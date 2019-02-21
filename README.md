@@ -1,7 +1,7 @@
 <img align="right" src="https://layer5.io/assets/images/cube-sh-small.png" />
 
 # meshery-linkerd
-Linkerd adapter for Meshery
+Meshery adapter for Linkerd
 
 ## [Meshery](https://layer5.io/meshery)
 
