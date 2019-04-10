@@ -34,8 +34,7 @@ var supportedOps = map[string]supportedOperation{
 		name: "Install the latest version of Linkerd",
 	},
 	installEmojiVotoCommand: {
-		name:         "Install the canonical Emojivoto demo Application",
-		templateName: "emojivoto.yml",
+		name: "Install the canonical Emojivoto demo Application",
 	},
 	installBooksAppCommand: {
 		name: "Install the Books demo Application",

@@ -342,13 +342,7 @@ func (iClient *LinkerdClient) executeEmojiVotoInstall(ctx context.Context, arReq
 		}
 	}
 
-	op, ok := supportedOps[installEmojiVotoCommand]
-	if !ok {
-		err := fmt.Errorf("unable to find the template for installing emojivoto app")
-		logrus.Error(err)
-		return err
-	}
-	yamlFileContents, err := iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
+	yamlFileContents, err := iClient.getYAML(emojivotoInstallFile, emojivotoLocalFile)
 	if err != nil {
 		return err
 	}
@@ -377,7 +371,7 @@ func (iClient *LinkerdClient) executeBooksAppInstall(ctx context.Context, arReq 
 		}
 	}
 
-	yamlFileContents, err := iClient.getBooksAppYAML()
+	yamlFileContents, err := iClient.getYAML(booksAppInstallFile, booksAppLocalFile)
 	if err != nil {
 		return err
 	}

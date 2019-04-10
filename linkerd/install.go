@@ -34,17 +34,17 @@ import (
 
 const (
 	repoURL              = "https://api.github.com/repos/linkerd/linkerd2/releases/latest"
-	emojivotoInstallFile = "https://run.linkerd.io/emojivoto.yml" // switching to a template because namespace was hardcoded
+	emojivotoInstallFile = "https://run.linkerd.io/emojivoto.yml"
 	booksAppInstallFile  = "https://run.linkerd.io/booksapp.yml"
 
 	cachePeriod = 1 * time.Hour
 )
 
 var (
-	URLSuffix = "-" + runtime.GOOS
-	localFile = path.Join(os.TempDir(), "linkerd-cli")
-	// emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
-	booksAppLocalFile = path.Join(os.TempDir(), "booksapp.yml")
+	URLSuffix          = "-" + runtime.GOOS
+	localFile          = path.Join(os.TempDir(), "linkerd-cli")
+	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
+	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 
 type APIInfo struct {
@@ -260,11 +260,11 @@ func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
 }
 */
 
-func (iClient *LinkerdClient) getBooksAppYAML() (string, error) {
+func (iClient *LinkerdClient) getYAML(remoteURL, localFile string) (string, error) {
 
 	proceedWithDownload := true
 
-	lFileStat, err := os.Stat(booksAppInstallFile)
+	lFileStat, err := os.Stat(localFile)
 	if err == nil {
 		if time.Since(lFileStat.ModTime()) > cachePeriod {
 			proceedWithDownload = true
@@ -274,12 +274,12 @@ func (iClient *LinkerdClient) getBooksAppYAML() (string, error) {
 	}
 
 	if proceedWithDownload {
-		if err = iClient.downloadFile(booksAppInstallFile, booksAppLocalFile); err != nil {
+		if err = iClient.downloadFile(remoteURL, localFile); err != nil {
 			return "", err
 		}
 		logrus.Debug("file successfully downloaded . . .")
 	}
 
-	b, err := ioutil.ReadFile(booksAppLocalFile)
+	b, err := ioutil.ReadFile(localFile)
 	return string(b), err
 }
