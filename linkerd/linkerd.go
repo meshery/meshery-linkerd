@@ -119,7 +119,10 @@ func (iClient *LinkerdClient) deleteResource(ctx context.Context, res schema.Gro
 }
 
 func (iClient *LinkerdClient) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	data1, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
+	var data1 *unstructured.Unstructured
+	var err error
+	logrus.Debugf("getResource: %+#v", data)
+	data1, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
 	if err != nil {
 		err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
 		logrus.Warn(err)
@@ -246,7 +249,20 @@ func (iClient *LinkerdClient) labelNamespaceForAutoInjection(ctx context.Context
 	ns.SetName(namespace)
 	ns, err := iClient.getResource(ctx, res, ns)
 	if err != nil {
-		return err
+		if strings.HasSuffix(err.Error(), "not found") {
+			if err = iClient.createNamespace(ctx, namespace); err != nil {
+				return err
+			}
+
+			ns := &unstructured.Unstructured{}
+			ns.SetName(namespace)
+			ns, err = iClient.getResource(ctx, res, ns)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	ns.SetLabels(map[string]string{
 		"linkerd.io/inject": "enabled",
@@ -338,6 +354,35 @@ func (iClient *LinkerdClient) executeEmojiVotoInstall(ctx context.Context, arReq
 	return nil
 }
 
+func (iClient *LinkerdClient) createNamespace(ctx context.Context, namespace string) error {
+	logrus.Debugf("creating namespace: %s", namespace)
+	yamlFileContents, err := iClient.executeTemplate(ctx, "", namespace, "namespace.yml")
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, namespace, false); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *LinkerdClient) executeBooksAppInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+
+	yamlFileContents, err := iClient.getBooksAppYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -410,6 +455,31 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			return
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
+	case installBooksAppCommand:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeBooksAppInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					EventType: meshes.EventType_ERROR,
+					Summary:   fmt.Sprintf("Error while %s the Books App", opName1),
+					Details:   err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				EventType: meshes.EventType_INFO,
+				Summary:   fmt.Sprintf("Books app %s successfully", opName),
+				Details:   fmt.Sprintf("The Linkerd Books app is now %s.", opName),
+			}
+			return
+		}()
 	default:
 		// tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", op.templateName))
 		// if err != nil {

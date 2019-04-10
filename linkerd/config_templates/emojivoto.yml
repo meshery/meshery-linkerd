@@ -3,26 +3,26 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: emoji
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 ---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: voting
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 ---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: web
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   creationTimestamp: null
   name: emoji
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   replicas: 1
   selector:
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: emoji-svc
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   selector:
     app: emoji-svc
@@ -69,7 +69,7 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   name: voting
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   replicas: 1
   selector:
@@ -101,7 +101,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: voting-svc
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   selector:
     app: voting-svc
@@ -116,7 +116,7 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   name: web
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   replicas: 1
   selector:
@@ -154,7 +154,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: web-svc
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   type: LoadBalancer
   selector:
@@ -169,7 +169,7 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   name: vote-bot
-  namespace: {{.Namespace}}
+  namespace: {{.namespace}}
 spec:
   replicas: 1
   selector:
