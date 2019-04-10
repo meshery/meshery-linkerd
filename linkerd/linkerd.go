@@ -264,6 +264,11 @@ func (iClient *LinkerdClient) labelNamespaceForAutoInjection(ctx context.Context
 			return err
 		}
 	}
+	logrus.Debugf("retrieved namespace: %+#v", ns)
+	if ns == nil {
+		ns = &unstructured.Unstructured{}
+		ns.SetName(namespace)
+	}
 	ns.SetLabels(map[string]string{
 		"linkerd.io/inject": "enabled",
 	})
