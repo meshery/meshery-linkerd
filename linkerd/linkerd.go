@@ -442,13 +442,32 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				return
 			}
 			opName := "deployed"
+			ports := []int64{}
 			if arReq.DeleteOp {
 				opName = "removed"
+			} else {
+				var err error
+				ports, err = iClient.getSVCPort(ctx, "web-svc", arReq.Namespace)
+				if err != nil {
+					iClient.eventChan <- &meshes.EventsResponse{
+						EventType: meshes.EventType_WARN,
+						Summary:   "Emojivoto App is deployed but unable to retrieve the port info for the service at the moment",
+						Details:   err.Error(),
+					}
+					return
+				}
 			}
+			var portMsg string
+			if len(ports) == 1 {
+				portMsg = fmt.Sprintf("The service is possibly available on port: %v", ports)
+			} else if len(ports) > 1 {
+				portMsg = fmt.Sprintf("The service is possibly available on one of the following ports: %v", ports)
+			}
+			msg := fmt.Sprintf("The Linkerd canonical Emojivoto app is now %s. %s", opName, portMsg)
 			iClient.eventChan <- &meshes.EventsResponse{
 				EventType: meshes.EventType_INFO,
 				Summary:   fmt.Sprintf("Emojivoto app %s successfully", opName),
-				Details:   fmt.Sprintf("The Linkerd canonical Emojivoto app is now %s.", opName),
+				Details:   msg,
 			}
 			return
 		}()
@@ -468,13 +487,33 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				return
 			}
 			opName := "deployed"
+			ports := []int64{}
 			if arReq.DeleteOp {
 				opName = "removed"
+			} else {
+				var err error
+				ports, err = iClient.getSVCPort(ctx, "webapp", arReq.Namespace)
+				if err != nil {
+					iClient.eventChan <- &meshes.EventsResponse{
+						EventType: meshes.EventType_WARN,
+						Summary:   "Books App is deployed but unable to retrieve the port info for the service at the moment",
+						Details:   err.Error(),
+					}
+					return
+				}
 			}
+			var portMsg string
+			if len(ports) == 1 {
+				portMsg = fmt.Sprintf("The service is possibly available on port: %v", ports)
+			} else if len(ports) > 1 {
+				portMsg = fmt.Sprintf("The service is possibly available on one of the following ports: %v", ports)
+			}
+			msg := fmt.Sprintf("The Linkerd Books app is now %s. %s", opName, portMsg)
+
 			iClient.eventChan <- &meshes.EventsResponse{
 				EventType: meshes.EventType_INFO,
 				Summary:   fmt.Sprintf("Books app %s successfully", opName),
-				Details:   fmt.Sprintf("The Linkerd Books app is now %s.", opName),
+				Details:   msg,
 			}
 			return
 		}()
@@ -604,4 +643,35 @@ func (iClient *LinkerdClient) splitYAML(yamlContents string) ([]string, error) {
 		result[i] = r
 	}
 	return result, nil
+}
+
+func (iClient *LinkerdClient) getSVCPort(ctx context.Context, svc, namespace string) ([]int64, error) {
+	// web-svc
+	ns := &unstructured.Unstructured{}
+	res := schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "services",
+	}
+	ns.SetName(svc)
+	ns.SetNamespace(namespace)
+	ns, err := iClient.getResource(ctx, res, ns)
+	if err != nil {
+		err = errors.Wrapf(err, "unable to get service details")
+		logrus.Error(err)
+		return nil, err
+	}
+	svcInst := ns.UnstructuredContent()
+	spec := svcInst["spec"].(map[string]interface{})
+	ports, _ := spec["ports"].([]interface{})
+	nodePorts := []int64{}
+	for _, port := range ports {
+		p, _ := port.(map[string]interface{})
+		np, ok := p["nodePort"]
+		if ok {
+			npi, _ := np.(int64)
+			nodePorts = append(nodePorts, npi)
+		}
+	}
+	logrus.Debugf("retrieved svc: %+#v", ns)
+	return nodePorts, nil
 }
