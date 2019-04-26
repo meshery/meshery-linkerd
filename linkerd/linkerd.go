@@ -299,7 +299,7 @@ func (iClient *LinkerdClient) executeInstall(ctx context.Context, arReq *meshes.
 		return err
 	}
 
-	installArgs := append(args1, "install", "--proxy-auto-inject", "--ignore-cluster")
+	installArgs := append(args1, "install", "--ignore-cluster")
 	yamlFileContents, er, err = iClient.execute(installArgs...)
 	if err != nil {
 		return err
