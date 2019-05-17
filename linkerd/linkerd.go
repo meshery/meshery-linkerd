@@ -335,23 +335,6 @@ func (iClient *LinkerdClient) executeTemplate(ctx context.Context, username, nam
 	return buf.String(), nil
 }
 
-func (iClient *LinkerdClient) executeEmojiVotoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
-	if !arReq.DeleteOp {
-		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
-			return err
-		}
-	}
-
-	yamlFileContents, err := iClient.getYAML(emojivotoInstallFile, emojivotoLocalFile)
-	if err != nil {
-		return err
-	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (iClient *LinkerdClient) createNamespace(ctx context.Context, namespace string) error {
 	logrus.Debugf("creating namespace: %s", namespace)
 	yamlFileContents, err := iClient.executeTemplate(ctx, "", namespace, "namespace.yml")
@@ -364,30 +347,13 @@ func (iClient *LinkerdClient) createNamespace(ctx context.Context, namespace str
 	return nil
 }
 
-func (iClient *LinkerdClient) executeBooksAppInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
-	if !arReq.DeleteOp {
-		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
-			return err
-		}
-	}
-
-	yamlFileContents, err := iClient.getYAML(booksAppInstallFile, booksAppLocalFile)
-	if err != nil {
-		return err
-	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
-		return err
-	}
-	return nil
-}
-
 // ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
 		return nil, errors.New("mesh client has not been created")
 	}
 
-	_, ok := supportedOps[arReq.OpName]
+	op, ok := supportedOps[arReq.OpName]
 	if !ok {
 		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
 	}
@@ -397,6 +363,8 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 	}
 
 	var yamlFileContents string
+	var appName string
+	var err error
 
 	switch arReq.OpName {
 	case customOpCommand:
@@ -427,16 +395,58 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			return
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
+	case installBooksAppCommand:
+		appName = "Linkerd Books App"
+		yamlFileContents, err = iClient.getYAML(booksAppInstallFile, booksAppLocalFile)
+		if err != nil {
+			return nil, err
+		}
+		fallthrough
+	case installHTTPBinApp:
+		if appName == "" {
+			appName = "HTTP Bin App"
+			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
+			if err != nil {
+				return nil, err
+			}
+		}
+		fallthrough
+	case installIstioBookInfoApp:
+		if appName == "" {
+			appName = "Istio canonical Book Info App"
+			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
+			if err != nil {
+				return nil, err
+			}
+		}
+		fallthrough
 	case installEmojiVotoCommand:
+		if appName == "" {
+			appName = "Emojivoto App"
+			yamlFileContents, err = iClient.getYAML(emojivotoInstallFile, emojivotoLocalFile)
+			if err != nil {
+				return nil, err
+			}
+		}
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
 				opName1 = "removing"
 			}
-			if err := iClient.executeEmojiVotoInstall(ctx, arReq); err != nil {
+			if !arReq.DeleteOp {
+				if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+					iClient.eventChan <- &meshes.EventsResponse{
+						EventType: meshes.EventType_ERROR,
+						Summary:   fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
+						Details:   err.Error(),
+					}
+					return
+				}
+			}
+			if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
 					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s the canonical Emojivoto App", opName1),
+					Summary:   fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
 					Details:   err.Error(),
 				}
 				return
@@ -451,7 +461,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				if err != nil {
 					iClient.eventChan <- &meshes.EventsResponse{
 						EventType: meshes.EventType_WARN,
-						Summary:   "Emojivoto App is deployed but unable to retrieve the port info for the service at the moment",
+						Summary:   fmt.Sprintf("%s is deployed but unable to retrieve the port info for the service at the moment", appName),
 						Details:   err.Error(),
 					}
 					return
@@ -463,60 +473,15 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			} else if len(ports) > 1 {
 				portMsg = fmt.Sprintf("The service is possibly available on one of the following ports: %v", ports)
 			}
-			msg := fmt.Sprintf("The Linkerd canonical Emojivoto app is now %s. %s", opName, portMsg)
+			msg := fmt.Sprintf("%s is now %s. %s", appName, opName, portMsg)
 			iClient.eventChan <- &meshes.EventsResponse{
 				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Emojivoto app %s successfully", opName),
+				Summary:   fmt.Sprintf("%s %s successfully", appName, opName),
 				Details:   msg,
 			}
 			return
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
-	case installBooksAppCommand:
-		go func() {
-			opName1 := "deploying"
-			if arReq.DeleteOp {
-				opName1 = "removing"
-			}
-			if err := iClient.executeBooksAppInstall(ctx, arReq); err != nil {
-				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s the Books App", opName1),
-					Details:   err.Error(),
-				}
-				return
-			}
-			opName := "deployed"
-			ports := []int64{}
-			if arReq.DeleteOp {
-				opName = "removed"
-			} else {
-				var err error
-				ports, err = iClient.getSVCPort(ctx, "webapp", arReq.Namespace)
-				if err != nil {
-					iClient.eventChan <- &meshes.EventsResponse{
-						EventType: meshes.EventType_WARN,
-						Summary:   "Books App is deployed but unable to retrieve the port info for the service at the moment",
-						Details:   err.Error(),
-					}
-					return
-				}
-			}
-			var portMsg string
-			if len(ports) == 1 {
-				portMsg = fmt.Sprintf("The service is possibly available on port: %v", ports)
-			} else if len(ports) > 1 {
-				portMsg = fmt.Sprintf("The service is possibly available on one of the following ports: %v", ports)
-			}
-			msg := fmt.Sprintf("The Linkerd Books app is now %s. %s", opName, portMsg)
-
-			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Books app %s successfully", opName),
-				Details:   msg,
-			}
-			return
-		}()
 	default:
 		// tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", op.templateName))
 		// if err != nil {

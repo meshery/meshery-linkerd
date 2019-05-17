@@ -26,7 +26,8 @@ const (
 	installLinkerdCommand   = "linkerd_install"
 	installEmojiVotoCommand = "install_emojivoto"
 	installBooksAppCommand  = "install_booksapp"
-	cbCommand               = "linkerd_cb1"
+	installHTTPBinApp       = "install_http_bin"
+	installIstioBookInfoApp = "install_istio_book_info"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -41,5 +42,13 @@ var supportedOps = map[string]supportedOperation{
 	},
 	customOpCommand: {
 		name: "Custom YAML",
+	},
+	installHTTPBinApp: {
+		name:         "Install HTTP Bin application",
+		templateName: "httpbin.yaml",
+	},
+	installIstioBookInfoApp: {
+		name:         "Install Istio's canonical Book Info app",
+		templateName: "istiobookinfo.yaml",
 	},
 }
