@@ -363,7 +363,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 	}
 
 	var yamlFileContents string
-	var appName string
+	var appName, svcName string
 	var err error
 
 	switch arReq.OpName {
@@ -397,6 +397,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 		return &meshes.ApplyRuleResponse{}, nil
 	case installBooksAppCommand:
 		appName = "Linkerd Books App"
+		svcName = "webapp"
 		yamlFileContents, err = iClient.getYAML(booksAppInstallFile, booksAppLocalFile)
 		if err != nil {
 			return nil, err
@@ -405,6 +406,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 	case installHTTPBinApp:
 		if appName == "" {
 			appName = "HTTP Bin App"
+			svcName = "httpbin"
 			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 			if err != nil {
 				return nil, err
@@ -414,6 +416,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 	case installIstioBookInfoApp:
 		if appName == "" {
 			appName = "Istio canonical Book Info App"
+			svcName = "productpage"
 			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 			if err != nil {
 				return nil, err
@@ -423,6 +426,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 	case installEmojiVotoCommand:
 		if appName == "" {
 			appName = "Emojivoto App"
+			svcName = "web-svc"
 			yamlFileContents, err = iClient.getYAML(emojivotoInstallFile, emojivotoLocalFile)
 			if err != nil {
 				return nil, err
@@ -457,7 +461,7 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				opName = "removed"
 			} else {
 				var err error
-				ports, err = iClient.getSVCPort(ctx, "web-svc", arReq.Namespace)
+				ports, err = iClient.getSVCPort(ctx, svcName, arReq.Namespace)
 				if err != nil {
 					iClient.eventChan <- &meshes.EventsResponse{
 						EventType: meshes.EventType_WARN,
