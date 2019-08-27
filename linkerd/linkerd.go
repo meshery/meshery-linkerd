@@ -543,9 +543,16 @@ func (iClient *LinkerdClient) applyConfigChange(ctx context.Context, yamlFileCon
 
 // SupportedOperations - returns a list of supported operations on the mesh
 func (iClient *LinkerdClient) SupportedOperations(context.Context, *meshes.SupportedOperationsRequest) (*meshes.SupportedOperationsResponse, error) {
-	result := map[string]string{}
-	for key, op := range supportedOps {
-		result[key] = op.name
+	supportedOpsCount := len(supportedOps)
+	result := make([]*meshes.SupportedOperation, supportedOpsCount)
+	i := 0
+	for k, sp := range supportedOps {
+		result[i] = &meshes.SupportedOperation{
+			Key:      k,
+			Value:    sp.name,
+			Category: sp.opType,
+		}
+		i++
 	}
 	return &meshes.SupportedOperationsResponse{
 		Ops: result,
