@@ -40,11 +40,11 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installEmojiVotoCommand: {
-		name:   "Canonical Emojivoto demo Application",
+		name:   "Emojivoto Application",
 		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	installBooksAppCommand: {
-		name:   "Books demo Application",
+		name:   "Linkerd Books Application",
 		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	customOpCommand: {
@@ -52,12 +52,12 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_CUSTOM,
 	},
 	installHTTPBinApp: {
-		name:         "HTTPBin application",
+		name:         "HTTPbin Application",
 		templateName: "httpbin.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	installIstioBookInfoApp: {
-		name:         "Istio's canonical Book Info app",
+		name:         "Istio Book Info Application",
 		templateName: "istiobookinfo.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
