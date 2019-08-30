@@ -355,11 +355,11 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 
 	op, ok := supportedOps[arReq.OpName]
 	if !ok {
-		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
+		return nil, fmt.Errorf("operation id: %s, error: %s is not a valid operation name", arReq.OperationId, arReq.OpName)
 	}
 
 	if arReq.OpName == customOpCommand && arReq.CustomBody == "" {
-		return nil, fmt.Errorf("error: yaml body is empty for %s operation", arReq.OpName)
+		return nil, fmt.Errorf("operation id: %s, error: yaml body is empty for %s operation", arReq.OperationId, arReq.OpName)
 	}
 
 	var yamlFileContents string
@@ -377,9 +377,10 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			}
 			if err := iClient.executeInstall(ctx, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s Linkerd", opName1),
-					Details:   err.Error(),
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Linkerd", opName1),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -388,13 +389,16 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				opName = "removed"
 			}
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Linkerd %s successfully", opName),
-				Details:   fmt.Sprintf("The latest version of Linkerd is now %s.", opName),
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Linkerd %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Linkerd is now %s.", opName),
 			}
 			return
 		}()
-		return &meshes.ApplyRuleResponse{}, nil
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installBooksAppCommand:
 		appName = "Linkerd Books App"
 		svcName = "webapp"
@@ -440,18 +444,20 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			if !arReq.DeleteOp {
 				if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
 					iClient.eventChan <- &meshes.EventsResponse{
-						EventType: meshes.EventType_ERROR,
-						Summary:   fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
-						Details:   err.Error(),
+						OperationId: arReq.OperationId,
+						EventType:   meshes.EventType_ERROR,
+						Summary:     fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
+						Details:     err.Error(),
 					}
 					return
 				}
 			}
 			if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
-					Details:   err.Error(),
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the canonical %s", opName1, appName),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -464,9 +470,10 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 				ports, err = iClient.getSVCPort(ctx, svcName, arReq.Namespace)
 				if err != nil {
 					iClient.eventChan <- &meshes.EventsResponse{
-						EventType: meshes.EventType_WARN,
-						Summary:   fmt.Sprintf("%s is deployed but unable to retrieve the port info for the service at the moment", appName),
-						Details:   err.Error(),
+						OperationId: arReq.OperationId,
+						EventType:   meshes.EventType_WARN,
+						Summary:     fmt.Sprintf("%s is deployed but unable to retrieve the port info for the service at the moment", appName),
+						Details:     err.Error(),
 					}
 					return
 				}
@@ -479,13 +486,16 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 			}
 			msg := fmt.Sprintf("%s is now %s. %s", appName, opName, portMsg)
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("%s %s successfully", appName, opName),
-				Details:   msg,
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("%s %s successfully", appName, opName),
+				Details:     msg,
 			}
 			return
 		}()
-		return &meshes.ApplyRuleResponse{}, nil
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	default:
 		// tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", op.templateName))
 		// if err != nil {
@@ -513,7 +523,9 @@ func (iClient *LinkerdClient) ApplyOperation(ctx context.Context, arReq *meshes.
 		return nil, err
 	}
 
-	return &meshes.ApplyRuleResponse{}, nil
+	return &meshes.ApplyRuleResponse{
+		OperationId: arReq.OperationId,
+	}, nil
 }
 
 func (iClient *LinkerdClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete bool) error {
