@@ -14,11 +14,15 @@
 
 package linkerd
 
+import "github.com/layer5io/meshery-linkerd/meshes"
+
 type supportedOperation struct {
 	// a friendly name
 	name string
 	// the template file name
 	templateName string
+
+	opType meshes.OpCategory
 }
 
 const (
@@ -32,23 +36,29 @@ const (
 
 var supportedOps = map[string]supportedOperation{
 	installLinkerdCommand: {
-		name: "Install the latest version of Linkerd",
+		name:   "Latest version of Linkerd",
+		opType: meshes.OpCategory_INSTALL,
 	},
 	installEmojiVotoCommand: {
-		name: "Install the canonical Emojivoto demo Application",
+		name:   "Emojivoto Application",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	installBooksAppCommand: {
-		name: "Install the Books demo Application",
+		name:   "Linkerd Books Application",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	customOpCommand: {
-		name: "Custom YAML",
+		name:   "Custom YAML",
+		opType: meshes.OpCategory_CUSTOM,
 	},
 	installHTTPBinApp: {
-		name:         "Install HTTP Bin application",
+		name:         "HTTPbin Application",
 		templateName: "httpbin.yaml",
+		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	installIstioBookInfoApp: {
-		name:         "Install Istio's canonical Book Info app",
+		name:         "Istio Book Info Application",
 		templateName: "istiobookinfo.yaml",
+		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 }
