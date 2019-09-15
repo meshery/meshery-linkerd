@@ -23,7 +23,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 //to resolve the "a blank import should be only in a main or test package, or have a comment justifying it" problem
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	_ "k8s.io/client-go/plugin/pkg/client/auth" //solved
 )
 
 // LinkerdClient represents an Linkerd client in Meshery
