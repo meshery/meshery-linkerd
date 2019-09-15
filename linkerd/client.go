@@ -27,7 +27,7 @@ import (
 )
 
 // LinkerdClient represents an Linkerd client in Meshery
-type LinkerdClient struct {
+type Client struct {
 	contextName string
 	kubeconfig  []byte
 
