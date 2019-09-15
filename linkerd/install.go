@@ -41,7 +41,7 @@ const (
 )
 
 var (
-	URLSuffix          = "-" + runtime.GOOS
+	URLSuffix          = "-" + runtime.GOOS //to solve the error
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
