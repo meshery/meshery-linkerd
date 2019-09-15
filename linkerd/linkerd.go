@@ -35,31 +35,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
+// to solve
+func (iClient *LinkerdClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) { //to solve
+	var k8sConfig []byte //to solve
+	contextName := "" //to solve
+	if k8sReq != nil { //to solve
+		k8sConfig = k8sReq.K8SConfig  //to solve
+		contextName = k8sReq.ContextName //to solve
+	} //to solve
+	// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
+	logrus.Debugf("received contextName: %s", contextName) //to solve
 
-func (iClient *LinkerdClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
-	var k8sConfig []byte
-	contextName := ""
-	if k8sReq != nil {
-		k8sConfig = k8sReq.K8SConfig
-		contextName = k8sReq.ContextName
+	ic, err := newClient(k8sConfig, contextName) //to solve
+	if err != nil { //to solve
+		err = errors.Wrapf(err, "unable to create a new linkerd client") //to solve
+		logrus.Error(err) //to solve
+		return nil, err //to solve
 	}
-	// logrus.Debugf("received k8sConfig: %s", k8sConfig)
-	logrus.Debugf("received contextName: %s", contextName)
-
-	ic, err := newClient(k8sConfig, contextName)
-	if err != nil {
-		err = errors.Wrapf(err, "unable to create a new linkerd client")
-		logrus.Error(err)
-		return nil, err
-	}
-	iClient.k8sClientset = ic.k8sClientset
-	iClient.k8sDynamicClient = ic.k8sDynamicClient
-	iClient.eventChan = make(chan *meshes.EventsResponse, 100)
-	iClient.config = ic.config
-	iClient.contextName = ic.contextName
-	iClient.kubeconfig = ic.kubeconfig
-	return &meshes.CreateMeshInstanceResponse{}, nil
-}
+	iClient.k8sClientset = ic.k8sClientset //to solve
+	iClient.k8sDynamicClient = ic.k8sDynamicClient //to solve
+	iClient.eventChan = make(chan *meshes.EventsResponse, 100) //to solve
+	iClient.config = ic.config //to solve
+	iClient.contextName = ic.contextName //to solve
+	iClient.kubeconfig = ic.kubeconfig //to solve
+	return &meshes.CreateMeshInstanceResponse{}, nil //to solve
+} //to solve
 
 func (iClient *LinkerdClient) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
