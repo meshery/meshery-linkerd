@@ -47,17 +47,17 @@ var (
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 //to solve 
-type APIInfo struct { //to solve
-	TagName    string   `json:"tag_name,omitempty"`//to solve
-	PreRelease bool     `json:"prerelease,omitempty"` //to solve
-	Assets     []*Asset `json:"assets,omitempty"` //to solve
-} //to solve
+type APIInfo struct { 
+	TagName    string   `json:"tag_name,omitempty"`
+	PreRelease bool     `json:"prerelease,omitempty"` 
+	Assets     []*Asset `json:"assets,omitempty"` 
+} 
 //to solve
-type Asset struct {     //solveto 
-	Name        string `json:"name,omitempty"` //to solve
-	State       string `json:"state,omitempty"` //to solve
-	DownloadURL string `json:"browser_download_url,omitempty"` //to solve
-} //to solve
+type Asset struct {     
+	Name        string `json:"name,omitempty"` 
+	State       string `json:"state,omitempty"` 
+	DownloadURL string `json:"browser_download_url,omitempty"` 
+} 
 
 func (iClient *LinkerdClient) getLatestReleaseURL() error {
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
