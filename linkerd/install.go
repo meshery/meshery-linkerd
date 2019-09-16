@@ -48,17 +48,17 @@ var (
 )
 //to solve 
 type APIInfo struct { //to solve
-	TagName    string   `json:"tag_name,omitempty"`//to solve
-	PreRelease bool     `json:"prerelease,omitempty"` //to solve
-	Assets     []*Asset `json:"assets,omitempty"` //to solve
-} //to solve
+	TagName    string   `json:"tag_name,omitempty"`
+	PreRelease bool     `json:"prerelease,omitempty"` 
+	Assets     []*Asset `json:"assets,omitempty"` 
+} 
 //to solve
-type Asset struct {     //solveto 
-	Name        string `json:"name,omitempty"` //to solve
-	State       string `json:"state,omitempty"` //to solve
-	DownloadURL string `json:"browser_download_url,omitempty"` //to solve
-} //to solve
-
+type Asset struct {     
+	Name        string `json:"name,omitempty"` 
+	State       string `json:"state,omitempty"` 
+	DownloadURL string `json:"browser_download_url,omitempty"` 
+} 
+//to solve
 func (iClient *LinkerdClient) getLatestReleaseURL() error {
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
@@ -187,11 +187,12 @@ func (iClient *LinkerdClient) execute(command ...string) (string, string, error)
 		if os.IsNotExist(err) {
 			logrus.Error(err)
 			return "", "", err
-		} else {
-			err = errors.Wrap(err, "unknown error")
-			logrus.Error(err)
-			return "", "", err
 		}
+		
+		err = errors.Wrap(err, "unknown error")
+		logrus.Error(err)
+		return "", "", err
+		
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
