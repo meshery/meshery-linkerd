@@ -41,23 +41,23 @@ const (
 )
 
 var (
-	URLSuffix          = "-" + runtime.GOOS //to solve the error
+	URLSuffix          = "-" + runtime.GOOS 
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
-//to solve 
-type APIInfo struct { //to solve
-	TagName    string   `json:"tag_name,omitempty"`//to solve
-	PreRelease bool     `json:"prerelease,omitempty"` //to solve
-	Assets     []*Asset `json:"assets,omitempty"` //to solve
-} //to solve
-//to solve
-type Asset struct {     //solveto 
-	Name        string `json:"name,omitempty"` //to solve
-	State       string `json:"state,omitempty"` //to solve
-	DownloadURL string `json:"browser_download_url,omitempty"` //to solve
-} //to solve
+// APIInfo is used to store individual response from GitHub release call
+type APIInfo struct { 
+	TagName    string   `json:"tag_name,omitempty"`
+	PreRelease bool     `json:"prerelease,omitempty"` 
+	Assets     []*Asset `json:"assets,omitempty"` 
+} 
+// Asset is used to store the individual asset data as part of a release
+type Asset struct {     
+	Name        string `json:"name,omitempty"` 
+	State       string `json:"state,omitempty"` 
+	DownloadURL string `json:"browser_download_url,omitempty"` 
+} 
 
 func (iClient *LinkerdClient) getLatestReleaseURL() error {
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
@@ -184,14 +184,11 @@ func (iClient *LinkerdClient) execute(command ...string) (string, string, error)
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-		if os.IsNotExist(err) {
-			logrus.Error(err)
-			return "", "", err
-		} else {
+		if !os.IsNotExist(err) {
 			err = errors.Wrap(err, "unknown error")
-			logrus.Error(err)
-			return "", "", err
 		}
+		logrus.Error(err)
+		return "", "", err
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
