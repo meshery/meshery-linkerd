@@ -59,7 +59,7 @@ type Asset struct {
 	DownloadURL string `json:"browser_download_url,omitempty"` 
 } 
 
-func (iClient *LinkerdClient) getLatestReleaseURL() error {
+func (iClient *Client) getLatestReleaseURL() error {
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -108,7 +108,7 @@ func (iClient *LinkerdClient) getLatestReleaseURL() error {
 	return nil
 }
 
-func (iClient *LinkerdClient) downloadFile(urlToDownload, localFile string) error {
+func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 	dFile, err := os.Create(localFile)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create a file on the filesystem at %s", localFile)
@@ -146,7 +146,7 @@ func (iClient *LinkerdClient) downloadFile(urlToDownload, localFile string) erro
 	return nil
 }
 
-func (iClient *LinkerdClient) downloadLinkerd() error {
+func (iClient *Client) downloadLinkerd() error {
 	logrus.Debug("preparing to download the latest linkerd release")
 	err := iClient.getLatestReleaseURL()
 	if err != nil {
@@ -176,7 +176,7 @@ func (iClient *LinkerdClient) downloadLinkerd() error {
 	return nil
 }
 
-func (iClient *LinkerdClient) execute(command ...string) (string, string, error) {
+func (iClient *Client) execute(command ...string) (string, string, error) {
 	err := iClient.downloadLinkerd()
 	if err != nil {
 		return "", "", err
@@ -217,7 +217,7 @@ func (iClient *LinkerdClient) execute(command ...string) (string, string, error)
 }
 
 /*
-func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
+func (iClient *Client) getEmojivotoYAML(inject bool) (string, error) {
 
 
 	// proceedWithDownload := true
@@ -257,7 +257,7 @@ func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
 }
 */
 
-func (iClient *LinkerdClient) getYAML(remoteURL, localFile string) (string, error) {
+func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
 
 	proceedWithDownload := true
 
