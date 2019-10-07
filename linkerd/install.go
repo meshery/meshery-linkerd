@@ -41,25 +41,29 @@ const (
 )
 
 var (
-	URLSuffix          = "-" + runtime.GOOS //to solve the error
+	URLSuffix          = "-" + runtime.GOOS
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
-//to solve 
-type APIInfo struct { //to solve
+
+
+// APIInfo is used to store individual response from GitHub release call
+type APIInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
-	PreRelease bool     `json:"prerelease,omitempty"` 
-	Assets     []*Asset `json:"assets,omitempty"` 
-} 
-//to solve
-type Asset struct {     
-	Name        string `json:"name,omitempty"` 
-	State       string `json:"state,omitempty"` 
-	DownloadURL string `json:"browser_download_url,omitempty"` 
-} 
-//to solve
-func (iClient *LinkerdClient) getLatestReleaseURL() error {
+	PreRelease bool     `json:"prerelease,omitempty"`
+	Assets     []*Asset `json:"assets,omitempty"`
+}
+
+// Asset is used to store the individual asset data as part of a release
+type Asset struct {
+	Name        string `json:"name,omitempty"`
+	State       string `json:"state,omitempty"`
+	DownloadURL string `json:"browser_download_url,omitempty"`
+}
+
+func (iClient *Client) getLatestReleaseURL() error {
+
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -108,7 +112,7 @@ func (iClient *LinkerdClient) getLatestReleaseURL() error {
 	return nil
 }
 
-func (iClient *LinkerdClient) downloadFile(urlToDownload, localFile string) error {
+func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 	dFile, err := os.Create(localFile)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create a file on the filesystem at %s", localFile)
@@ -146,7 +150,7 @@ func (iClient *LinkerdClient) downloadFile(urlToDownload, localFile string) erro
 	return nil
 }
 
-func (iClient *LinkerdClient) downloadLinkerd() error {
+func (iClient *Client) downloadLinkerd() error {
 	logrus.Debug("preparing to download the latest linkerd release")
 	err := iClient.getLatestReleaseURL()
 	if err != nil {
@@ -176,7 +180,7 @@ func (iClient *LinkerdClient) downloadLinkerd() error {
 	return nil
 }
 
-func (iClient *LinkerdClient) execute(command ...string) (string, string, error) {
+func (iClient *Client) execute(command ...string) (string, string, error) {
 	err := iClient.downloadLinkerd()
 	if err != nil {
 		return "", "", err
@@ -184,15 +188,7 @@ func (iClient *LinkerdClient) execute(command ...string) (string, string, error)
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-		if os.IsNotExist(err) {
-			logrus.Error(err)
-			return "", "", err
-		}
-		
-		err = errors.Wrap(err, "unknown error")
-		logrus.Error(err)
-		return "", "", err
-		
+
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
@@ -261,7 +257,7 @@ func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
 }
 */
 
-func (iClient *LinkerdClient) getYAML(remoteURL, localFile string) (string, error) {
+func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
 
 	proceedWithDownload := true
 

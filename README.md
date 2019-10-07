@@ -2,12 +2,12 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-linkerd.svg)](https://hub.docker.com/r/layer5/meshery-linkerd)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-linkerd)](https://goreportcard.com/report/github.com/layer5io/meshery-linkerd)
-[![Build Status](https://travis-ci.com/layer5io/meshery-linkerd.svg?branch=master)](https://travis-ci.com/layer5io/meshery-linkerd)
+[![Build Status](https://github.com/layer5io/meshery-linkerd/workflows/Meshery-Linkerd/badge.svg)](https://github.com/layer5io/meshery-linkerd/actions)
 ![GitHub](https://img.shields.io/github/license/layer5io/meshery-linkerd.svg)
 ![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-linkerd/help%20wanted.svg)
 ![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)
 ![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)
-[![Slack](https://img.shields.io/badge/slack-380-lightgrey)](http://slack.layer5.io)
+[![Slack](http://slack.layer5.io/badge.svg)](http://slack.layer5.io)
 
 # meshery-linkerd
 Meshery Adapter for Linkerd
