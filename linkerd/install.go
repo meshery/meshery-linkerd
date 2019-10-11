@@ -47,22 +47,6 @@ var (
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 
-//to solve 
-type APIInfo struct { 
-	TagName    string   `json:"tag_name,omitempty"`
-	PreRelease bool     `json:"prerelease,omitempty"` 
-	Assets     []*Asset `json:"assets,omitempty"` 
-} 
-//to solve
-type Asset struct {     
-	Name        string `json:"name,omitempty"` 
-	State       string `json:"state,omitempty"` 
-	DownloadURL string `json:"browser_download_url,omitempty"` 
-} 
-
-func (iClient *LinkerdClient) getLatestReleaseURL() error {
-
-
 // APIInfo is used to store individual response from GitHub release call
 type APIInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
@@ -203,11 +187,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			err = errors.Wrap(err, "unknown error")
-		}
-		logrus.Error(err)
-		return "", "", err
+
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
