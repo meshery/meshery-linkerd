@@ -47,6 +47,22 @@ var (
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 
+//to solve 
+type APIInfo struct { 
+	TagName    string   `json:"tag_name,omitempty"`
+	PreRelease bool     `json:"prerelease,omitempty"` 
+	Assets     []*Asset `json:"assets,omitempty"` 
+} 
+//to solve
+type Asset struct {     
+	Name        string `json:"name,omitempty"` 
+	State       string `json:"state,omitempty"` 
+	DownloadURL string `json:"browser_download_url,omitempty"` 
+} 
+
+func (iClient *LinkerdClient) getLatestReleaseURL() error {
+
+
 // APIInfo is used to store individual response from GitHub release call
 type APIInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
@@ -62,6 +78,7 @@ type Asset struct {
 }
 
 func (iClient *Client) getLatestReleaseURL() error {
+
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
