@@ -47,7 +47,6 @@ var (
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 
-
 // APIInfo is used to store individual response from GitHub release call
 type APIInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
