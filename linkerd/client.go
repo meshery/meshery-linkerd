@@ -27,7 +27,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth" //solved
 )
 
-// LinkerdClient represents an Linkerd client in Meshery
+// Client represents an client in Meshery
 type Client struct {
 	contextName string
 	kubeconfig  []byte
