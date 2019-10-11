@@ -41,7 +41,7 @@ const (
 )
 
 var (
-	URLSuffix          = "-" + runtime.GOOS //declearning URLSuffix 
+	URLSuffix          = "-" + runtime.GOOS //defining URLSuffix
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
@@ -62,6 +62,7 @@ type Asset struct {
 }
 
 func (iClient *Client) getLatestReleaseURL() error {
+
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -186,11 +187,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			err = errors.Wrap(err, "unknown error")
-		}
-		logrus.Error(err)
-		return "", "", err
+
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
@@ -219,7 +216,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 }
 
 /*
-func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
+func (iClient *Client) getEmojivotoYAML(inject bool) (string, error) {
 
 
 	// proceedWithDownload := true
