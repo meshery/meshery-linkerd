@@ -41,7 +41,7 @@ const (
 )
 
 var (
-	URLSuffix          = "-" + runtime.GOOS
+	URLSuffix          = "-" + runtime.GOOS //defining URLSuffix
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
@@ -216,7 +216,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 }
 
 /*
-func (iClient *LinkerdClient) getEmojivotoYAML(inject bool) (string, error) {
+func (iClient *Client) getEmojivotoYAML(inject bool) (string, error) {
 
 
 	// proceedWithDownload := true
