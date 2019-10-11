@@ -61,9 +61,10 @@ func (d *YAMLDecoder) Read(data []byte) (n int, err error) {
 	d.remaining = d.remaining[len(data):]
 	return len(data), io.ErrShortBuffer
 }
-//to solve this problem
+
+// Close - closes the decoder
 func (d *YAMLDecoder) Close() error {
-	return d.r.Close() //to solve this poblem
+	return d.r.Close()
 }
 
 const yamlSeparator = "\n---"

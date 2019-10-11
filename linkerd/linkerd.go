@@ -35,33 +35,36 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-// to solve
-func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) { //to solve
-	var k8sConfig []byte //to solve
-	contextName := "" //to solve
-	if k8sReq != nil { //to solve
-		k8sConfig = k8sReq.K8SConfig  //to solve
-		contextName = k8sReq.ContextName //to solve
-	} //to solve
 	// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
-	logrus.Debugf("received contextName: %s", contextName) //to solve
 
-	ic, err := newClient(k8sConfig, contextName) //to solve
-	if err != nil { //to solve
-		err = errors.Wrapf(err, "unable to create a new linkerd client") //to solve
-		logrus.Error(err) //to solve
-		return nil, err //to solve
+// CreateMeshInstance - creates a mesh adapter instance
+func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
+	var k8sConfig []byte
+	contextName := ""
+	if k8sReq != nil {
+		k8sConfig = k8sReq.K8SConfig
+		contextName = k8sReq.ContextName
 	}
-	iClient.k8sClientset = ic.k8sClientset //to solve
-	iClient.k8sDynamicClient = ic.k8sDynamicClient //to solve
-	iClient.eventChan = make(chan *meshes.EventsResponse, 100) //to solve
-	iClient.config = ic.config //to solve
-	iClient.contextName = ic.contextName //to solve
-	iClient.kubeconfig = ic.kubeconfig //to solve
-	return &meshes.CreateMeshInstanceResponse{}, nil //to solve
-} //to solve
+	// logrus.Debugf("received k8sConfig: %s", k8sConfig)
+	logrus.Debugf("received contextName: %s", contextName)
+
+	ic, err := newClient(k8sConfig, contextName)
+	if err != nil {
+		err = errors.Wrapf(err, "unable to create a new linkerd client")
+		logrus.Error(err)
+		return nil, err
+	}
+	iClient.k8sClientset = ic.k8sClientset
+	iClient.k8sDynamicClient = ic.k8sDynamicClient
+	iClient.eventChan = make(chan *meshes.EventsResponse, 100)
+	iClient.config = ic.config
+	iClient.contextName = ic.contextName
+	iClient.kubeconfig = ic.kubeconfig
+	return &meshes.CreateMeshInstanceResponse{}, nil
+}
 
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
+	logrus.Debug("============================================================================")
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
@@ -120,7 +123,8 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	var data1 *unstructured.Unstructured
 	var err error
-	logrus.Debugf("getResource: %+#v", data)
+	logrus.Debugf("getResource data: %+#v", data)
+	logrus.Debugf("getResource res: %+#v", res)
 	data1, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
 	if err != nil {
 		err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
@@ -212,6 +216,8 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 		kind = "logentries"
 	case "kubernetes":
 		kind = "kuberneteses"
+	case "podsecuritypolicy":
+		kind = "podsecuritypolicies"
 	default:
 		kind += "s"
 	}
@@ -388,6 +394,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			if arReq.DeleteOp {
 				opName = "removed"
 			}
+			logrus.Debugf("Op - %s - completed successfully", opName)
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,

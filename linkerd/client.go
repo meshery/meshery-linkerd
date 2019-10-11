@@ -22,12 +22,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-//to resolve the "a blank import should be only in a main or test package, or have a comment justifying it" problem
+
+	//to resolve the "a blank import should be only in a main or test package, or have a comment justifying it" problem
 	_ "k8s.io/client-go/plugin/pkg/client/auth" //solved
 )
 
 // LinkerdClient represents an Linkerd client in Meshery
-type Client struct {
+type client struct {
 	contextName string
 	kubeconfig  []byte
 
@@ -56,8 +57,8 @@ func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func newClient(kubeconfig []byte, contextName string) (*LinkerdClient, error) {
-	client := LinkerdClient{}
+func newClient(kubeconfig []byte, contextName string) (*Client, error) {
+	client := Client{}
 	config, err := configClient(kubeconfig, contextName)
 	if err != nil {
 		return nil, err
