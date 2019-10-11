@@ -62,6 +62,7 @@ type Asset struct {
 }
 
 func (iClient *Client) getLatestReleaseURL() error {
+
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -186,11 +187,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			err = errors.Wrap(err, "unknown error")
-		}
-		logrus.Error(err)
-		return "", "", err
+
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {
