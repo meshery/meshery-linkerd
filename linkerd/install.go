@@ -41,6 +41,7 @@ const (
 )
 
 var ( 
+	// URLSuffix deceleration
 	URLSuffix          = "-" + runtime.GOOS //defining URLSuffix
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
