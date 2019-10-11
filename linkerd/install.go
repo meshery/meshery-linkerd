@@ -40,7 +40,7 @@ const (
 	cachePeriod = 1 * time.Hour
 )
 
-var (
+var ( 
 	URLSuffix          = "-" + runtime.GOOS //defining URLSuffix
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
