@@ -41,8 +41,8 @@ const (
 )
 
 var ( 
-	// URLSuffix deceleration
-	URLSuffix          = "-" + runtime.GOOS //defining URLSuffix
+	
+	urlsuffix          = "-" + runtime.GOOS //defining 
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
@@ -97,8 +97,8 @@ func (iClient *Client) getLatestReleaseURL() error {
 		logrus.Debugf("retrieved api info: %+#v", result)
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, URLSuffix) {
-					iClient.linkerdReleaseVersion = strings.Replace(asset.Name, URLSuffix, "", -1)
+				if strings.HasSuffix(asset.Name, urlsuffix ) {
+					iClient.linkerdReleaseVersion = strings.Replace(asset.Name, urlsuffix , "", -1)
 					iClient.linkerdReleaseDownloadURL = asset.DownloadURL
 					iClient.linkerdReleaseUpdatedAt = time.Now()
 					return nil
