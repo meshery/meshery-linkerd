@@ -353,7 +353,7 @@ func (iClient *Client) createNamespace(ctx context.Context, namespace string) er
 	return nil
 }
 
-// ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
+// ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
 		return nil, errors.New("mesh client has not been created")
