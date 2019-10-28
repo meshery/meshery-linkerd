@@ -1,12 +1,12 @@
-<img align="right" src="https://layer5.io/assets/images/cube-sh-small.png" />
+<a href="https://layer5.io/meshery"><img align="right" src="https://raw.githubusercontent.com/layer5io/meshery/master/ui/static/img/meshery-logo/meshery-logo-light-text.png"  width="25%" /></a>
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-linkerd.svg)](https://hub.docker.com/r/layer5/meshery-linkerd)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-linkerd)](https://goreportcard.com/report/github.com/layer5io/meshery-linkerd)
 [![Build Status](https://github.com/layer5io/meshery-linkerd/workflows/Meshery-Linkerd/badge.svg)](https://github.com/layer5io/meshery-linkerd/actions)
-![GitHub](https://img.shields.io/github/license/layer5io/meshery-linkerd.svg)
-![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-linkerd/help%20wanted.svg)
-![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)
-![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)
+[![GitHub](https://img.shields.io/github/license/layer5io/meshery-linkerd.svg)](https://github.com/layer5io/meshery-linkerd/blob/master/LICENSE)
+[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-linkerd/help%20wanted.svg)](https://github.com/layer5io/meshery-linkerd/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery)
+[![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=layer5)
 [![Slack](http://slack.layer5.io/badge.svg)](http://slack.layer5.io)
 
 # meshery-linkerd
