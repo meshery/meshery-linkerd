@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package linkerd ... 
 package linkerd
 
 import (
@@ -188,6 +189,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
+		return "", "", err;
 
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)

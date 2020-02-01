@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//Package linkerd ... 
 package linkerd
 
 import (
@@ -262,6 +263,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 			ns := &unstructured.Unstructured{}
 			ns.SetName(namespace)
 			ns, err = iClient.getResource(ctx, res, ns)
+			_ = ns
 			if err != nil {
 				return err
 			}
@@ -301,6 +303,8 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 
 	preCheck := append(args1, "check", "--pre")
 	yamlFileContents, er, err := iClient.execute(preCheck...)
+	_ = er
+	_ = yamlFileContents
 	if err != nil {
 		return err
 	}
@@ -401,7 +405,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Linkerd %s successfully", opName),
 				Details:     fmt.Sprintf("The latest version of Linkerd is now %s.", opName),
 			}
-			return
+			
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -498,7 +502,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("%s %s successfully", appName, opName),
 				Details:     msg,
 			}
-			return
+			
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -599,7 +603,6 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return nil
 }
 
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
