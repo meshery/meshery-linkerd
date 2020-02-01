@@ -80,15 +80,15 @@ jobs:
      name: Tests
      runs-on: ubuntu-latest
      steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
+     - name: Check out code
+       uses: actions/checkout@master
+       with:
         fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
+     - name: Setup Go
+       uses: actions/setup-go@v1
+       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
+     - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
   build:
     name: Build check
     runs-on: ubuntu-latest
@@ -138,4 +138,3 @@ jobs:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKERHUB_REPOSITORY: ${{ secrets.IMAGE_NAME }}
-    
