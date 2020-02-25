@@ -35,7 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-	// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
+
+// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
 
 // CreateMeshInstance - creates a mesh adapter instance
 func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
@@ -286,14 +287,14 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
-	// -l <namespace> --context <context name> --kubeconfig <file path>
+	// -L <namespace> --context <context name> --kubeconfig <file path>
 	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
 	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0700); err != nil {
 		return err
 	}
 	// defer os.Remove(tmpKubeConfigFileLoc)
 
-	args1 := []string{"-l", arReq.Namespace}
+	args1 := []string{"-L", arReq.Namespace}
 	if iClient.contextName != "" {
 		args1 = append(args1, "--context", iClient.contextName)
 	}
