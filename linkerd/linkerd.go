@@ -264,7 +264,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 			ns.SetName(namespace)
 			ns, err = iClient.getResource(ctx, res, ns)
 			if err != nil {
-				logrus.Debugf("Error getting namespace", ns.GetName())
+				logrus.Debugf("Error getting namespace %s", ns.GetName())
 				return err
 			}
 		} else {
