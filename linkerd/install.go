@@ -40,9 +40,8 @@ const (
 	cachePeriod = 1 * time.Hour
 )
 
-var ( 
-	
-	urlsuffix          = "-" + runtime.GOOS //defining 
+var (
+	urlsuffix          = "-" + runtime.GOOS //defining
 	localFile          = path.Join(os.TempDir(), "linkerd-cli")
 	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
@@ -97,8 +96,8 @@ func (iClient *Client) getLatestReleaseURL() error {
 		logrus.Debugf("retrieved api info: %+#v", result)
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, urlsuffix ) {
-					iClient.linkerdReleaseVersion = strings.Replace(asset.Name, urlsuffix , "", -1)
+				if strings.HasSuffix(asset.Name, urlsuffix) {
+					iClient.linkerdReleaseVersion = strings.Replace(asset.Name, urlsuffix, "", -1)
 					iClient.linkerdReleaseDownloadURL = asset.DownloadURL
 					iClient.linkerdReleaseUpdatedAt = time.Now()
 					return nil
@@ -188,7 +187,8 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("checking if install file exists at path: %s", localFile)
 	_, err = os.Stat(localFile)
 	if err != nil {
-
+		err = errors.Wrap(err, "path not found")
+		logrus.Error(err)
 	}
 	// fileContents, err := ioutil.ReadFile(installFileLoc)
 	// if err != nil {

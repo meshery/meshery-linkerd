@@ -264,6 +264,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 			ns.SetName(namespace)
 			ns, err = iClient.getResource(ctx, res, ns)
 			if err != nil {
+				logrus.Debugf("Error getting namespace", ns.GetName())
 				return err
 			}
 		} else {
@@ -301,13 +302,13 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	args1 = append(args1, "--kubeconfig", tmpKubeConfigFileLoc)
 
 	preCheck := append(args1, "check", "--pre")
-	yamlFileContents, er, err := iClient.execute(preCheck...)
+	_, _, err := iClient.execute(preCheck...)
 	if err != nil {
 		return err
 	}
 
 	installArgs := append(args1, "install", "--ignore-cluster")
-	yamlFileContents, er, err = iClient.execute(installArgs...)
+	yamlFileContents, er, err := iClient.execute(installArgs...)
 	if err != nil {
 		return err
 	}
@@ -402,7 +403,6 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Linkerd %s successfully", opName),
 				Details:     fmt.Sprintf("The latest version of Linkerd is now %s.", opName),
 			}
-			return
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -499,7 +499,6 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("%s %s successfully", appName, opName),
 				Details:     msg,
 			}
-			return
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
