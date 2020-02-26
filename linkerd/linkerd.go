@@ -35,7 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-	// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
+
+// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
 
 // CreateMeshInstance - creates a mesh adapter instance
 func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
@@ -263,6 +264,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 			ns.SetName(namespace)
 			ns, err = iClient.getResource(ctx, res, ns)
 			if err != nil {
+				logrus.Debugf("Error getting namespace %s", ns.GetName())
 				return err
 			}
 		} else {
@@ -286,27 +288,27 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
-	// -l <namespace> --context <context name> --kubeconfig <file path>
+	// -L <namespace> --context <context name> --kubeconfig <file path>
 	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
 	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0700); err != nil {
 		return err
 	}
 	// defer os.Remove(tmpKubeConfigFileLoc)
 
-	args1 := []string{"-l", arReq.Namespace}
+	args1 := []string{"-L", arReq.Namespace}
 	if iClient.contextName != "" {
 		args1 = append(args1, "--context", iClient.contextName)
 	}
 	args1 = append(args1, "--kubeconfig", tmpKubeConfigFileLoc)
 
 	preCheck := append(args1, "check", "--pre")
-	yamlFileContents, er, err := iClient.execute(preCheck...)
+	_, _, err := iClient.execute(preCheck...)
 	if err != nil {
 		return err
 	}
 
 	installArgs := append(args1, "install", "--ignore-cluster")
-	yamlFileContents, er, err = iClient.execute(installArgs...)
+	yamlFileContents, er, err := iClient.execute(installArgs...)
 	if err != nil {
 		return err
 	}
@@ -401,7 +403,6 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Linkerd %s successfully", opName),
 				Details:     fmt.Sprintf("The latest version of Linkerd is now %s.", opName),
 			}
-			return
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -498,7 +499,6 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("%s %s successfully", appName, opName),
 				Details:     msg,
 			}
-			return
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -599,7 +599,6 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return nil
 }
 
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
