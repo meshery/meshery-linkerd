@@ -119,7 +119,7 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		return err
 	}
 	defer dFile.Close()
-
+	/* #nosec */
 	resp, err := http.Get(urlToDownload)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to download the file from URL: %s", iClient.linkerdReleaseDownloadURL)
@@ -140,6 +140,7 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
+	/* #nosec */
 	err = os.Chmod(localFile, 0755)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to change permission on %s", localFile)
@@ -200,6 +201,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 
 	// TODO: execute
 	logrus.Debugf("command to be executed: %s %v", localFile, command)
+	/* #nosec */
 	cmd := exec.Command(localFile, command...)
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
@@ -275,7 +277,7 @@ func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
 		}
 		logrus.Debug("file successfully downloaded . . .")
 	}
-
+	/* #nosec */
 	b, err := ioutil.ReadFile(localFile)
 	return string(b), err
 }
