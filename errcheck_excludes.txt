@@ -1,0 +1,3 @@
+(io.Closer).Close
+(*os.File).Close
+(*github.com/layer5io/meshery-linkerd/linkerd.YAMLDecoder).Close

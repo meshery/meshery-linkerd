@@ -204,13 +204,12 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
-	// err = cmd.Run()
-	cmd.Run()
-	// if err != nil {
-	// 	err = errors.Wrapf(err, "error while executing requested command")
-	// 	logrus.Error(err)
-	// 	return "", "", err
-	// }
+
+	err = cmd.Run()
+	if err != nil {
+		err = errors.Wrapf(err, "error while executing requested command")
+		logrus.Error(err)
+	}
 	logrus.Debugf("Received output: %s", outb.String())
 	logrus.Debugf("Received error: %s", errb.String())
 	return outb.String(), errb.String(), nil
