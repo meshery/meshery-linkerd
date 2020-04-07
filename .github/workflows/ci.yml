@@ -74,13 +74,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - name: Create cluster using KinD
-      uses: engineerd/setup-kind@v0.3.0
-      with:
-        version: "v0.7.0"
-    - run: |
-        kubectl cluster-info
-        GOPROXY=direct GOSUMDB=off GO111MODULE=on go get github.com/securego/gosec/cmd/gosec; /home/runner/go/bin/gosec ./... # https://github.com/securego/gosec
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get github.com/securego/gosec/cmd/gosec; /home/runner/go/bin/gosec ./... # https://github.com/securego/gosec
   tests:
      # needs: [lint, error_check, static_check, vet, sec_check]
      name: Tests
@@ -94,14 +88,13 @@ jobs:
        uses: actions/setup-go@v1
        with:
         go-version: ${{ secrets.GO_VERSION }}
-     - name: KinD (Kubernetes in Docker) Action
+     - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.3.0
        with:
          version: "v0.7.0"
        run: |
          kubectl cluster-info
-         env
-     - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
+         GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
   build:
     name: Build check
     runs-on: ubuntu-latest
