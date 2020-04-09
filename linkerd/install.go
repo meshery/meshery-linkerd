@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/layer5io/meshery-linkerd/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -118,7 +119,9 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
-	defer dFile.Close()
+
+	defer util.SafeClose(dFile, &err)
+
 	/* #nosec */
 	resp, err := http.Get(urlToDownload)
 	if err != nil {

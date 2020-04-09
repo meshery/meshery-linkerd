@@ -290,7 +290,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
 	// -L <namespace> --context <context name> --kubeconfig <file path>
 	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
-	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0700); err != nil {
+	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0600); err != nil {
 		return err
 	}
 	// defer os.Remove(tmpKubeConfigFileLoc)
