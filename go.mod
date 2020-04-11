@@ -13,7 +13,7 @@ require (
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472 // indirect
