@@ -77,7 +77,7 @@ jobs:
       with:
         args: ./...
   tests:
-     # needs: [lint, error_check, static_check, vet, sec_check]
+    #  needs: [lint, error_check, static_check, vet, sec_check]
      name: Tests
      runs-on: ubuntu-latest
      steps:
