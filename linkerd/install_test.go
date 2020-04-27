@@ -15,33 +15,32 @@
 package linkerd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func TestDownloadLinkerd(t *testing.T) {
-
 	pathOfKubeconfig := os.Getenv("KUBECONFIG")
-
 	contextName := os.Getenv("CURRENTCONTEXT")
 
 	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
 
 	if err != nil {
-		t.Errorf("Load kubeconfig err %s", err)
+		t.Fatalf("Load kubeconfig err %s", err)
 	}
 
 	client, err := newClient(byteKubeconfig, contextName)
 
 	if err != nil {
-		t.Errorf("NewClient function was failed %s", err)
+		t.Fatalf("NewClient function was failed %s", err)
 	}
 
 	err = client.downloadLinkerd()
 
 	if err != nil {
-		t.Errorf("DownloadLinkerd function execution failed %s", err)
+		t.Fatalf("DownloadLinkerd function execution failed %s", err)
 	}
 }
 
@@ -54,18 +53,24 @@ func TestExecute(t *testing.T) {
 	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
 
 	if err != nil {
-		t.Errorf("Load kubeconfig err %s", err)
+		t.Fatalf("Load kubeconfig err %s", err)
 	}
+
+	args:=[]string{
+		"--context",contextName,
+		"--kubeconfig",pathOfKubeconfig,"check","--pre"}
 
 	client, err := newClient(byteKubeconfig, contextName)
 
 	if err != nil {
-		t.Errorf("NewClient function was failed %s", err)
+		t.Fatal(err)
 	}
 
-	_, _, err = client.execute("install | kubectl apply -f -")
+	outs, errs, err := client.execute(args...)
 
-	if err != nil {
-		t.Errorf("execute function execution failed %s", err)
+	if err!=nil{
+		fmt.Println(errs)
+		t.Fatal(err)
 	}
+	t.Log(outs)
 }

@@ -15,18 +15,18 @@ func TestClient(t *testing.T) {
 	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
 
 	if err != nil {
-		t.Errorf("Load kubeconfig err %s", err)
+		t.Fatalf("Load kubeconfig err %s", err)
 	}
 
 	client, err := newClient(byteKubeconfig, contextName)
 
 	if err != nil {
-		t.Errorf("NewClient function was failed %s", err)
+		t.Fatalf("NewClient function was failed %s", err)
 	}
 
 	// TODO Could out more information about the client if we need
 	if client == nil {
-		t.Error("Client is nil")
+		t.Fatal("Client is nil")
 	} else {
 		t.Skip()
 	}
