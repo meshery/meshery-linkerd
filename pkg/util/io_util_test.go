@@ -25,13 +25,13 @@ func TestSafeClose(t *testing.T) {
 	SafeClose(f, &err)
 
 	if err != nil {
-		t.Errorf("Close function is failed")
+		t.Fatal("Close function is failed")
 	}
 
 	err = os.Remove("test_safe_close.txt")
 
 	if err != nil {
-		t.Errorf("Remove file test_safe_close.txt failed")
+		t.Fatal("Remove file test_safe_close.txt failed")
 	}
 
 }

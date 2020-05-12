@@ -295,7 +295,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	}
 	// defer os.Remove(tmpKubeConfigFileLoc)
 
-	args1 := []string{"-L", arReq.Namespace}
+	args1 := []string{"--linkerd-namespace", arReq.Namespace}
 	if iClient.contextName != "" {
 		args1 = append(args1, "--context", iClient.contextName)
 	}

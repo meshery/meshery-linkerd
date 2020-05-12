@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	repoURL              = "https://api.github.com/repos/linkerd/linkerd2/releases/latest"
+	repoURL              = "https://api.github.com/repos/linkerd/linkerd2/releases"
 	emojivotoInstallFile = "https://run.linkerd.io/emojivoto.yml"
 	booksAppInstallFile  = "https://run.linkerd.io/booksapp.yml"
 
@@ -48,18 +48,20 @@ var (
 	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
 )
 
-// APIInfo is used to store individual response from GitHub release call
-type APIInfo struct {
-	TagName    string   `json:"tag_name,omitempty"`
-	PreRelease bool     `json:"prerelease,omitempty"`
-	Assets     []*Asset `json:"assets,omitempty"`
-}
-
 // Asset is used to store the individual asset data as part of a release
 type Asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
+}
+
+// Release is used to save the release informations
+type Release struct {
+	ID      int      `json:"id,omitempty"`
+	TagName string   `json:"tag_name,omitempty"`
+	Name    string   `json:"name,omitempty"`
+	Draft   bool     `json:"draft,omitempty"`
+	Assets  []*Asset `json:"assets,omitempty"`
 }
 
 func (iClient *Client) getLatestReleaseURL() error {
@@ -80,28 +82,32 @@ func (iClient *Client) getLatestReleaseURL() error {
 			return err
 		}
 
+		// TODO Need to confirm that the github APIv3 limit the number of request
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			err = errors.Wrapf(err, "error parsing response body")
 			logrus.Error(err)
 			return err
 		}
-		// logrus.Debugf("Raw api info: %s", body)
-		result := &APIInfo{}
-		err = json.Unmarshal(body, result)
+		// TODO There may have a consider if the top 10 release did not includes the stable version
+		releaseList := make([]*Release, 10)
+
+		err = json.Unmarshal(body, &releaseList)
 		if err != nil {
 			err = errors.Wrapf(err, "error unmarshalling response body")
 			logrus.Error(err)
 			return err
 		}
-		logrus.Debugf("retrieved api info: %+#v", result)
-		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
-			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, urlsuffix) {
-					iClient.linkerdReleaseVersion = strings.Replace(asset.Name, urlsuffix, "", -1)
-					iClient.linkerdReleaseDownloadURL = asset.DownloadURL
-					iClient.linkerdReleaseUpdatedAt = time.Now()
-					return nil
+
+		for _, v := range releaseList {
+			if strings.HasPrefix(v.TagName, "stable") && !v.Draft {
+				for _, asset := range v.Assets {
+					if strings.HasSuffix(asset.Name, urlsuffix) {
+						iClient.linkerdReleaseVersion = strings.Replace(asset.Name, urlsuffix, "", -1)
+						iClient.linkerdReleaseDownloadURL = asset.DownloadURL
+						iClient.linkerdReleaseUpdatedAt = time.Now()
+						return nil
+					}
 				}
 			}
 		}
@@ -194,13 +200,6 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 		err = errors.Wrap(err, "path not found")
 		logrus.Error(err)
 	}
-	// fileContents, err := ioutil.ReadFile(installFileLoc)
-	// if err != nil {
-	// 	err = errors.Wrap(err, "unable to read file")
-	// 	logrus.Error(err)
-	// 	return "", err
-	// }
-	// return string(fileContents), nil
 
 	// TODO: execute
 	logrus.Debugf("command to be executed: %s %v", localFile, command)
@@ -219,47 +218,6 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	logrus.Debugf("Received error: %s", errb.String())
 	return outb.String(), errb.String(), nil
 }
-
-/*
-func (iClient *Client) getEmojivotoYAML(inject bool) (string, error) {
-
-
-	// proceedWithDownload := true
-
-	// lFileStat, err := os.Stat(emojivotoLocalFile)
-	// if err == nil {
-	// 	if time.Since(lFileStat.ModTime()) > cachePeriod {
-	// 		proceedWithDownload = true
-	// 	} else {
-	// 		proceedWithDownload = false
-	// 	}
-	// }
-
-	// if proceedWithDownload {
-	// 	if err = iClient.downloadFile(emojivotoInstallFile, emojivotoLocalFile); err != nil {
-	// 		return "", err
-	// 	}
-	// 	logrus.Debug("package successfully downloaded . . .")
-	// }
-
-	// if inject {
-	// 	output, er, err := iClient.Execute("inject", "--verbose", emojivotoLocalFile)
-	// 	if er != "" {
-	// 		err = fmt.Errorf("received error while attempting to inject sidecar config: %s", er)
-	// 		logrus.Error(err)
-	// 		return "", err
-	// 	}
-	// 	if err != nil {
-	// 		err = errors.Wrapf(err, "received error while attempting to inject sidecar config")
-	// 		logrus.Error(err)
-	// 		return "", err
-	// 	}
-	// 	return output, err
-	// }
-	// b, err := ioutil.ReadFile(emojivotoLocalFile)
-	return string(b), err
-}
-*/
 
 func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
 
