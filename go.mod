@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.31.0
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v0.17.4
 )
