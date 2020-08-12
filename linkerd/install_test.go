@@ -15,62 +15,38 @@
 package linkerd
 
 import (
-	"fmt"
+	"context"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
-func TestDownloadLinkerd(t *testing.T) {
-	pathOfKubeconfig := os.Getenv("KUBECONFIG")
+func TestPreck(t *testing.T) {
+
+	//os.Setenv("KUBECONFIG", "/Users/aisuko/Documents/rke/kube_config_cluster.yml")
+	//os.Setenv("CURRENTCONTEXT", "local")
+	kubectlConfig := os.Getenv("KUBECONFIG")
 	contextName := os.Getenv("CURRENTCONTEXT")
-
-	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
-
+	byteKubeconfig, err := ioutil.ReadFile(kubectlConfig)
 	if err != nil {
-		t.Fatalf("Load kubeconfig err %s", err)
+		t.Fatal(err)
 	}
-
 	client, err := newClient(byteKubeconfig, contextName)
-
 	if err != nil {
-		t.Fatalf("NewClient function was failed %s", err)
+		t.Fatal(err)
 	}
-
-	err = client.downloadLinkerd()
-
-	if err != nil {
-		t.Fatalf("DownloadLinkerd function execution failed %s", err)
-	}
-}
-
-func TestExecute(t *testing.T) {
-
-	pathOfKubeconfig := os.Getenv("KUBECONFIG")
-
-	contextName := os.Getenv("CURRENTCONTEXT")
-
-	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
-
-	if err != nil {
-		t.Fatalf("Load kubeconfig err %s", err)
-	}
-
-	args:=[]string{
-		"--context",contextName,
-		"--kubeconfig",pathOfKubeconfig,"check","--pre"}
-
-	client, err := newClient(byteKubeconfig, contextName)
-
+	ctx := context.Background()
+	err = client.preCheck(ctx, "linkerd")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	outs, errs, err := client.execute(args...)
-
-	if err!=nil{
-		fmt.Println(errs)
-		t.Fatal(err)
-	}
-	t.Log(outs)
+	//bol := assert.NotEmpty(t, deployMainyaml)
+	//if !bol && err != nil {
+	//	t.Fatal("deployMainyaml is blank")
+	//}
+	//
+	//err = client.deployment(deployMainyaml)
+	//
+	//assert.NoError(t, err)
 }

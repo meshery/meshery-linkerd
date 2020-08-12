@@ -22,8 +22,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
+
+	"k8s.io/apimachinery/pkg/api/meta"
+
+	"github.com/linkerd/linkerd2/expose/cmd"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/restmapper"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/alecthomas/template"
 	"github.com/ghodss/yaml"
@@ -34,9 +43,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
-// logrus.Debugf("received k8sConfig: %s", k8sConfig)  //to solve
+const (
+	// TODO Can be configuration
+	linkerdVersion = "stable-2.8.1"
+)
 
 // CreateMeshInstance - creates a mesh adapter instance
 func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
@@ -288,38 +301,30 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
-	// -L <namespace> --context <context name> --kubeconfig <file path>
-	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
 	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0600); err != nil {
 		return err
 	}
-	// defer os.Remove(tmpKubeConfigFileLoc)
 
-	args1 := []string{"--linkerd-namespace", arReq.Namespace}
-	if iClient.contextName != "" {
-		args1 = append(args1, "--context", iClient.contextName)
+	// Need to confirm Linkerd2 has been already install into the cluster succeed.
+	installManifest, err := iClient.initManifest(ctx, arReq.Namespace, linkerdVersion)
+	if err != nil {
+		return err
 	}
-	args1 = append(args1, "--kubeconfig", tmpKubeConfigFileLoc)
+	logrus.Debug(installManifest)
 
-	preCheck := append(args1, "check", "--pre")
-	_, _, err := iClient.execute(preCheck...)
+	// When remove the linkerd2 deployments there does not need to do pre check
+	if !arReq.DeleteOp {
+		err = iClient.preCheck(ctx, arReq.Namespace)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = iClient.deployment(ctx, installManifest, arReq.DeleteOp)
 	if err != nil {
 		return err
 	}
 
-	installArgs := append(args1, "install", "--ignore-cluster")
-	yamlFileContents, er, err := iClient.execute(installArgs...)
-	if err != nil {
-		return err
-	}
-	if er != "" {
-		err = fmt.Errorf("received error while attempting to prepare install yaml: %s", er)
-		logrus.Error(err)
-		return err
-	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -410,6 +415,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	case installBooksAppCommand:
 		appName = "Linkerd Books App"
 		svcName = "webapp"
+		// TODO Need to check
 		yamlFileContents, err = iClient.getYAML(booksAppInstallFile, booksAppLocalFile)
 		if err != nil {
 			return nil, err
@@ -504,28 +510,12 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			OperationId: arReq.OperationId,
 		}, nil
 	default:
-		// tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", op.templateName))
-		// if err != nil {
-		// 	err = errors.Wrapf(err, "unable to parse template")
-		// 	logrus.Error(err)
-		// 	return nil, err
-		// }
-		// buf := bytes.NewBufferString("")
-		// err = tmpl.Execute(buf, map[string]string{
-		// 	"user_name": arReq.Username,
-		// 	"namespace": arReq.Namespace,
-		// })
-		// if err != nil {
-		// 	err = errors.Wrapf(err, "unable to execute template")
-		// 	logrus.Error(err)
-		// 	return nil, err
-		// }
-		// yamlFileContents = buf.String()
 		err := fmt.Errorf("please select a valid operation")
 		logrus.Error(err)
 		return nil, err
 	}
 
+	// Apply change
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
 		return nil, err
 	}
@@ -535,8 +525,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	}, nil
 }
 
+// TODO Need to be remove
 func (iClient *Client) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete bool) error {
-	// yamls := strings.Split(yamlFileContents, "---")
 	yamls, err := iClient.splitYAML(yamlFileContents)
 	if err != nil {
 		err = errors.Wrap(err, "error while splitting yaml")
@@ -544,18 +534,14 @@ func (iClient *Client) applyConfigChange(ctx context.Context, yamlFileContents, 
 		return err
 	}
 	for _, yml := range yamls {
-		// if strings.TrimSpace(yml) != "" {
 		if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete); err != nil {
 			errStr := strings.TrimSpace(err.Error())
 			if delete && (strings.HasSuffix(errStr, "not found") ||
 				strings.HasSuffix(errStr, "the server could not find the requested resource")) {
-				// logrus.Debugf("skipping error. . .")
 				continue
 			}
-			// logrus.Debugf("returning error: %v", err)
 			return err
 		}
-		// }
 	}
 	return nil
 }
@@ -601,6 +587,7 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 	}
 }
 
+// TODO The function need to be remove
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
 	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
 	if !ok {
@@ -608,7 +595,11 @@ func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
 		logrus.Error(err)
 		return nil, err
 	}
-	defer yamlDecoder.Close()
+	// TODO Need to change to more better
+	yamlErr := yamlDecoder.Close()
+	if yamlErr != nil {
+		return nil, yamlErr
+	}
 	var err error
 	n := 0
 	data := [][]byte{}
@@ -668,4 +659,164 @@ func (iClient *Client) getSVCPort(ctx context.Context, svc, namespace string) ([
 	}
 	logrus.Debugf("retrieved svc: %+#v", ns)
 	return nodePorts, nil
+}
+
+func (iClient *Client) preCheck(ctx context.Context, namespace string) error {
+	// Check the namespace
+	_, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	if err == nil {
+		return errors.New(fmt.Sprintf("Namespace %s already exist", namespace))
+	}
+	// Just to check the main controller
+	controllerDeployment := "linkerd-controller"
+	// Check the deployments of the linkerd2 components
+	deploys, err := iClient.k8sClientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	// The ready replicas > 0 can be useful
+	deployments := map[string]int{}
+	for _, deploy := range deploys.Items {
+		deployments[deploy.GetName()] = int(deploy.Status.ReadyReplicas)
+	}
+	count, ok := deployments[controllerDeployment]
+	if ok && count > 0 {
+		return errors.New(fmt.Sprintf("The linkerd2 controller manager already deployed in namespace %s", namespace))
+	}
+	return nil
+}
+
+func (iClient *Client) initManifest(ctx context.Context, namespace, linkerdVersion string) (string, error) {
+	// Init the linkerd2 manifest
+	installManifest, err := cmd.InitManifest(namespace, linkerdVersion)
+	if err != nil {
+		return "", err
+	}
+	return installManifest, nil
+}
+
+func (iClient *Client) deployment(ctx context.Context, deploymentYAML string, deleteOpts bool) error {
+	// Because the Linkerd2 used Helm v2.16.8, so we can not use Helm v3 because there may too much conflict in the dependency
+	acceptedK8sTypes := regexp.MustCompile(`(Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount|MutatingWebhookConfiguration|Secret|ValidatingWebhookConfiguration|APIService|PodSecurityPolicy|ConfigMap|Service|Deployment|CronJob|CustomResourceDefinition)`)
+	sepYamlfiles := strings.Split(deploymentYAML, "\n---\n")
+	// Command out for private kubebuilder which use the runtime.Object
+	//retVal := make([]runtime.Object, 0, len(sepYamlfiles))
+	mappingNamespace := &meta.RESTMapping{}
+	dataNamespace := &unstructured.Unstructured{}
+	for _, f := range sepYamlfiles {
+		if f == "\n" || f == "" {
+			// ignore empty cases
+			continue
+		}
+
+		// Need to manually add the resources to the scheme &_&
+		sch := runtime.NewScheme()
+		_ = scheme.AddToScheme(sch)
+		_ = apiextv1beta1.AddToScheme(sch)
+		_ = apiregistrationv1.AddToScheme(sch)
+		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
+
+		//decode := clientgoscheme.Codecs.UniversalDeserializer().Decode
+		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
+
+		if err != nil {
+			logrus.Debug(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
+			continue
+		}
+
+		if !acceptedK8sTypes.MatchString(groupVersionKind.Kind) {
+			logrus.Debug(fmt.Sprintf("The custom-roles configMap contained K8s object types which are not supported! Skipping object with type: %s", groupVersionKind.Kind))
+		} else {
+			// convert the runtime.Object to unstructured.Unstructured
+			gk := schema.GroupKind{
+				Group: groupVersionKind.Group,
+				Kind:  groupVersionKind.Kind,
+			}
+			groupResources, err := restmapper.GetAPIGroupResources(iClient.k8sClientset.Discovery())
+			if err != nil {
+				return nil
+			}
+			resm := restmapper.NewDiscoveryRESTMapper(groupResources)
+			mapping, err := resm.RESTMapping(gk, groupVersionKind.Version)
+			if err != nil {
+				return nil
+			}
+			logrus.Debug(mapping)
+
+			unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+
+			if err != nil {
+				return err
+			}
+			data := &unstructured.Unstructured{}
+			data.SetUnstructuredContent(unstructuredObj)
+			logrus.Debug(unstructuredObj)
+
+			if mapping.Scope.Name() == "root" {
+				if deleteOpts {
+					if data.GetObjectKind().GroupVersionKind().Kind == "Namespace" {
+						mappingNamespace = mapping
+						dataNamespace = data
+						continue
+					}
+					deletePolicy := metav1.DeletePropagationForeground
+					t := int64(1)
+					deleteOptions := &metav1.DeleteOptions{
+						PropagationPolicy:  &deletePolicy,
+						GracePeriodSeconds: &t,
+					}
+					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Delete(data.GetName(), deleteOptions)
+					if err != nil {
+						logrus.Info(fmt.Sprintf("Delete the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+						return err
+					}
+					logrus.Info(fmt.Sprintf("Delete the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+				} else {
+					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Create(data, metav1.CreateOptions{})
+					if err != nil {
+						logrus.Info(fmt.Sprintf("Create the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+						return err
+					}
+					logrus.Info(fmt.Sprintf("Create the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+				}
+			} else {
+				if deleteOpts {
+					deletePolicy := metav1.DeletePropagationForeground
+					deleteOptions := &metav1.DeleteOptions{
+						PropagationPolicy: &deletePolicy,
+					}
+					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Delete(data.GetName(), deleteOptions)
+					if err != nil {
+						logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+						return err
+					}
+
+					logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+
+				} else {
+					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
+					if err != nil {
+						logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+						return err
+					}
+					logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+				}
+			}
+
+		}
+	}
+	// Remove the namespace at least.
+	if deleteOpts && dataNamespace.GetName() != "default" {
+		deletePolicy := metav1.DeletePropagationForeground
+		deleteOptions := &metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		}
+		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(dataNamespace.GetName(), deleteOptions)
+		if err != nil {
+			logrus.Info(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, dataNamespace.GetName()))
+			return err
+		}
+		logrus.Info(fmt.Sprintf("Delete the %s %s succeed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, dataNamespace.GetName()))
+	}
+	return nil
 }

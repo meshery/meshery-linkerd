@@ -15,8 +15,6 @@
 package linkerd
 
 import (
-	"time"
-
 	"github.com/layer5io/meshery-linkerd/meshes"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -36,10 +34,6 @@ type Client struct {
 	k8sClientset     *kubernetes.Clientset
 	k8sDynamicClient dynamic.Interface
 	eventChan        chan *meshes.EventsResponse
-
-	linkerdReleaseDownloadURL string
-	linkerdReleaseUpdatedAt   time.Time
-	linkerdReleaseVersion     string
 }
 
 func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
