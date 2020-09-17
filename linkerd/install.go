@@ -37,7 +37,7 @@ const (
 	repoURL              = "https://api.github.com/repos/linkerd/linkerd2/releases"
 	emojivotoInstallFile = "https://run.linkerd.io/emojivoto.yml"
 	booksAppInstallFile  = "https://run.linkerd.io/booksapp.yml"
-
+	// TODO This can be remove if we want to focus on stable version as you know linkerd2 release top 20 all the edge cli
 	cachePeriod = 1 * time.Hour
 )
 

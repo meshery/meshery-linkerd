@@ -17,3 +17,20 @@ docker-run:
 
 run:
 	DEBUG=true go run main.go
+
+.PHONY: local-check
+local-check: tidy
+local-check: golang-ci
+
+.PHONY: tidy
+tidy:
+	@echo "Executing go mod tidy"
+	go mod tidy
+
+.PHONY: golang-ci
+golangci-lint: $(GOLANGLINT)
+	@echo
+	$(GOPATH)/bin/golangci-lint run
+
+$(GOLANGLINT):
+	(cd /; GO111MODULE=on GOPROXY="https://goproxy.cn,direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
