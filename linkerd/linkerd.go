@@ -297,7 +297,10 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
-	os.Setenv("KUBECONFIG", tmpKubeConfigFileLoc)
+	err := os.Setenv("KUBECONFIG", tmpKubeConfigFileLoc)
+	if err != nil {
+		return err
+	}
 
 	// -L <namespace> --context <context name> --kubeconfig <file path>
 	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
@@ -313,7 +316,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	args1 = append(args1, "--kubeconfig", tmpKubeConfigFileLoc)
 
 	preCheck := append(args1, "check", "--pre")
-	_, _, err := iClient.execute(preCheck...)
+	_, _, err = iClient.execute(preCheck...)
 	if err != nil {
 		return err
 	}
@@ -331,7 +334,12 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
 		return err
 	}
-	os.Unsetenv("KUBECONFIG")
+
+	err = os.Unsetenv("KUBECONFIG")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
