@@ -20,19 +20,21 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 	"time"
 
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
+
 	"github.com/alecthomas/template"
 	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-linkerd/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	kubeerror "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -295,6 +297,8 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
+	os.Setenv("KUBECONFIG", tmpKubeConfigFileLoc)
+
 	// -L <namespace> --context <context name> --kubeconfig <file path>
 	// logrus.Debugf("about to write kubeconfig to file: %s", iClient.kubeconfig)
 	if err := ioutil.WriteFile(tmpKubeConfigFileLoc, iClient.kubeconfig, 0600); err != nil {
@@ -327,6 +331,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
 		return err
 	}
+	os.Unsetenv("KUBECONFIG")
 	return nil
 }
 
@@ -610,14 +615,14 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 						GracePeriodSeconds: &t,
 					}
 					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Delete(data.GetName(), deleteOptions)
-					if err != nil {
+					if err != nil && !kubeerror.IsNotFound(err) {
 						logrus.Info(fmt.Sprintf("Delete the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
 					}
 					logrus.Info(fmt.Sprintf("Delete the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 				} else {
 					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Create(data, metav1.CreateOptions{})
-					if err != nil {
+					if err != nil && !kubeerror.IsAlreadyExists(err) {
 						logrus.Info(fmt.Sprintf("Create the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
 					}
@@ -630,7 +635,7 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 						PropagationPolicy: &deletePolicy,
 					}
 					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Delete(data.GetName(), deleteOptions)
-					if err != nil {
+					if err != nil && !kubeerror.IsNotFound(err) {
 						logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
 						return err
 					}
@@ -639,7 +644,7 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 
 				} else {
 					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
-					if err != nil {
+					if err != nil && !kubeerror.IsAlreadyExists(err) {
 						logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
 						return err
 					}
