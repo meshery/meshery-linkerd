@@ -73,6 +73,7 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
+// createResource - creates a Kubernetes resource
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	logrus.Debug("============================================================================")
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
@@ -90,6 +91,7 @@ func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersi
 	return nil
 }
 
+// deleteResource - deletes a Kubernetes resource
 func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
@@ -130,6 +132,7 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 	return nil
 }
 
+// getResource - retreives a Kubernetes resource
 func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	var data1 *unstructured.Unstructured
 	var err error
@@ -151,6 +154,7 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 	return data1, nil
 }
 
+// updateResource - updates a Kubernetes resource
 func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
@@ -204,6 +208,7 @@ func (iClient *Client) applyRulePayload(ctx context.Context, namespace string, n
 	return nil
 }
 
+// executeRule - executes a rule
 func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete bool) error {
 	// logrus.Debug("========================================================")
 	// logrus.Debugf("Received data: %+#v", data)
@@ -255,6 +260,7 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 	return nil
 }
 
+// labelNamespaceForAutoInjection - adds a label to the specified namespace for injecting sidecar proxy
 func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
 	ns := &unstructured.Unstructured{}
 	res := schema.GroupVersionResource{
@@ -295,6 +301,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 	return nil
 }
 
+// executeInstall - initiates provisioning of an instance of Linkerd
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	var tmpKubeConfigFileLoc = path.Join(os.TempDir(), fmt.Sprintf("kubeconfig_%d", time.Now().UnixNano()))
 	err := os.Setenv("KUBECONFIG", tmpKubeConfigFileLoc)
@@ -343,6 +350,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	return nil
 }
 
+// executeTemplate - installs sample applications or other Kubernetes manifests
 func (iClient *Client) executeTemplate(ctx context.Context, username, namespace, templateName string) (string, error) {
 	tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", templateName))
 	if err != nil {
@@ -363,6 +371,7 @@ func (iClient *Client) executeTemplate(ctx context.Context, username, namespace,
 	return buf.String(), nil
 }
 
+// createNamespace - will create a new K8s namespace if one does not already exisst
 func (iClient *Client) createNamespace(ctx context.Context, namespace string) error {
 	logrus.Debugf("creating namespace: %s", namespace)
 	yamlFileContents, err := iClient.executeTemplate(ctx, "", namespace, "namespace.yml")
@@ -719,6 +728,7 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 	}
 }
 
+// splitYAML - parses through Kubernetes manifest yaml; pulls out objects
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
 	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
 	if !ok {
