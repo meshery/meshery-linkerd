@@ -32,6 +32,7 @@ const (
 	installBooksAppCommand  = "install_booksapp"
 	installHTTPBinApp       = "install_http_bin"
 	installIstioBookInfoApp = "install_istio_book_info"
+	injectLinkerd="inject_linkerd"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -60,5 +61,9 @@ var supportedOps = map[string]supportedOperation{
 		name:         "Istio Book Info Application",
 		templateName: "istiobookinfo.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
+	},
+	injectLinkerd: {
+		name:         "Inject Linkerd to monitor namespace",
+		opType:       meshes.OpCategory_CONFIGURE,
 	},
 }

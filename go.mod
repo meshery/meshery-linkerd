@@ -10,6 +10,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	google.golang.org/grpc v1.32.0
+	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v0.17.4
