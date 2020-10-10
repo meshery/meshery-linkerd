@@ -63,7 +63,7 @@ var supportedOps = map[string]supportedOperation{
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	injectLinkerd: {
-		name:         "Inject Linkerd to monitor namespace",
+		name:         "Annotate namespace for sidecar proxy injection",
 		opType:       meshes.OpCategory_CONFIGURE,
 	},
 }
