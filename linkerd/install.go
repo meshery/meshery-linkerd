@@ -66,6 +66,7 @@ type Release struct {
 	Assets  []*Asset `json:"assets,omitempty"`
 }
 
+// AddAnnotation is used to mark namespaces for automatic sidecar injection (or not)
 func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
 	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
 	if err != nil {
@@ -96,6 +97,7 @@ func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
 	return nil
 }
 
+// getLatestRelease is to pull down the Linkerd packages
 func (iClient *Client) getLatestReleaseURL() error {
 
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
@@ -150,6 +152,7 @@ func (iClient *Client) getLatestReleaseURL() error {
 	return nil
 }
 
+// downloadFile pulls the release packages
 func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 	dFile, err := os.Create(localFile)
 	if err != nil {
@@ -191,6 +194,7 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 	return nil
 }
 
+// downloadLinkerd pull down packages 
 func (iClient *Client) downloadLinkerd() error {
 	logrus.Debug("preparing to download the latest linkerd release")
 	err := iClient.getLatestReleaseURL()
@@ -221,6 +225,7 @@ func (iClient *Client) downloadLinkerd() error {
 	return nil
 }
 
+// execute processes the command given to it
 func (iClient *Client) execute(command ...string) (string, string, error) {
 	err := iClient.downloadLinkerd()
 	if err != nil {
@@ -251,6 +256,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 	return outb.String(), errb.String(), nil
 }
 
+// getYAML retrieves remote yaml file
 func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
 
 	proceedWithDownload := true
