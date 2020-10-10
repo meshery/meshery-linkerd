@@ -532,6 +532,14 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case injectLinkerd:
+		err := iClient.AddAnnotation(arReq.Namespace, arReq.DeleteOp)
+		if err != nil {
+			return nil,err
+		}
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	default:
 		// tmpl, err := template.ParseFiles(path.Join("linkerd", "config_templates", op.templateName))
 		// if err != nil {

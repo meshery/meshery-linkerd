@@ -31,6 +31,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -64,10 +65,34 @@ type Release struct {
 	Assets  []*Asset `json:"assets,omitempty"`
 }
 
+func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
+	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	if err != nil {
+		err = errors.Wrapf(err, "Unable to get namespace")
+		return err
+	}
+
+	if ns.ObjectMeta.Annotations == nil {
+		ns.ObjectMeta.Annotations = map[string]string{}
+	}
+	ns.ObjectMeta.Annotations["linkerd.io/inject"] = "enabled"
+
+	if remove {
+		delete(ns.ObjectMeta.Annotations, "linkerd.io/inject");
+	}
+
+	_, err = iClient.k8sClientset.CoreV1().Namespaces().Update(ns)
+	if err != nil {
+		err = errors.Wrapf(err, "Unable to update namespace with annotation")
+		return err
+	}
+	return nil
+}
+
 func (iClient *Client) getLatestReleaseURL() error {
 
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
-		logrus.Debugf("API info url: %s", repoURL)
+		logrus.Debugf("API info url: %s	", repoURL)
 		resp, err := http.Get(repoURL)
 		if err != nil {
 			err = errors.Wrapf(err, "error getting latest version info")
