@@ -32,6 +32,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -68,8 +69,14 @@ type Release struct {
 func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
 	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
 	if err != nil {
-		err = errors.Wrapf(err, "Unable to get namespace")
-		return err
+		_,err:=iClient.k8sClientset.CoreV1().Namespaces().Create(&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespace,
+			}})
+		if err!=nil {
+			err = errors.Wrapf(err, "Unable to create namespace")
+			return err
+		}
 	}
 
 	if ns.ObjectMeta.Annotations == nil {
