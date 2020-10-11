@@ -446,7 +446,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		fallthrough
 	case installHTTPBinApp:
 		if appName == "" {
-			appName = "HTTP Bin App"
+			appName = "httpbin App"
 			svcName = "httpbin"
 			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 			if err != nil {
@@ -456,12 +456,20 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		fallthrough
 	case installIstioBookInfoApp:
 		if appName == "" {
-			appName = "Istio canonical Book Info App"
+			appName = "Istio BookInfo App"
 			svcName = "productpage"
 			yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 			if err != nil {
 				return nil, err
 			}
+		}
+		fallthrough
+	case installNginxIngressCommand:
+		appName = "NGINX Ingress Controller"
+		svcName = "ingress-nginx-controller"
+		yamlFileContents, err = iClient.getYAML(nginxIngressInstallFile, nginxIngressLocalFile)
+		if err != nil {
+			return nil, err
 		}
 		fallthrough
 	case installEmojiVotoCommand:
