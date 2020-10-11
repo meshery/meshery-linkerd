@@ -31,23 +31,25 @@ import (
 	"github.com/layer5io/meshery-linkerd/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	repoURL              = "https://api.github.com/repos/linkerd/linkerd2/releases"
-	emojivotoInstallFile = "https://run.linkerd.io/emojivoto.yml"
-	booksAppInstallFile  = "https://run.linkerd.io/booksapp.yml"
+	repoURL                 = "https://api.github.com/repos/linkerd/linkerd2/releases"
+	emojivotoInstallFile    = "https://run.linkerd.io/emojivoto.yml"
+	booksAppInstallFile     = "https://run.linkerd.io/booksapp.yml"
+	nginxIngressInstallFile = "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.40.2/deploy/static/provider/cloud/deploy.yaml"
 	// TODO This can be remove if we want to focus on stable version as you know linkerd2 release top 20 all the edge cli
 	cachePeriod = 1 * time.Hour
 )
 
 var (
-	urlsuffix          = "-" + runtime.GOOS //defining
-	localFile          = path.Join(os.TempDir(), "linkerd-cli")
-	emojivotoLocalFile = path.Join(os.TempDir(), "emojivoto.yml")
-	booksAppLocalFile  = path.Join(os.TempDir(), "booksapp.yml")
+	urlsuffix             = "-" + runtime.GOOS //defining
+	localFile             = path.Join(os.TempDir(), "linkerd-cli")
+	emojivotoLocalFile    = path.Join(os.TempDir(), "emojivoto.yml")
+	booksAppLocalFile     = path.Join(os.TempDir(), "booksapp.yml")
+	nginxIngressLocalFile = path.Join(os.TempDir(), "deploy.yml")
 )
 
 // Asset is used to store the individual asset data as part of a release
@@ -67,14 +69,14 @@ type Release struct {
 }
 
 // AddAnnotation is used to mark namespaces for automatic sidecar injection (or not)
-func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
+func (iClient *Client) AddAnnotation(namespace string, remove bool) error {
 	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
 	if err != nil {
-		_,err:=iClient.k8sClientset.CoreV1().Namespaces().Create(&corev1.Namespace{
+		_, err := iClient.k8sClientset.CoreV1().Namespaces().Create(&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: namespace,
 			}})
-		if err!=nil {
+		if err != nil {
 			err = errors.Wrapf(err, "Unable to create namespace")
 			return err
 		}
@@ -86,7 +88,7 @@ func (iClient *Client) AddAnnotation(namespace string, remove bool) error{
 	ns.ObjectMeta.Annotations["linkerd.io/inject"] = "enabled"
 
 	if remove {
-		delete(ns.ObjectMeta.Annotations, "linkerd.io/inject");
+		delete(ns.ObjectMeta.Annotations, "linkerd.io/inject")
 	}
 
 	_, err = iClient.k8sClientset.CoreV1().Namespaces().Update(ns)
@@ -194,7 +196,7 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 	return nil
 }
 
-// downloadLinkerd pull down packages 
+// downloadLinkerd pull down packages
 func (iClient *Client) downloadLinkerd() error {
 	logrus.Debug("preparing to download the latest linkerd release")
 	err := iClient.getLatestReleaseURL()

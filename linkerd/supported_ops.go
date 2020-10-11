@@ -26,13 +26,14 @@ type supportedOperation struct {
 }
 
 const (
-	customOpCommand         = "custom"
-	installLinkerdCommand   = "linkerd_install"
-	installEmojiVotoCommand = "install_emojivoto"
-	installBooksAppCommand  = "install_booksapp"
-	installHTTPBinApp       = "install_http_bin"
-	installIstioBookInfoApp = "install_istio_book_info"
-	injectLinkerd="inject_linkerd"
+	customOpCommand            = "custom"
+	installLinkerdCommand      = "linkerd_install"
+	installEmojiVotoCommand    = "install_emojivoto"
+	installBooksAppCommand     = "install_booksapp"
+	installHTTPBinApp          = "install_http_bin"
+	installIstioBookInfoApp    = "install_istio_book_info"
+	installNginxIngressCommand = "install_nginx_ingress"
+	injectLinkerd              = "inject_linkerd"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -62,8 +63,12 @@ var supportedOps = map[string]supportedOperation{
 		templateName: "istiobookinfo.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
+	installNginxIngressCommand: {
+		name:   "NGINX Ingress Controller",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
 	injectLinkerd: {
-		name:         "Annotate namespace for sidecar proxy injection",
-		opType:       meshes.OpCategory_CONFIGURE,
+		name:   "Annotate namespace for sidecar proxy injection",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 }

@@ -464,6 +464,14 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			}
 		}
 		fallthrough
+	case installNginxIngressCommand:
+		appName = "NGINX Ingress Controller"
+		svcName = "ingress-nginx-controller"
+		yamlFileContents, err = iClient.getYAML(nginxIngressInstallFile, nginxIngressLocalFile)
+		if err != nil {
+			return nil, err
+		}
+		fallthrough
 	case installEmojiVotoCommand:
 		if appName == "" {
 			appName = "Emojivoto App"
@@ -535,7 +543,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	case injectLinkerd:
 		err := iClient.AddAnnotation(arReq.Namespace, arReq.DeleteOp)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
