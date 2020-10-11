@@ -535,7 +535,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	case injectLinkerd:
 		err := iClient.AddAnnotation(arReq.Namespace, arReq.DeleteOp)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -641,14 +641,14 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					}
 					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Delete(data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
-						logrus.Info(fmt.Sprintf("Delete the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+						logrus.Error(fmt.Sprintf("Delete the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
 					}
 					logrus.Info(fmt.Sprintf("Delete the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 				} else {
 					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Create(data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
-						logrus.Info(fmt.Sprintf("Create the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
+						logrus.Error(fmt.Sprintf("Create the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
 					}
 					logrus.Info(fmt.Sprintf("Create the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
@@ -659,21 +659,21 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					deleteOptions := &metav1.DeleteOptions{
 						PropagationPolicy: &deletePolicy,
 					}
-					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Delete(data.GetName(), deleteOptions)
+					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Delete(data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
-						logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+						logrus.Error(fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 						return err
 					}
 
-					logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+					logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 
 				} else {
-					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
+					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Create(data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
-						logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+						logrus.Error(fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 						return err
 					}
-					logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), data.GetNamespace()))
+					logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 				}
 			}
 
@@ -685,12 +685,12 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 		deleteOptions := &metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		}
-		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(dataNamespace.GetName(), deleteOptions)
+		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(namespace, deleteOptions)
 		if err != nil {
-			logrus.Info(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, dataNamespace.GetName()))
-			return err
+			// logrus.Error(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
+			// return err
 		}
-		logrus.Info(fmt.Sprintf("Delete the %s %s succeed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, dataNamespace.GetName()))
+		logrus.Info(fmt.Sprintf("Delete the %s %s succeed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
 	}
 	return nil
 }
