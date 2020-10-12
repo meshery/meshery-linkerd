@@ -633,6 +633,9 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 			data := &unstructured.Unstructured{}
 			data.SetUnstructuredContent(unstructuredObj)
 			logrus.Debug(unstructuredObj)
+			if len(data.GetNamespace()) > 2 {
+				namespace = data.GetNamespace()
+			}
 
 			if mapping.Scope.Name() == "root" {
 				if deleteOpts {
@@ -669,7 +672,8 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					}
 					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Delete(data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
-						logrus.Error(fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
+						errors.Wrapf(err, fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
+						logrus.Error(err)
 						return err
 					}
 
@@ -678,7 +682,8 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 				} else {
 					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Create(data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
-						logrus.Error(fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
+						err = errors.Wrapf(err, fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
+						logrus.Error(err)
 						return err
 					}
 					logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
