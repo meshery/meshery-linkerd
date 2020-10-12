@@ -581,7 +581,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 }
 
 func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, namespace string, deleteOpts bool) error {
-	acceptedK8sTypes := regexp.MustCompile(`(Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount|MutatingWebhookConfiguration|Secret|ValidatingWebhookConfiguration|APIService|PodSecurityPolicy|ConfigMap|Service|Deployment|CronJob|CustomResourceDefinition)`)
+	acceptedK8sTypes := regexp.MustCompile(`(Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount|MutatingWebhookConfiguration|Secret|ValidatingWebhookConfiguration|APIService|PodSecurityPolicy|ConfigMap|Service|Deployment|CronJob|CustomResourceDefinition|Ingress)`)
 	sepYamlfiles := strings.Split(deploymentYAML, "\n---\n")
 	mappingNamespace := &meta.RESTMapping{}
 	dataNamespace := &unstructured.Unstructured{}
