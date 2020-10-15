@@ -7,11 +7,8 @@ import (
 )
 
 func TestClient(t *testing.T) {
-
 	pathOfKubeconfig := os.Getenv("KUBECONFIG")
-
 	contextName := os.Getenv("CURRENTCONTEXT")
-
 	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
 
 	if err != nil {

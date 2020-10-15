@@ -45,20 +45,17 @@ func TestDownloadLinkerd(t *testing.T) {
 }
 
 func TestExecute(t *testing.T) {
-
 	pathOfKubeconfig := os.Getenv("KUBECONFIG")
-
 	contextName := os.Getenv("CURRENTCONTEXT")
-
 	byteKubeconfig, err := ioutil.ReadFile(pathOfKubeconfig)
 
 	if err != nil {
 		t.Fatalf("Load kubeconfig err %s", err)
 	}
 
-	args:=[]string{
-		"--context",contextName,
-		"--kubeconfig",pathOfKubeconfig,"check","--pre"}
+	args := []string{
+		"--context", contextName,
+		"--kubeconfig", pathOfKubeconfig, "check", "--pre"}
 
 	client, err := newClient(byteKubeconfig, contextName)
 
@@ -68,7 +65,7 @@ func TestExecute(t *testing.T) {
 
 	outs, errs, err := client.execute(args...)
 
-	if err!=nil{
+	if err != nil {
 		fmt.Println(errs)
 		t.Fatal(err)
 	}
