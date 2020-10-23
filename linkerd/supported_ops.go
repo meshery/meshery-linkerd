@@ -34,6 +34,7 @@ const (
 	installIstioBookInfoApp    = "install_istio_book_info"
 	installNginxIngressCommand = "install_nginx_ingress"
 	injectLinkerd              = "inject_linkerd"
+	validateSmiConformance     = "validate_smi_conformance"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -70,5 +71,9 @@ var supportedOps = map[string]supportedOperation{
 	injectLinkerd: {
 		name:   "Annotate namespace for sidecar proxy injection",
 		opType: meshes.OpCategory_CONFIGURE,
+	},
+	validateSmiConformance: {
+		name:   "Validate SMI conformance for Linkerd",
+		opType: meshes.OpCategory_VALIDATE,
 	},
 }

@@ -76,11 +76,11 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 // createResource - creates a Kubernetes resource
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	logrus.Debug("============================================================================")
-	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
+	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(context.TODO(), data, metav1.CreateOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-		_, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{})
+		_, err = iClient.k8sDynamicClient.Resource(res).Create(context.TODO(), data, metav1.CreateOptions{})
 		if err != nil {
 			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
 			logrus.Error(err)
@@ -116,12 +116,12 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 		}
 	}
 
-	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(data.GetName(), &metav1.DeleteOptions{})
+	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to delete the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
 
-		err := iClient.k8sDynamicClient.Resource(res).Delete(data.GetName(), &metav1.DeleteOptions{})
+		err := iClient.k8sDynamicClient.Resource(res).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 		if err != nil {
 			err = errors.Wrapf(err, "unable to delete the requested resource")
 			logrus.Error(err)
@@ -138,12 +138,12 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 	var err error
 	logrus.Debugf("getResource data: %+#v", data)
 	logrus.Debugf("getResource res: %+#v", res)
-	data1, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
+	data1, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(context.TODO(), data.GetName(), metav1.GetOptions{})
 	if err != nil {
 		err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
 		logrus.Warn(err)
 
-		data1, err = iClient.k8sDynamicClient.Resource(res).Get(data.GetName(), metav1.GetOptions{})
+		data1, err = iClient.k8sDynamicClient.Resource(res).Get(context.TODO(), data.GetName(), metav1.GetOptions{})
 		if err != nil {
 			err = errors.Wrap(err, "unable to retrieve the resource with a matching name, while attempting to apply the config")
 			logrus.Error(err)
@@ -156,11 +156,11 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 
 // updateResource - updates a Kubernetes resource
 func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
-	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
+	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(context.TODO(), data, metav1.UpdateOptions{}); err != nil {
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
 		logrus.Warn(err)
 
-		if _, err = iClient.k8sDynamicClient.Resource(res).Update(data, metav1.UpdateOptions{}); err != nil {
+		if _, err = iClient.k8sDynamicClient.Resource(res).Update(context.TODO(), data, metav1.UpdateOptions{}); err != nil {
 			err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
 			logrus.Error(err)
 			return err
@@ -406,6 +406,11 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	switch arReq.OpName {
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
+	case validateSmiConformance:
+		err = iClient.runConformanceTest(arReq.OperationId, "linkerd", "latest")
+		if err != nil {
+			return nil, err
+		}
 	case installLinkerdCommand:
 		go func() {
 			opName1 := "deploying"
@@ -436,6 +441,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+		fallthrough
 	case installBooksAppCommand:
 		appName = "Linkerd Books App"
 		svcName = "webapp"
@@ -581,7 +587,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 }
 
 func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, namespace string, deleteOpts bool) error {
-	acceptedK8sTypes := regexp.MustCompile(`(Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount|MutatingWebhookConfiguration|Secret|ValidatingWebhookConfiguration|APIService|PodSecurityPolicy|ConfigMap|Service|Deployment|CronJob|CustomResourceDefinition)`)
+	acceptedK8sTypes := regexp.MustCompile(`(Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount|MutatingWebhookConfiguration|Secret|ValidatingWebhookConfiguration|APIService|PodSecurityPolicy|ConfigMap|Service|Deployment|CronJob|CustomResourceDefinition|Ingress)`)
 	sepYamlfiles := strings.Split(deploymentYAML, "\n---\n")
 	mappingNamespace := &meta.RESTMapping{}
 	dataNamespace := &unstructured.Unstructured{}
@@ -646,18 +652,18 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					}
 					deletePolicy := metav1.DeletePropagationForeground
 					t := int64(1)
-					deleteOptions := &metav1.DeleteOptions{
+					deleteOptions := metav1.DeleteOptions{
 						PropagationPolicy:  &deletePolicy,
 						GracePeriodSeconds: &t,
 					}
-					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Delete(data.GetName(), deleteOptions)
+					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Delete(context.TODO(), data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
 						logrus.Error(fmt.Sprintf("Delete the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
 					}
 					logrus.Info(fmt.Sprintf("Delete the %s %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 				} else {
-					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Create(data, metav1.CreateOptions{})
+					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Create(context.TODO(), data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
 						logrus.Error(fmt.Sprintf("Create the %s %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName()))
 						return err
@@ -667,10 +673,10 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 			} else {
 				if deleteOpts {
 					deletePolicy := metav1.DeletePropagationForeground
-					deleteOptions := &metav1.DeleteOptions{
+					deleteOptions := metav1.DeleteOptions{
 						PropagationPolicy: &deletePolicy,
 					}
-					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Delete(data.GetName(), deleteOptions)
+					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Delete(context.TODO(), data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
 						errors.Wrapf(err, fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 						logrus.Error(err)
@@ -680,7 +686,7 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 
 				} else {
-					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Create(data, metav1.CreateOptions{})
+					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Create(context.TODO(), data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
 						err = errors.Wrapf(err, fmt.Sprintf("Create the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 						logrus.Error(err)
@@ -695,10 +701,10 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 	// Remove the namespace at least.
 	if deleteOpts && dataNamespace.GetName() != "default" {
 		deletePolicy := metav1.DeletePropagationForeground
-		deleteOptions := &metav1.DeleteOptions{
+		deleteOptions := metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		}
-		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(namespace, deleteOptions)
+		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(context.TODO(), namespace, deleteOptions)
 		if err != nil {
 			// logrus.Error(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
 			// return err
