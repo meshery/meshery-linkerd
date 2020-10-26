@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -30,7 +29,6 @@ import (
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/alecthomas/template"
-	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-linkerd/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -73,66 +71,6 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
-// createResource - creates a Kubernetes resource
-func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
-	logrus.Debug("============================================================================")
-	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
-		logrus.Warn(err)
-		_, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{})
-		if err != nil {
-			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
-			logrus.Error(err)
-			return err
-		}
-	}
-	logrus.Infof("Created Resource of type: %s and name: %s", data.GetKind(), data.GetName())
-	return nil
-}
-
-// deleteResource - deletes a Kubernetes resource
-func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
-	if iClient.k8sDynamicClient == nil {
-		return errors.New("mesh client has not been created")
-	}
-
-	if res.Resource == "namespaces" && data.GetName() == "default" { // skipping deletion of default namespace
-		return nil
-	}
-
-	// in the case with deployments, have to scale it down to 0 first and then delete. . . or else RS and pods will be left behind
-	if res.Resource == "deployments" {
-		data1, err := iClient.getResource(ctx, res, data)
-		if err != nil {
-			return err
-		}
-		depl := data1.UnstructuredContent()
-		spec1 := depl["spec"].(map[string]interface{})
-		spec1["replicas"] = 0
-		data1.SetUnstructuredContent(depl)
-		if err = iClient.updateResource(ctx, res, data1); err != nil {
-			return err
-		}
-	}
-
-	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(data.GetName(), &metav1.DeleteOptions{})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to delete the requested resource, attempting operation without namespace")
-		logrus.Warn(err)
-
-		err := iClient.k8sDynamicClient.Resource(res).Delete(data.GetName(), &metav1.DeleteOptions{})
-		if err != nil {
-			err = errors.Wrapf(err, "unable to delete the requested resource")
-			logrus.Error(err)
-			return err
-		}
-	}
-	logrus.Infof("Deleted Resource of type: %s and name: %s", data.GetKind(), data.GetName())
-	return nil
-}
-
-// getResource - retreives a Kubernetes resource
 func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	var data1 *unstructured.Unstructured
 	var err error
@@ -175,92 +113,6 @@ func (iClient *Client) MeshName(context.Context, *meshes.MeshNameRequest) (*mesh
 	return &meshes.MeshNameResponse{Name: "Linkerd"}, nil
 }
 
-func (iClient *Client) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete bool) error {
-	if iClient.k8sDynamicClient == nil {
-		return errors.New("mesh client has not been created")
-	}
-	jsonBytes, err := yaml.YAMLToJSON(newBytes)
-	if err != nil {
-		err = errors.Wrapf(err, "unable to convert yaml to json")
-		logrus.Errorf("received yaml bytes: %s", newBytes)
-		logrus.Error(err)
-		return err
-	}
-	// logrus.Debugf("created json: %s, length: %d", jsonBytes, len(jsonBytes))
-	if len(jsonBytes) > 5 { // attempting to skip 'null' json
-		data := &unstructured.Unstructured{}
-		err = data.UnmarshalJSON(jsonBytes)
-		if err != nil {
-			err = errors.Wrapf(err, "unable to unmarshal json created from yaml")
-			logrus.Error(err)
-			logrus.Errorf("received yaml bytes: %s", newBytes)
-			return err
-		}
-		if data.IsList() {
-			err = data.EachListItem(func(r runtime.Object) error {
-				dataL, _ := r.(*unstructured.Unstructured)
-				return iClient.executeRule(ctx, dataL, namespace, delete)
-			})
-			return err
-		}
-		return iClient.executeRule(ctx, data, namespace, delete)
-	}
-	return nil
-}
-
-// executeRule - executes a rule
-func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete bool) error {
-	// logrus.Debug("========================================================")
-	// logrus.Debugf("Received data: %+#v", data)
-	if namespace != "" {
-		data.SetNamespace(namespace)
-	}
-	groupVersion := strings.Split(data.GetAPIVersion(), "/")
-	logrus.Debugf("groupVersion: %v", groupVersion)
-	var group, version string
-	if len(groupVersion) == 2 {
-		group = groupVersion[0]
-		version = groupVersion[1]
-	} else if len(groupVersion) == 1 {
-		version = groupVersion[0]
-	}
-
-	kind := strings.ToLower(data.GetKind())
-	switch kind {
-	case "logentry":
-		kind = "logentries"
-	case "kubernetes":
-		kind = "kuberneteses"
-	case "podsecuritypolicy":
-		kind = "podsecuritypolicies"
-	default:
-		kind += "s"
-	}
-
-	res := schema.GroupVersionResource{
-		Group:    group,
-		Version:  version,
-		Resource: kind,
-	}
-	logrus.Debugf("Computed Resource: %+#v", res)
-
-	if delete {
-		return iClient.deleteResource(ctx, res, data)
-	}
-
-	if err := iClient.createResource(ctx, res, data); err != nil {
-		data1, err := iClient.getResource(ctx, res, data)
-		if err != nil {
-			return err
-		}
-		if err = iClient.updateResource(ctx, res, data1); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// labelNamespaceForAutoInjection - adds a label to the specified namespace for injecting sidecar proxy
 func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
 	ns := &unstructured.Unstructured{}
 	res := schema.GroupVersionResource{
@@ -672,13 +524,12 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					}
 					err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Delete(data.GetName(), deleteOptions)
 					if err != nil && !kubeerror.IsNotFound(err) {
-						errors.Wrapf(err, fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
+						err = errors.Wrapf(err, fmt.Sprintf("Delete the %s %s in namespace %s failed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 						logrus.Error(err)
 						return err
 					}
 
 					logrus.Info(fmt.Sprintf("Delete the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
-
 				} else {
 					_, err = iClient.k8sDynamicClient.Resource(mapping.Resource).Namespace(namespace).Create(data, metav1.CreateOptions{})
 					if err != nil && !kubeerror.IsAlreadyExists(err) {
@@ -689,7 +540,6 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 					logrus.Info(fmt.Sprintf("Create the %s %s in namespace %s succeed", data.GetObjectKind().GroupVersionKind().Kind, data.GetName(), namespace))
 				}
 			}
-
 		}
 	}
 	// Remove the namespace at least.
@@ -700,8 +550,8 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 		}
 		err := iClient.k8sDynamicClient.Resource(mappingNamespace.Resource).Delete(namespace, deleteOptions)
 		if err != nil {
-			// logrus.Error(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
-			// return err
+			logrus.Error(fmt.Sprintf("Delete the %s %s failed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
+			return err
 		}
 		logrus.Info(fmt.Sprintf("Delete the %s %s succeed", dataNamespace.GetObjectKind().GroupVersionKind().Kind, namespace))
 	}
@@ -747,45 +597,6 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-}
-
-// splitYAML - parses through Kubernetes manifest yaml; pulls out objects
-func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
-	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
-	if !ok {
-		err := fmt.Errorf("unable to create a yaml decoder")
-		logrus.Error(err)
-		return nil, err
-	}
-	defer yamlDecoder.Close()
-	var err error
-	n := 0
-	data := [][]byte{}
-	ind := 0
-	for err == io.ErrShortBuffer || err == nil {
-		// for {
-		d := make([]byte, 1000)
-		n, err = yamlDecoder.Read(d)
-		// logrus.Debugf("Read this: %s, count: %d, err: %v", d, n, err)
-		if len(data) == 0 || len(data) <= ind {
-			data = append(data, []byte{})
-		}
-		if n > 0 {
-			data[ind] = append(data[ind], d...)
-		}
-		if err == nil {
-			logrus.Debugf("..............BOUNDARY................")
-			ind++
-		}
-	}
-	result := make([]string, len(data))
-	for i, row := range data {
-		r := string(row)
-		r = strings.Trim(r, "\x00")
-		logrus.Debugf("ind: %d, data: %s", i, r)
-		result[i] = r
-	}
-	return result, nil
 }
 
 func (iClient *Client) getSVCPort(ctx context.Context, svc, namespace string) ([]int64, error) {
