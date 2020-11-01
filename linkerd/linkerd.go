@@ -485,9 +485,7 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 			data := &unstructured.Unstructured{}
 			data.SetUnstructuredContent(unstructuredObj)
 			logrus.Debug(unstructuredObj)
-			if len(data.GetNamespace()) > 2 {
-				namespace = data.GetNamespace()
-			}
+			data.SetNamespace(namespace)
 
 			if mapping.Scope.Name() == "root" {
 				if deleteOpts {
@@ -543,7 +541,7 @@ func (iClient *Client) applyConfigChange(ctx context.Context, deploymentYAML, na
 		}
 	}
 	// Remove the namespace at least.
-	if deleteOpts && dataNamespace.GetName() != "default" {
+	if deleteOpts && dataNamespace.GetNamespace() != "default" {
 		deletePolicy := metav1.DeletePropagationForeground
 		deleteOptions := &metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
