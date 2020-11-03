@@ -2,190 +2,95 @@ name: Meshery Linkerd
 on:
   push:
     branches:
-      - '*'
+      - 'master'
     tags:
       - 'v*'
   pull_request:
     branches:
-      - master
+      - 'master'
 jobs:
-  lint:
-    name: Check & Review code
+  golangci:
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: ${{ secrets.GO_VERSION }}
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
-  error_check:
-    name: Error check
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: ${{ secrets.GO_VERSION }}
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -exclude errcheck_excludes.txt ./...
-  static_check:
-    name: Static check
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: ${{ secrets.GO_VERSION }}
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -checks all,-ST1000 ./... # https://staticcheck.io/docs/checks
-  vet:
-    name: Vet
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: ${{ secrets.GO_VERSION }}
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet ./...
-  sec_check:
-    name: Security check
-    runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 1
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - name: Run Gosec Security Scanner
-      uses: securego/gosec@master
-      with:
-        args: ./...
-  tests:
-     needs: [lint, error_check, static_check, vet, sec_check]
-     name: Tests
-     runs-on: ubuntu-latest
-     steps:
-     - name: Check out code
-       uses: actions/checkout@master
-       with:
-        fetch-depth: 1
-     - name: Setup Go
-       uses: actions/setup-go@v1
-       with:
-        go-version: ${{ secrets.GO_VERSION }}
-     - name: Cache node modules
-       uses: actions/cache@v1
-       with:
-         path: ~/go/pkg/mod
-         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-         restore-keys: |
-           ${{ runner.os }}-go-
-     - name: Create cluster using KinD
-       uses: engineerd/setup-kind@v0.3.0
-       with:
-         version: "v0.7.0"
-     - run: |
-         export CURRENTCONTEXT="$(kubectl config current-context)"
-         echo "current-context:" ${CURRENTCONTEXT}   
-         export KUBECONFIG="${HOME}/.kube/config"
-         echo "environment-kubeconfig:" ${KUBECONFIG}
-         GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v1
+        with:
+          # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
+          version: v1.29
 
-  build:
-    name: Build check
+          # Optional: working directory, useful for monorepos
+          # working-directory: somedir
+
+          # Optional: golangci-lint command line arguments.
+          # args: --issues-exit-code=0
+
+          # Optional: show only new issues if it's a pull request. The default value is `false`.
+          # only-new-issues: true
+  tests:
+    name: tests
     runs-on: ubuntu-latest
-    needs: [lint, error_check, static_check, vet, sec_check, tests]
+    needs: [golangci]
     steps:
-    - name: Check out code
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: ${{ secrets.GO_VERSION }}
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ secrets.GO_VERSION }}
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Create cluster using KinD
+        uses: engineerd/setup-kind@v0.3.0
+        with:
+          version: "v0.7.0"
+      - run: |
+          export CURRENTCONTEXT="$(kubectl config current-context)"
+          echo "current-context:" ${CURRENTCONTEXT}
+          export KUBECONFIG="${HOME}/.kube/config"
+          echo "environment-kubeconfig:" ${KUBECONFIG}
+          GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./... -v
+
   docker:
     name: Docker build and push
     runs-on: ubuntu-latest
-    # needs: [build, build_release]
+    needs: [golangci,tests]
     steps:
     - name: Check out code
-      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       uses: actions/checkout@master
       with:
         fetch-depth: 1
     - name: Docker login
-      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
-      uses: azure/container-actions/docker-login@master
+      uses: azure/docker-login@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Docker build & tag
+    - name: Docker edge build & tag
+      if: startsWith(github.ref, 'refs/tags/') != true && success()
+      run: |
+        DOCKER_BUILDKIT=1 docker build --no-cache -t layer5/meshery-linkerd:edge-latest .
+        docker tag layer5/meshery-linkerd:edge-latest layer5/meshery-linkerd:edge-${GITHUB_SHA::7}
+    - name: Docker edge push
+      if: startsWith(github.ref, 'refs/tags/') != true && success()
+      run: |
+        docker push ${{ secrets.IMAGE_NAME }}:edge-latest
+        docker push ${{ secrets.IMAGE_NAME }}:edge-${GITHUB_SHA::7}
+    - name: Docker stable build & tag
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       run: |
         DOCKER_BUILDKIT=1 docker build --no-cache -t ${{ secrets.IMAGE_NAME }}:stable-latest .
         docker tag ${{ secrets.IMAGE_NAME }}:stable-latest ${{ secrets.IMAGE_NAME }}:${GITHUB_REF/refs\/tags\//}-edge
         docker tag ${{ secrets.IMAGE_NAME }}:stable-latest ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_REF/refs\/tags\//}
         docker tag ${{ secrets.IMAGE_NAME }}:stable-latest ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_SHA::7}
-    - name: Docker push
+    - name: Docker stable push
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       run: |
         docker push ${{ secrets.IMAGE_NAME }}:stable-latest

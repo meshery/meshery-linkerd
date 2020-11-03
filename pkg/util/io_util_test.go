@@ -33,5 +33,4 @@ func TestSafeClose(t *testing.T) {
 	if err != nil {
 		t.Fatal("Remove file test_safe_close.txt failed")
 	}
-
 }

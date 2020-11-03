@@ -102,7 +102,6 @@ func (iClient *Client) AddAnnotation(namespace string, remove bool) error {
 
 // getLatestRelease is to pull down the Linkerd packages
 func (iClient *Client) getLatestReleaseURL() error {
-
 	if iClient.linkerdReleaseDownloadURL == "" || time.Since(iClient.linkerdReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s	", repoURL)
 		resp, err := http.Get(repoURL)
@@ -261,9 +260,7 @@ func (iClient *Client) execute(command ...string) (string, string, error) {
 
 // getYAML retrieves remote yaml file
 func (iClient *Client) getYAML(remoteURL, localFile string) (string, error) {
-
 	proceedWithDownload := true
-
 	lFileStat, err := os.Stat(localFile)
 	if err == nil {
 		if time.Since(lFileStat.ModTime()) > cachePeriod {
