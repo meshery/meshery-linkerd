@@ -1,3 +1,5 @@
+GOPATH = $(shell go env GOPATH)
+
 protoc-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
@@ -20,17 +22,21 @@ run:
 
 .PHONY: local-check
 local-check: tidy
-local-check: golang-ci
+local-check: golangci-lint
 
 .PHONY: tidy
 tidy:
 	@echo "Executing go mod tidy"
 	go mod tidy
 
-.PHONY: golang-ci
-golangci-lint: $(GOLANGLINT)
+.PHONY: golangci-lint
+golangci-lint: $(GOLANGCILINT)
 	@echo
 	$(GOPATH)/bin/golangci-lint run
 
-$(GOLANGLINT):
-	(cd /; GO111MODULE=on GOPROXY="https://goproxy.cn,direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
+$(GOLANGCILINT):
+	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
+
+# If your internet was blocked by sth, you can use this proxy
+#$(GOLANGCILINT):
+#	(cd /; GO111MODULE=on GOPROXY="https://goproxy.cn,direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
