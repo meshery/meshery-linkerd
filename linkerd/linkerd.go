@@ -353,7 +353,6 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
-		fallthrough
 	case installBooksAppCommand:
 		appName = "Linkerd Books App"
 		svcName = "webapp"
