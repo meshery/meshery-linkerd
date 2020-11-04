@@ -110,7 +110,6 @@ func (iClient *Client) getLatestReleaseURL() error {
 			logrus.Error(err)
 			return err
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			err = fmt.Errorf("unable to fetch release info due to an unexpected status code: %d", resp.StatusCode)
@@ -151,6 +150,12 @@ func (iClient *Client) getLatestReleaseURL() error {
 		logrus.Error(err)
 		return err
 	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
