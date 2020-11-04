@@ -146,14 +146,16 @@ func (iClient *Client) getLatestReleaseURL() error {
 				}
 			}
 		}
+
+		err = resp.Body.Close()
+		if err != nil {
+			return err
+		}
+
 		err = errors.New("unable to extract the download URL")
 		logrus.Error(err)
 		return err
-	}
 
-	err = resp.Body.Close()
-	if err != nil {
-		return err
 	}
 
 	return nil
