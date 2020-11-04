@@ -10,7 +10,6 @@ import (
 )
 
 func (iClient *Client) runConformanceTest(id string, name string, version string) error {
-
 	annotations := map[string]string{
 		"linkerd.io/inject": "enabled",
 	}

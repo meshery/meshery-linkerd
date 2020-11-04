@@ -155,7 +155,6 @@ func (iClient *Client) getLatestReleaseURL() error {
 		err = errors.New("unable to extract the download URL")
 		logrus.Error(err)
 		return err
-
 	}
 
 	return nil
@@ -179,7 +178,6 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("unable to download the file from URL: %s, status: %s", iClient.linkerdReleaseDownloadURL, resp.Status)
@@ -200,6 +198,12 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
