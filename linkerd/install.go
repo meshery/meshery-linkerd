@@ -16,6 +16,7 @@ package linkerd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -70,12 +71,12 @@ type Release struct {
 
 // AddAnnotation is used to mark namespaces for automatic sidecar injection (or not)
 func (iClient *Client) AddAnnotation(namespace string, remove bool) error {
-	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
-		_, err := iClient.k8sClientset.CoreV1().Namespaces().Create(&corev1.Namespace{
+		_, err := iClient.k8sClientset.CoreV1().Namespaces().Create(context.TODO(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: namespace,
-			}})
+			}}, metav1.CreateOptions{})
 		if err != nil {
 			err = errors.Wrapf(err, "Unable to create namespace")
 			return err
@@ -91,7 +92,7 @@ func (iClient *Client) AddAnnotation(namespace string, remove bool) error {
 		delete(ns.ObjectMeta.Annotations, "linkerd.io/inject")
 	}
 
-	_, err = iClient.k8sClientset.CoreV1().Namespaces().Update(ns)
+	_, err = iClient.k8sClientset.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "Unable to update namespace with annotation")
 		return err
@@ -109,7 +110,6 @@ func (iClient *Client) getLatestReleaseURL() error {
 			logrus.Error(err)
 			return err
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			err = fmt.Errorf("unable to fetch release info due to an unexpected status code: %d", resp.StatusCode)
@@ -146,10 +146,17 @@ func (iClient *Client) getLatestReleaseURL() error {
 				}
 			}
 		}
+
+		err = resp.Body.Close()
+		if err != nil {
+			return err
+		}
+
 		err = errors.New("unable to extract the download URL")
 		logrus.Error(err)
 		return err
 	}
+
 	return nil
 }
 
@@ -171,7 +178,6 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("unable to download the file from URL: %s, status: %s", iClient.linkerdReleaseDownloadURL, resp.Status)
@@ -192,6 +198,12 @@ func (iClient *Client) downloadFile(urlToDownload, localFile string) error {
 		logrus.Error(err)
 		return err
 	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

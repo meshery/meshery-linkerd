@@ -1,5 +1,11 @@
 GOPATH = $(shell go env GOPATH)
 
+check:
+	golangci-lint run
+
+check-clean-cache:
+	golangci-lint cache clean
+	
 protoc-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
