@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+
+	"github.com/layer5io/gokit/utils"
 
 	"github.com/layer5io/gokit/smi"
 	"github.com/layer5io/meshery-linkerd/meshes"
@@ -23,6 +27,23 @@ func (iClient *Client) runConformanceTest(id string, name string, version string
 			Details:     err.Error(),
 		}
 		return err
+	}
+
+	// This path is hardcoded in test.kubeConfigPath.
+	// Consider parametrizing it, possibly also synchronizing it with the path used in linkerd/linkerd.go:226 (executeInstall, tmpKubeConfigFileLoc)
+	kubeConfigPath := fmt.Sprintf("%s/.kube/config", utils.GetHome())
+	_, statErr := os.Stat(kubeConfigPath)
+	if os.IsNotExist(statErr) {
+		err = ioutil.WriteFile(kubeConfigPath, iClient.kubeconfig, 0600)
+		if err != nil {
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: id,
+				EventType:   meshes.EventType_ERROR,
+				Summary:     fmt.Sprintf("Error while setting up smi-conformance test:  %s", err.Error()),
+				Details:     err.Error(),
+			}
+			return err
+		}
 	}
 
 	result, err := test.Run(nil, annotations)

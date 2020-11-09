@@ -7,7 +7,6 @@ replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200
 require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.0 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/ghodss/yaml v1.0.0
 	github.com/golang/protobuf v1.4.3
 	github.com/layer5io/gokit v0.1.16
 	github.com/pkg/errors v0.9.1
