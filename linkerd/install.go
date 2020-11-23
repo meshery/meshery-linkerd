@@ -50,7 +50,6 @@ func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error)
 }
 
 func (linkerd *Linkerd) fetchManifest(version string) (string, error) {
-
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer

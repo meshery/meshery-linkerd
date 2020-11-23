@@ -29,7 +29,6 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 
 // ApplyOperation applies the operation on linkerd
 func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
-
 	operations := make(adapter.Operations, 0)
 	err := linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {

@@ -21,7 +21,6 @@ var (
 
 // New creates a new config instance
 func New(provider string) (config.Handler, error) {
-
 	// Default config
 	opts := configprovider.Options{}
 	environment := os.Getenv("MESHERY_ENV")
@@ -49,7 +48,6 @@ func New(provider string) (config.Handler, error) {
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
-
 	opts := configprovider.Options{}
 	environment := os.Getenv("MESHERY_ENV")
 	if len(environment) < 1 {

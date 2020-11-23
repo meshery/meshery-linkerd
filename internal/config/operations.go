@@ -10,7 +10,6 @@ var (
 )
 
 func getOperations(dev adapter.Operations) adapter.Operations {
-
 	versions, _ := getLatestReleaseNames(3)
 
 	dev[LinkerdOperation] = &adapter.Operation{
