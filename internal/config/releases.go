@@ -72,7 +72,8 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 // GetLatestReleases fetches the latest releases from the linkerd repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
 	releaseAPIURL := "https://api.github.com/repos/linkerd/linkerd2/releases?per_page=" + fmt.Sprint(releases)
-
+	// We need a variable url here hence using nosec
+	// #nosec
 	resp, err := http.Get(releaseAPIURL)
 	if err != nil {
 		return []*Release{}, ErrGetLatestReleases(err)

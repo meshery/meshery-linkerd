@@ -61,6 +61,8 @@ func (linkerd *Linkerd) fetchManifest(version string) (string, error) {
 		return "", ErrFetchManifest(err, err.Error())
 	}
 
+	// We need a variable executable here hence using nosec
+	// #nosec
 	command := exec.Command(Executable, "install")
 	command.Stdout = &out
 	command.Stderr = &er
@@ -149,7 +151,7 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ErrDownloadBinary(fmt.Errorf("Bad status: %s", resp.Status))
+		return nil, ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
 	}
 
 	return resp, nil
@@ -163,7 +165,11 @@ func installBinary(location, platform string, res *http.Response) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		if err := out.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	switch platform {
 	case "darwin":
