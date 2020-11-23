@@ -158,7 +158,11 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 
 func installBinary(location, platform string, res *http.Response) error {
 	// Close the response body
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	out, err := os.Create(location)
 	if err != nil {
