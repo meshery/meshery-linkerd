@@ -17,7 +17,9 @@ import (
 )
 
 func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error) {
-	linkerd.Log.Info("Requested install of version:", version)
+	linkerd.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
+	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
+
 	st := status.Installing
 
 	if del {
@@ -35,7 +37,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error)
 		return st, ErrInstallLinkerd(err)
 	}
 
-	err = linkerd.applyManifest([]byte(manifest))
+	err = linkerd.applyManifest([]byte(manifest), del)
 	if err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
 		return st, ErrInstallLinkerd(err)
@@ -70,13 +72,13 @@ func (linkerd *Linkerd) fetchManifest(version string) (string, error) {
 	return out.String(), nil
 }
 
-func (linkerd *Linkerd) applyManifest(contents []byte) error {
+func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool) error {
 	kclient, err := mesherykube.New(linkerd.KubeClient, linkerd.RestConfig)
 	if err != nil {
 		return err
 	}
 
-	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{})
+	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{Delete: isDel})
 	if err != nil {
 		return err
 	}
