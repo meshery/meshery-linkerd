@@ -31,7 +31,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error)
 		return st, ErrMeshConfig(err)
 	}
 
-	manifest, err := linkerd.fetchManifest(version)
+	manifest, err := linkerd.fetchManifest(version, del)
 	if err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
 		return st, ErrInstallLinkerd(err)
@@ -49,7 +49,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error)
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) fetchManifest(version string) (string, error) {
+func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error) {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
@@ -59,10 +59,14 @@ func (linkerd *Linkerd) fetchManifest(version string) (string, error) {
 	if err != nil {
 		return "", ErrFetchManifest(err, err.Error())
 	}
+	execCmd := "install"
+	if isDel {
+		execCmd = "uninstall"
+	}
 
 	// We need a variable executable here hence using nosec
 	// #nosec
-	command := exec.Command(Executable, "install")
+	command := exec.Command(Executable, execCmd)
 	command.Stdout = &out
 	command.Stderr = &er
 	err = command.Run()
@@ -110,9 +114,9 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 	}
 
 	// Look for config in the root path
-	configRootPath := config.RootPath()
-	linkerd.Log.Info("Looking for linkerd in", configRootPath, "...")
-	executable = path.Join(configRootPath, alternateBinaryName)
+	binPath := path.Join(config.RootPath(), "bin")
+	linkerd.Log.Info("Looking for linkerd in", binPath, "...")
+	executable = path.Join(binPath, alternateBinaryName)
 	if _, err := os.Stat(executable); err == nil {
 		return executable, nil
 	}
@@ -125,12 +129,12 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 	}
 	// Install the binary
 	linkerd.Log.Info("Installing...")
-	if err = installBinary(path.Join(configRootPath, alternateBinaryName), runtime.GOOS, res); err != nil {
+	if err = installBinary(path.Join(binPath, alternateBinaryName), runtime.GOOS, res); err != nil {
 		return "", err
 	}
 
 	linkerd.Log.Info("Done")
-	return path.Join(configRootPath, alternateBinaryName), nil
+	return path.Join(binPath, alternateBinaryName), nil
 }
 
 func downloadBinary(platform, arch, release string) (*http.Response, error) {
@@ -183,7 +187,7 @@ func installBinary(location, platform string, res *http.Response) error {
 			return ErrInstallBinary(err)
 		}
 
-		if err = out.Chmod(0755); err != nil {
+		if err = out.Chmod(0750); err != nil {
 			return ErrInstallBinary(err)
 		}
 	case "windows":

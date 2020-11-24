@@ -16,6 +16,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 	"time"
 
 	"github.com/layer5io/meshery-linkerd/linkerd"
@@ -35,7 +36,7 @@ var (
 func init() {
 	// Create the config path if it doesn't exists as the entire adapter
 	// expects that directory to exists, which may or may not be true
-	if err := os.MkdirAll(config.RootPath(), 0750); err != nil {
+	if err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
