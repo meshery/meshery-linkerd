@@ -16,9 +16,16 @@ import (
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
-func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error) {
+func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
 	linkerd.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
+	linkerd.Log.Info(fmt.Sprintf("Requested action is in namespace: %s", namespace))
+
+	// Overiding the namespace to be empty
+	// This is intentional as deploying linkerd on custom namespace
+	// is a bit tricky
+	namespace = ""
+	linkerd.Log.Debug(fmt.Sprintf("Overriden namespace: %s", namespace))
 
 	st := status.Installing
 
@@ -37,7 +44,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version string) (string, error)
 		return st, ErrInstallLinkerd(err)
 	}
 
-	err = linkerd.applyManifest([]byte(manifest), del)
+	err = linkerd.applyManifest([]byte(manifest), del, namespace)
 	if err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
 		return st, ErrInstallLinkerd(err)
@@ -77,13 +84,13 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 	return out.String(), nil
 }
 
-func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool) error {
+func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
 	kclient, err := mesherykube.New(linkerd.KubeClient, linkerd.RestConfig)
 	if err != nil {
 		return err
 	}
 
-	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{Delete: isDel})
+	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{Namespace: namespace, Delete: isDel})
 	if err != nil {
 		return err
 	}

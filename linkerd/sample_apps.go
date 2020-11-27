@@ -8,7 +8,7 @@ import (
 	"github.com/layer5io/meshkit/utils"
 )
 
-func (linkerd *Linkerd) installSampleApp(del bool, templates []adapter.Template) (string, error) {
+func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates []adapter.Template) (string, error) {
 	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
 	st := status.Installing
 
@@ -22,7 +22,7 @@ func (linkerd *Linkerd) installSampleApp(del bool, templates []adapter.Template)
 			return st, ErrSampleApp(err)
 		}
 
-		err = linkerd.applyManifest([]byte(contents), del)
+		err = linkerd.applyManifest([]byte(contents), del, namespace)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}

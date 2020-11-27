@@ -45,7 +45,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	case internalconfig.LinkerdOperation:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version)
+			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Linkerd service mesh", stat)
 				e.Details = err.Error()
@@ -59,7 +59,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			stat, err := hh.installSampleApp(opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
