@@ -57,6 +57,8 @@ func readLocalFile(location string) (string, error) {
 	// remove the protocol prefix
 	location = strings.TrimPrefix(location, "file://")
 
+	// Need to support variable file locations hence
+	// #nosec
 	data, err := ioutil.ReadFile(location)
 	if err != nil {
 		return "", err
