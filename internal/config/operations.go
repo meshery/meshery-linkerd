@@ -19,9 +19,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Templates: []adapter.Template{
 			"templates/linkerd.yaml",
 		},
-		AdditionalProperties: map[string]string{
-			ServiceName: LinkerdOperation,
-		},
+		AdditionalProperties: map[string]string{},
 	}
 
 	return dev
