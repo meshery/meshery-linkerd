@@ -25,7 +25,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 	// This is intentional as deploying linkerd on custom namespace
 	// is a bit tricky
 	namespace = ""
-	linkerd.Log.Debug(fmt.Sprintf("Overriden namespace: %s", namespace))
+	linkerd.Log.Debug(fmt.Sprintf("Overidden namespace: %s", namespace))
 
 	st := status.Installing
 

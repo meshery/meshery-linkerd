@@ -45,7 +45,7 @@ var (
 		configprovider.FileName: "linkerd",
 	}
 
-	// Controlling the kubeconfig lifecycle with viper
+	// KubeConfig - Controlling the kubeconfig lifecycle with viper
 	KubeConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
