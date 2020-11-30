@@ -66,14 +66,14 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 	if err != nil {
 		return "", ErrFetchManifest(err, err.Error())
 	}
-	execCmd := "install"
+	execCmd := []string{"install", "--ignore-cluster"}
 	if isDel {
-		execCmd = "uninstall"
+		execCmd = []string{"uninstall"}
 	}
 
 	// We need a variable executable here hence using nosec
 	// #nosec
-	command := exec.Command(Executable, execCmd)
+	command := exec.Command(Executable, execCmd...)
 	command.Stdout = &out
 	command.Stderr = &er
 	err = command.Run()
