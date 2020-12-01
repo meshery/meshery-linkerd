@@ -87,6 +87,19 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
+	case common.CustomOperation:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("custom operation %s successfully", stat)
+			ee.Details = fmt.Sprintf("Custom operation %s successfully", stat)
+			hh.StreamInfo(e)
+		}(linkerd, e)
 	default:
 		linkerd.StreamErr(e, ErrOpInvalid)
 	}
