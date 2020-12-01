@@ -40,6 +40,11 @@ func init() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
 }
 
 // main is the entrypoint of the adaptor
