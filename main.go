@@ -61,7 +61,7 @@ func main() {
 	)
 	if err != nil {
 		// Fail silently
-		log.Error(err)
+		log.Warn(err)
 	}
 
 	// Initialize application specific configs and dependencies
