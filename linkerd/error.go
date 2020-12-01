@@ -7,15 +7,16 @@ import (
 )
 
 var (
-	ErrInstallLinkerdCode = "linkerd_test_code"
-	ErrMeshConfigCode     = "linkerd_test_code"
-	ErrFetchManifestCode  = "linkerd_test_code"
-	ErrDownloadBinaryCode = "linkerd_test_code"
-	ErrInstallBinaryCode  = "linkerd_test_code"
-	ErrClientConfigCode   = "linkerd_test_code"
-	ErrClientSetCode      = "linkerd_test_code"
-	ErrStreamEventCode    = "linkerd_test_code"
-	ErrSampleAppCode      = "linkerd_test_code"
+	ErrInstallLinkerdCode  = "linkerd_test_code"
+	ErrMeshConfigCode      = "linkerd_test_code"
+	ErrFetchManifestCode   = "linkerd_test_code"
+	ErrDownloadBinaryCode  = "linkerd_test_code"
+	ErrInstallBinaryCode   = "linkerd_test_code"
+	ErrClientConfigCode    = "linkerd_test_code"
+	ErrClientSetCode       = "linkerd_test_code"
+	ErrStreamEventCode     = "linkerd_test_code"
+	ErrSampleAppCode       = "linkerd_test_code"
+	ErrCustomOperationCode = "linkerd_test_code"
 
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
@@ -63,4 +64,9 @@ func ErrStreamEvent(err error) error {
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
 	return errors.NewDefault(ErrSampleAppCode, fmt.Sprintf("Error with sample app operation: %s", err.Error()))
+}
+
+// ErrCustomOperation is the error for streaming event
+func ErrCustomOperation(err error) error {
+	return errors.NewDefault(ErrCustomOperationCode, fmt.Sprintf("Error with custom operation: %s", err.Error()))
 }
