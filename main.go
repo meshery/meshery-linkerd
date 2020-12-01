@@ -53,6 +53,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set $KUBECONFIG environmental variable
+	// crucial when adapter's running within the containers
+	err = os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
+	if err != nil {
+		// Fail silently
+		log.Warn(err)
+	}
+
 	// Initialize application specific configs and dependencies
 	// App and request config
 	cfg, err := config.New(configprovider.ViperKey)
