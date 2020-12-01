@@ -40,16 +40,6 @@ func init() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	err := os.Setenv("KUBECONFIG", path.Join(
-		config.KubeConfig[configprovider.FilePath],
-		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
-	)
-
-	if err != nil {
-		// Fail silently
-		fmt.Println(err)
-	}
 }
 
 // main is the entrypoint of the adaptor
@@ -61,6 +51,17 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	// Set $KUBECONFIG environmental variable
+	// crucial when adapter's running within the containers
+	err = os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
+	if err != nil {
+		// Fail silently
+		log.Error(err)
 	}
 
 	// Initialize application specific configs and dependencies
