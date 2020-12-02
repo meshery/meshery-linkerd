@@ -104,7 +104,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		go func(hh *Linkerd, ee *adapter.Event) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while annotating ", opReq.Namespace)
+				e.Summary = fmt.Sprintf("Error while annotating %s", opReq.Namespace)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
 				return

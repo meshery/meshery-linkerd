@@ -37,7 +37,6 @@ func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates [
 }
 
 func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool) error {
-
 	deploy, err := linkerd.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
 	if err != nil {
 		return err
