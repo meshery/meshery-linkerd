@@ -14,6 +14,8 @@ const (
 	LinkerdOperation = "linkerd"
 	Development      = "development"
 	Production       = "production"
+
+	AnnotateNamespace = "annotate-namespace"
 )
 
 var (

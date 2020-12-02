@@ -10,6 +10,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
 type Linkerd struct {
@@ -87,7 +88,35 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
+	case common.CustomOperation:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			contents := opReq.CustomBody
+			err := hh.MesheryKubeclient.ApplyManifest([]byte(contents), mesherykube.ApplyOptions{Namespace: opReq.Namespace, Delete: opReq.IsDeleteOperation})
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s manifest", status.Deploying)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
+			ee.Details = ""
+			hh.StreamInfo(e)
+		}(linkerd, e)
+	case internalconfig.AnnotateNamespace:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while annotating ", opReq.Namespace)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = "Annotation successful"
+			ee.Details = ""
+			hh.StreamInfo(e)
+		}(linkerd, e)
 	default:
+		e.Summary = "Invalid Request"
 		linkerd.StreamErr(e, ErrOpInvalid)
 	}
 
