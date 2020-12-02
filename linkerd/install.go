@@ -66,7 +66,7 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 	if err != nil {
 		return "", ErrFetchManifest(err, err.Error())
 	}
-	execCmd := []string{"install", "--ignore-cluster"}
+	execCmd := []string{"install"}
 	if isDel {
 		execCmd = []string{"uninstall"}
 	}

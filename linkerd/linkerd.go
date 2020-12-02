@@ -10,7 +10,6 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/logger"
-	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
 type Linkerd struct {
@@ -90,10 +89,9 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(linkerd, e)
 	case common.CustomOperation:
 		go func(hh *Linkerd, ee *adapter.Event) {
-			contents := opReq.CustomBody
-			err := hh.MesheryKubeclient.ApplyManifest([]byte(contents), mesherykube.ApplyOptions{Namespace: opReq.Namespace, Delete: opReq.IsDeleteOperation})
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s manifest", status.Deploying)
+				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
 				return
