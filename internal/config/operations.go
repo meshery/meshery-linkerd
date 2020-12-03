@@ -27,5 +27,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Description: "Annotate Namespace",
 	}
 
+	dev[ExposePrometheus] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Expose Prometheus Deployment",
+	}
+
 	return dev
 }

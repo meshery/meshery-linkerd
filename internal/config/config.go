@@ -12,10 +12,9 @@ import (
 
 const (
 	LinkerdOperation = "linkerd"
-	Development      = "development"
-	Production       = "production"
 
 	AnnotateNamespace = "annotate-namespace"
+	ExposePrometheus  = "expose-prometheus"
 )
 
 var (

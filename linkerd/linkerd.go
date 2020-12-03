@@ -114,7 +114,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
-	case "expose-prometheus":
+	case internalconfig.ExposePrometheus:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			err := expose.Prometheus(hh.KubeClient, hh.RestConfig, hh.Log)
 			if err != nil {
