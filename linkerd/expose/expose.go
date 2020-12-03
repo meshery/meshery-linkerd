@@ -8,7 +8,6 @@ import (
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,8 +56,7 @@ type Logger interface {
 
 // Expose exposes the given kubernetes resource
 func Expose(clientSet *kubernetes.Clientset, restConfig rest.Config, ec Config, resources []string) error {
-	// continueOnError not only controls if the traversal should continue but
-	// will also control of the traverser returns an error or not
+	// continueOnError not only controls if the traversal should continue even after errors
 	continueOnError := true
 
 	tr := Traverser{
@@ -66,7 +64,7 @@ func Expose(clientSet *kubernetes.Clientset, restConfig rest.Config, ec Config, 
 		Resources: resources,
 		Logger:    ec.Logger,
 	}
-	err := tr.Visit(func(info runtime.Object, name string, err error) error {
+	err := tr.Visit(func(info runtime.Object, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -77,8 +75,8 @@ func Expose(clientSet *kubernetes.Clientset, restConfig rest.Config, ec Config, 
 			return ErrResourceCannotBeExposed(err, gk.Kind)
 		}
 
-		if len(name) > validation.DNS1035LabelMaxLength {
-			name = name[:validation.DNS1035LabelMaxLength]
+		if len(ec.Name) > validation.DNS1035LabelMaxLength {
+			ec.Name = ec.Name[:validation.DNS1035LabelMaxLength]
 		}
 
 		// Map for selectors of the current object
@@ -139,9 +137,12 @@ func Expose(clientSet *kubernetes.Clientset, restConfig rest.Config, ec Config, 
 	return err
 }
 
-func generateService(serviceConfig serviceConfig) (*v1.Service, error) {
-	ports := []v1.ServicePort{}
+func generateService(serviceConfig serviceConfig) (*corev1.Service, error) {
+	ports := []corev1.ServicePort{}
 	for i, port := range serviceConfig.portsSlice {
+		// We can expect the port to be a valid UNIX port and hence
+		// should not cause integer overflow. Hence,
+		// #nosec
 		portInt, err := strconv.Atoi(port)
 		if err != nil {
 			return nil, err
@@ -157,20 +158,20 @@ func generateService(serviceConfig serviceConfig) (*v1.Service, error) {
 			protocol = exposeProtocol
 		}
 
-		ports = append(ports, v1.ServicePort{
+		ports = append(ports, corev1.ServicePort{
 			Name:     portName,
 			Port:     int32(portInt),
-			Protocol: v1.Protocol(protocol),
+			Protocol: corev1.Protocol(protocol),
 		})
 	}
 
-	service := v1.Service{
+	service := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceConfig.Name,
 			Labels:    serviceConfig.labelsMap,
 			Namespace: serviceConfig.Namespace,
 		},
-		Spec: v1.ServiceSpec{
+		Spec: corev1.ServiceSpec{
 			Selector: serviceConfig.selectorsMap,
 			Ports:    ports,
 		},
@@ -188,21 +189,21 @@ func generateService(serviceConfig serviceConfig) (*v1.Service, error) {
 
 	// Setup service type
 	if len(serviceConfig.Type) != 0 {
-		service.Spec.Type = v1.ServiceType(serviceConfig.Type)
+		service.Spec.Type = corev1.ServiceType(serviceConfig.Type)
 	}
 
 	// Setup load balancer ip if the type is load balancer
-	if service.Spec.Type == v1.ServiceTypeLoadBalancer {
+	if service.Spec.Type == corev1.ServiceTypeLoadBalancer {
 		service.Spec.LoadBalancerIP = serviceConfig.LoadBalancerIP
 	}
 
 	// Setup session affinity
 	if len(serviceConfig.SessionAffinity) != 0 {
-		switch v1.ServiceAffinity(serviceConfig.SessionAffinity) {
-		case v1.ServiceAffinityNone:
-			service.Spec.SessionAffinity = v1.ServiceAffinityNone
-		case v1.ServiceAffinityClientIP:
-			service.Spec.SessionAffinity = v1.ServiceAffinityClientIP
+		switch corev1.ServiceAffinity(serviceConfig.SessionAffinity) {
+		case corev1.ServiceAffinityNone:
+			service.Spec.SessionAffinity = corev1.ServiceAffinityNone
+		case corev1.ServiceAffinityClientIP:
+			service.Spec.SessionAffinity = corev1.ServiceAffinityClientIP
 		default:
 			return nil, fmt.Errorf("unknown session affinity: %s", serviceConfig.SessionAffinity)
 		}
@@ -211,7 +212,7 @@ func generateService(serviceConfig serviceConfig) (*v1.Service, error) {
 	// Setup cluster IP
 	if len(serviceConfig.ClusterIP) != 0 {
 		if serviceConfig.ClusterIP == "None" {
-			service.Spec.ClusterIP = v1.ClusterIPNone
+			service.Spec.ClusterIP = corev1.ClusterIPNone
 		} else {
 			service.Spec.ClusterIP = serviceConfig.ClusterIP
 		}
@@ -342,7 +343,6 @@ func mapBasedSelectorForObject(object runtime.Object) (map[string]string, error)
 	default:
 		return map[string]string{}, fmt.Errorf("cannot extract pod selector from %T", object)
 	}
-
 }
 
 func protocolsForObject(object runtime.Object) (map[string]string, error) {

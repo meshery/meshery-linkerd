@@ -23,7 +23,7 @@ type Traverser struct {
 }
 
 // Visit function traverses each of the resource mentioned in the Traverser struct
-func (traverser *Traverser) Visit(f func(runtime.Object, string, error) error, continueOnError bool) error {
+func (traverser *Traverser) Visit(f func(runtime.Object, error) error, continueOnError bool) error {
 	var errs []error
 	for _, res := range traverser.Resources {
 		md := strings.Split(res, " ")
@@ -50,7 +50,7 @@ func (traverser *Traverser) Visit(f func(runtime.Object, string, error) error, c
 			// Please do no remove
 			svc.Kind = "Service"
 			svc.APIVersion = "v1"
-			if err := f(svc, svc.Name, err); err != nil {
+			if err := f(svc, err); err != nil {
 				traverser.Logger.Error(err)
 				errs = append(errs, err)
 				if !continueOnError {
@@ -71,7 +71,7 @@ func (traverser *Traverser) Visit(f func(runtime.Object, string, error) error, c
 			// Please do no remove
 			dep.Kind = "Deployment"
 			dep.APIVersion = "apps/v1"
-			if err := f(dep, dep.Name, err); err != nil {
+			if err := f(dep, err); err != nil {
 				traverser.Logger.Error(err)
 				errs = append(errs, err)
 				if !continueOnError {
@@ -86,14 +86,14 @@ func (traverser *Traverser) Visit(f func(runtime.Object, string, error) error, c
 
 	err := combineErrors(errs, "\n")
 	if err != nil {
-		ErrTraverser(err)
+		return ErrTraverser(err)
 	}
 
 	return nil
 }
 
 // combineErrors merges a slice of error
-// into one error seperated by the given seperator
+// into one error separated by the given separator
 func combineErrors(errs []error, sep string) error {
 	if len(errs) == 0 {
 		return nil
