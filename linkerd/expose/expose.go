@@ -29,7 +29,7 @@ type Config struct {
 	LoadBalancerIP string
 	ClusterIP      string
 	TargetPort     string
-	// Namespace will get overriden as
+	// Namespace will get overridden as
 	// per the namespace of the resource
 	Namespace       string
 	SessionAffinity string
