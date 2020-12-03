@@ -22,5 +22,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		AdditionalProperties: map[string]string{},
 	}
 
+	dev[AnnotateNamespace] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Annotate Namespace",
+	}
+
 	return dev
 }

@@ -97,8 +97,21 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("custom operation %s successfully", stat)
-			ee.Details = fmt.Sprintf("Custom operation %s successfully", stat)
+			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
+			ee.Details = ""
+			hh.StreamInfo(e)
+		}(linkerd, e)
+	case internalconfig.AnnotateNamespace:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while annotating %s", opReq.Namespace)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = "Annotation successful"
+			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
 	case "expose-prometheus":
@@ -115,6 +128,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(linkerd, e)
 	default:
+		e.Summary = "Invalid Request"
 		linkerd.StreamErr(e, ErrOpInvalid)
 	}
 
