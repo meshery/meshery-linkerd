@@ -9,6 +9,7 @@ import (
 	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-linkerd/internal/config"
+	"github.com/layer5io/meshery-linkerd/linkerd/expose"
 	"github.com/layer5io/meshkit/logger"
 )
 
@@ -98,6 +99,24 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			}
 			ee.Summary = fmt.Sprintf("custom operation %s successfully", stat)
 			ee.Details = fmt.Sprintf("Custom operation %s successfully", stat)
+			hh.StreamInfo(e)
+		}(linkerd, e)
+	case "expose-prometheus":
+		go func(hh *Linkerd, ee *adapter.Event) {
+			err := expose.Expose(hh.KubeClient, hh.RestConfig, expose.Config{
+				Name:      "linkerd-prometheus-meshery",
+				Namespace: "linkerd",
+				Type:      "NodePort",
+				Logger:    hh.Log,
+			}, []string{"linkerd deployment linkerd-prometheus"})
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while exposing prometheus")
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Successfully exposed prometheus deployment")
+			ee.Details = fmt.Sprintf("Successfully exposed prometheus service")
 			hh.StreamInfo(e)
 		}(linkerd, e)
 	default:
