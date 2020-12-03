@@ -19,7 +19,6 @@ import (
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	restClient "k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 )
 
@@ -452,18 +451,6 @@ func getServicePorts(spec corev1.ServiceSpec) []string {
 		result = append(result, strconv.Itoa(int(servicePort.Port)))
 	}
 	return result
-}
-
-func clientForMapping(restConfig rest.Config, gv schema.GroupVersion) (resource.RESTClient, error) {
-	restConfig.ContentConfig = resource.UnstructuredPlusDefaultContentConfig()
-	restConfig.GroupVersion = &gv
-	if len(gv.Group) == 0 {
-		restConfig.APIPath = "/api"
-	} else {
-		restConfig.APIPath = "/apis"
-	}
-
-	return restClient.RESTClientFor(&restConfig)
 }
 
 func constructObject(kubeClientset kubernetes.Interface, restConfig rest.Config, obj runtime.Object) (*resource.Helper, error) {
