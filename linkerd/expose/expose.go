@@ -23,7 +23,7 @@ import (
 	"k8s.io/client-go/restmapper"
 )
 
-// Config is a struct
+// Config is a the struct for Expose configuration
 type Config struct {
 	Port            string
 	Type            string

@@ -103,12 +103,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(linkerd, e)
 	case "expose-prometheus":
 		go func(hh *Linkerd, ee *adapter.Event) {
-			err := expose.Expose(hh.KubeClient, hh.RestConfig, expose.Config{
-				Name:      "linkerd-prometheus-meshery",
-				Namespace: "linkerd",
-				Type:      "NodePort",
-				Logger:    hh.Log,
-			}, []string{"linkerd deployment linkerd-prometheus"})
+			err := expose.Prometheus(hh.KubeClient, hh.RestConfig, hh.Log)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while exposing prometheus")
 				e.Details = err.Error()
