@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/layer5io/meshkit/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -19,11 +20,11 @@ type Traverser struct {
 
 	Client *kubernetes.Clientset
 
-	Logger
+	Logger logger.Handler
 }
 
 // Visit function traverses each of the resource mentioned in the Traverser struct
-func (traverser *Traverser) Visit(f func(runtime.Object, error) error, continueOnError bool) error {
+func (traverser *Traverser) Visit(f func(runtime.Object, string, error) error, continueOnError bool) error {
 	var errs []error
 	for _, res := range traverser.Resources {
 		md := strings.Split(res, " ")
@@ -50,7 +51,7 @@ func (traverser *Traverser) Visit(f func(runtime.Object, error) error, continueO
 			// Please do no remove
 			svc.Kind = "Service"
 			svc.APIVersion = "v1"
-			if err := f(svc, err); err != nil {
+			if err := f(svc, ns, err); err != nil {
 				traverser.Logger.Error(err)
 				errs = append(errs, err)
 				if !continueOnError {
@@ -71,7 +72,7 @@ func (traverser *Traverser) Visit(f func(runtime.Object, error) error, continueO
 			// Please do no remove
 			dep.Kind = "Deployment"
 			dep.APIVersion = "apps/v1"
-			if err := f(dep, err); err != nil {
+			if err := f(dep, ns, err); err != nil {
 				traverser.Logger.Error(err)
 				errs = append(errs, err)
 				if !continueOnError {

@@ -116,7 +116,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(linkerd, e)
 	case internalconfig.ExposePrometheus:
 		go func(hh *Linkerd, ee *adapter.Event) {
-			err := expose.Prometheus(hh.KubeClient, hh.RestConfig, hh.Log)
+			err := expose.Prometheus(hh.KubeClient, hh.RestConfig, hh.Log, opReq.IsDeleteOperation)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while exposing prometheus")
 				e.Details = err.Error()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/layer5io/meshkit/logger"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
@@ -23,15 +24,17 @@ import (
 
 // Config is a the struct for Expose configuration
 type Config struct {
-	Port            string
-	Type            string
-	LoadBalancerIP  string
-	ClusterIP       string
-	TargetPort      string
+	Port           string
+	Type           string
+	LoadBalancerIP string
+	ClusterIP      string
+	TargetPort     string
+	// Namespace will get overriden as
+	// per the namespace of the resource
 	Namespace       string
 	SessionAffinity string
 	Name            string
-	Logger
+	Logger          logger.Handler
 }
 
 type serviceConfig struct {
@@ -40,18 +43,6 @@ type serviceConfig struct {
 	protocolsMap map[string]string
 	portsSlice   []string
 	Config
-}
-
-// Logger is the interface which replicates
-// the struct logger.Handler in the meshkit package
-//
-// Sole reason for it's existence is to avoid
-// circular dependency
-type Logger interface {
-	Info(description ...string)
-	Error(err error)
-	Debug(description ...string)
-	Warn(err error)
 }
 
 // Expose exposes the given kubernetes resource
@@ -64,7 +55,11 @@ func Expose(clientSet *kubernetes.Clientset, restConfig rest.Config, ec Config, 
 		Resources: resources,
 		Logger:    ec.Logger,
 	}
-	err := tr.Visit(func(info runtime.Object, err error) error {
+	err := tr.Visit(func(info runtime.Object, ns string, err error) error {
+		// Override the namespace
+		// as per the namespace
+		// of the resource
+		ec.Namespace = ns
 		if err != nil {
 			return nil
 		}
