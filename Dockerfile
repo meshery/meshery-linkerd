@@ -1,22 +1,17 @@
-FROM golang:1.13 as bd
+FROM golang:1.13 as build-env
 WORKDIR /github.com/layer5io/meshery-linkerd
-ADD . .
-RUN GOPROXY=direct GOSUMDB=off go build -ldflags="-w -s" -a -o /meshery-linkerd .
-RUN find . -name "*.go" -type f -delete; mv linkerd /
+COPY go.mod go.sum ./
+RUN go mod download
 
-FROM alpine
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN apk --update add ca-certificates curl && \
-    mkdir /lib64 && \
-    ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-# Install kubectl
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl" && \
-	chmod +x ./kubectl && \
-	mv ./kubectl /usr/local/bin/kubectl
+COPY main.go main.go
+COPY internal/ internal/
+COPY linkerd/ linkerd/
 
-USER appuser
-RUN mkdir -p /home/appuser/.kube
-WORKDIR /home/appuser
-COPY --from=bd /meshery-linkerd /home/appuser
-COPY --from=bd /linkerd /home/appuser/linkerd
-CMD ./meshery-linkerd
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s" -a -o meshery-linkerd main.go
+
+FROM gcr.io/distroless/base
+ENV DISTRO="debian"
+ENV GOARCH="amd64"
+WORKDIR /
+COPY --from=build-env /github.com/layer5io/meshery-linkerd/meshery-linkerd .
+ENTRYPOINT ["/meshery-linkerd"]
