@@ -10,5 +10,5 @@ require (
 	github.com/layer5io/meshkit v0.1.31
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	google.golang.org/grpc v1.33.1 // indirect
-	k8s.io/apimachinery v0.18.12
+	k8s.io/apimachinery v0.20.1
 )
