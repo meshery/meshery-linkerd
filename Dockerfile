@@ -12,6 +12,6 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -
 FROM gcr.io/distroless/base:nonroot-amd64
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
-WORKDIR /
+WORKDIR /$HOME/.meshery
 COPY --from=build-env /github.com/layer5io/meshery-linkerd/meshery-linkerd .
-ENTRYPOINT ["/meshery-linkerd"]
+ENTRYPOINT ["./meshery-linkerd"]
