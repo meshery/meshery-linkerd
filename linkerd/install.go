@@ -85,7 +85,7 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 }
 
 func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
-	kclient, err := mesherykube.New(linkerd.KubeClient, linkerd.RestConfig)
+	kclient, err := mesherykube.New(contents)
 	if err != nil {
 		return err
 	}
