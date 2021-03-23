@@ -79,12 +79,14 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		go func(hh *Linkerd, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
 			_, err := hh.RunSMITest(adapter.SMITestOptions{
-				Ctx:  context.TODO(),
+				Ctx:         context.TODO(),
 				OperationID: ee.Operationid,
 				Namespace:   "meshery",
 				Manifest:    SMIManifest,
 				Labels:      make(map[string]string),
-				Annotations:  make(map[string]string),
+				Annotations: map[string]string{
+					"linkerd.io/inject": "enabled",
+				},
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
