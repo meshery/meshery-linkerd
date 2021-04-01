@@ -1,4 +1,5 @@
 GOPATH = $(shell go env GOPATH)
+GOLANGCILINT=$(GOPATH)/bin/golangci-lint
 
 check:
 	golangci-lint run
@@ -38,11 +39,7 @@ tidy:
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCILINT)
 	@echo
-	$(GOPATH)/bin/golangci-lint run
+	$(GOLANGCILINT) run
 
 $(GOLANGCILINT):
-	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
-
-# If your internet was blocked by sth, you can use this proxy
-#$(GOLANGCILINT):
-#	(cd /; GO111MODULE=on GOPROXY="https://goproxy.cn,direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
+	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.39.0)

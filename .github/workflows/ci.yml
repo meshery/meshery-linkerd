@@ -8,20 +8,26 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
+     inputs:
+       logLevel:
+         description: 'Log level'
+         required: true
+         default: 'warning'
 jobs:
-  lint:
-    name: Check & Review code
+  golangci:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
         with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./linkerd/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.29
   error_check:
     name: Error check
     runs-on: ubuntu-latest
@@ -76,7 +82,7 @@ jobs:
         with:
           args: ./... -exclude=G301,G304,G107,G101,G110
   tests:
-    #  needs: [lint, error_check, static_check, vet, sec_check]
+    #  needs: [error_check, static_check, vet, sec_check]
      name: Tests
      runs-on: ubuntu-latest
      env:

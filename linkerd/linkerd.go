@@ -1,3 +1,4 @@
+// Package linkerd provides custom operation ability for deploying Linkerd2
 package linkerd
 
 import (
@@ -17,6 +18,7 @@ const (
 	SMIManifest = "https://raw.githubusercontent.com/layer5io/learn-layer5/master/smi-conformance/manifest.yml"
 )
 
+// Linkerd struct is overwrite the adpter template of meshery-adapter-library
 type Linkerd struct {
 	adapter.Adapter // Type Embedded
 }
@@ -34,7 +36,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 
 // ApplyOperation applies the operation on linkerd
 func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
-	operations := make(adapter.Operations, 0)
+	operations := make(adapter.Operations)
 	err := linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err

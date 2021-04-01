@@ -1,3 +1,4 @@
+// Package linkerd provides custom operation ability for deploying Linkerd2
 package linkerd
 
 import (
@@ -85,7 +86,6 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 }
 
 func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
-
 	err := linkerd.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{Namespace: namespace, Delete: isDel})
 	if err != nil {
 		return err

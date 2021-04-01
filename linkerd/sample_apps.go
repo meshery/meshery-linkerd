@@ -1,3 +1,4 @@
+// Package linkerd provides custom operation ability for deploying Linkerd2
 package linkerd
 
 import (
@@ -36,6 +37,7 @@ func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates [
 	return status.Installed, nil
 }
 
+// LoadToMesh is used to add or remove annotation of Linkerd2 injection
 func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool) error {
 	deploy, err := linkerd.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
 	if err != nil {
@@ -59,6 +61,7 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 	return nil
 }
 
+// LoadNamespaceToMesh is used to enabled the namespace injection of Linkerd2
 // AddAnnotation is used to mark namespaces for automatic sidecar injection (or not)
 func (linkerd *Linkerd) LoadNamespaceToMesh(namespace string, remove bool) error {
 	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})

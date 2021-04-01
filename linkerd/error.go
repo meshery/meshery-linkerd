@@ -1,3 +1,4 @@
+// Package linkerd provides custom operation ability for deploying Linkerd2
 package linkerd
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/layer5io/meshkit/errors"
 )
 
+//
 var (
 	ErrInstallLinkerdCode  = "linkerd_test_code"
 	ErrMeshConfigCode      = "linkerd_test_code"
@@ -21,7 +23,7 @@ var (
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
-// ErrInstallMesh is the error for install mesh
+// ErrInstallLinkerd is the error for install mesh
 func ErrInstallLinkerd(err error) error {
 	return errors.NewDefault(ErrInstallLinkerdCode, fmt.Sprintf("Error with linkerd operation: %s", err.Error()))
 }

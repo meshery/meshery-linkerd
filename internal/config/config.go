@@ -40,7 +40,7 @@ var (
 		"status":   status.None,
 		"traceurl": status.None,
 		"version":  status.None,
-		"type": smp.ServiceMesh_LINKERD.Enum().String(),
+		"type":     smp.ServiceMesh_LINKERD.Enum().String(),
 	}
 
 	ProviderConfig = map[string]string{
