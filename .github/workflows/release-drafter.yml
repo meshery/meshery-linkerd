@@ -10,7 +10,6 @@ jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ::set-env name=REPO_NAME::${{ github.repository.name }}
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - uses: release-drafter/release-drafter@v5
         with:
