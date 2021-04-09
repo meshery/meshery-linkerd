@@ -1,3 +1,4 @@
+// Package for lifecycle management of Linkerd
 package linkerd
 
 import (
