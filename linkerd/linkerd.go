@@ -12,6 +12,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+// Linkerd is the handler for the adapter
 type Linkerd struct {
 	adapter.Adapter // Type Embedded
 }

@@ -82,7 +82,6 @@ func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bo
 }
 
 func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
-
 	err := linkerd.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
 		Namespace: namespace,
 		Update:    true,
