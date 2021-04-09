@@ -3,12 +3,9 @@ package linkerd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
-	"github.com/layer5io/meshkit/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,12 +19,7 @@ func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates [
 	}
 
 	for _, template := range templates {
-		contents, err := readFileSource(string(template))
-		if err != nil {
-			return st, ErrSampleApp(err)
-		}
-
-		err = linkerd.applyManifest([]byte(contents), del, namespace)
+		err := linkerd.applyManifest([]byte(template.String()), del, namespace)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}
@@ -80,38 +72,4 @@ func (linkerd *Linkerd) LoadNamespaceToMesh(namespace string, remove bool) error
 		return err
 	}
 	return nil
-}
-
-// readFileSource supports "http", "https" and "file" protocols.
-// it takes in the location as a uri and returns the contents of
-// file as a string.
-//
-// TODO: May move this function to meshkit
-func readFileSource(uri string) (string, error) {
-	if strings.HasPrefix(uri, "http") {
-		return utils.ReadRemoteFile(uri)
-	}
-	if strings.HasPrefix(uri, "file") {
-		return readLocalFile(uri)
-	}
-
-	return "", fmt.Errorf("invalid protocol: only http, https and file are valid protocols")
-}
-
-// readLocalFile takes in the location of a local file
-// in the format `file://location/of/file` and returns
-// the content of the file if the path is valid and no
-// error occurs
-func readLocalFile(location string) (string, error) {
-	// remove the protocol prefix
-	location = strings.TrimPrefix(location, "file://")
-
-	// Need to support variable file locations hence
-	// #nosec
-	data, err := ioutil.ReadFile(location)
-	if err != nil {
-		return "", err
-	}
-
-	return string(data), nil
 }

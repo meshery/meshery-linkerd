@@ -30,17 +30,16 @@ var (
 	}
 
 	ServerConfig = map[string]string{
-		"name":    "linkerd-adapter",
-		"port":    "10001",
-		"version": "v1.0.0",
+		"name":     smp.ServiceMesh_LINKERD.Enum().String(),
+		"port":     "10001",
+		"type":     "adapter",
+		"traceurl": status.None,
 	}
 
 	MeshSpec = map[string]string{
-		"name":     "linkerd",
-		"status":   status.None,
-		"traceurl": status.None,
-		"version":  status.None,
-		"type": smp.ServiceMesh_LINKERD.Enum().String(),
+		"name":    smp.ServiceMesh_LINKERD.Enum().String(),
+		"status":  status.NotInstalled,
+		"version": status.None,
 	}
 
 	ProviderConfig = map[string]string{
