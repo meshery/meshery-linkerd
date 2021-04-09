@@ -1,3 +1,4 @@
+// Package linkerd - Error codes for the adapter
 package linkerd
 
 import (
