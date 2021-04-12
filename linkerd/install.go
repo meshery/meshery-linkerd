@@ -1,3 +1,4 @@
+// Package linkerd - for lifecycle management of Linkerd
 package linkerd
 
 import (
@@ -24,9 +25,6 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 	// Overiding the namespace to be empty
 	// This is intentional as deploying linkerd on custom namespace
 	// is a bit tricky
-	namespace = ""
-	linkerd.Log.Debug(fmt.Sprintf("Overidden namespace: %s", namespace))
-
 	st := status.Installing
 
 	if del {
@@ -38,7 +36,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 		return st, ErrMeshConfig(err)
 	}
 
-	manifest, err := linkerd.fetchManifest(version, del)
+	manifest, err := linkerd.fetchManifest(version, namespace, del)
 	if err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
 		return st, ErrInstallLinkerd(err)
@@ -56,7 +54,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error) {
+func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bool) (string, error) {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
@@ -66,9 +64,9 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 	if err != nil {
 		return "", ErrFetchManifest(err, err.Error())
 	}
-	execCmd := []string{"install"}
+	execCmd := []string{"install", "--ignore-cluster", "--linkerd-namespace", namespace}
 	if isDel {
-		execCmd = []string{"uninstall"}
+		execCmd = []string{"uninstall", "--linkerd-namespace", namespace}
 	}
 
 	// We need a variable executable here hence using nosec
@@ -85,8 +83,11 @@ func (linkerd *Linkerd) fetchManifest(version string, isDel bool) (string, error
 }
 
 func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
-
-	err := linkerd.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{Namespace: namespace, Delete: isDel})
+	err := linkerd.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+		Namespace: namespace,
+		Update:    true,
+		Delete:    isDel,
+	})
 	if err != nil {
 		return err
 	}

@@ -1,3 +1,4 @@
+// Package linkerd - Error codes for the adapter
 package linkerd
 
 import (
@@ -7,21 +8,32 @@ import (
 )
 
 var (
-	ErrInstallLinkerdCode  = "linkerd_test_code"
-	ErrMeshConfigCode      = "linkerd_test_code"
-	ErrFetchManifestCode   = "linkerd_test_code"
-	ErrDownloadBinaryCode  = "linkerd_test_code"
-	ErrInstallBinaryCode   = "linkerd_test_code"
-	ErrClientConfigCode    = "linkerd_test_code"
-	ErrClientSetCode       = "linkerd_test_code"
-	ErrStreamEventCode     = "linkerd_test_code"
-	ErrSampleAppCode       = "linkerd_test_code"
+	// ErrInstallLinkerdCode is the error code for ErrInstallLinkerd
+	ErrInstallLinkerdCode = "linkerd_test_code"
+	// ErrMeshConfigCode is the error code for ErrMeshConfig
+	ErrMeshConfigCode = "linkerd_test_code"
+	// ErrFetchManifestCode is the error code for ErrFetchManifest
+	ErrFetchManifestCode = "linkerd_test_code"
+	// ErrDownloadBinaryCode is the error code for ErrDownloadBinary
+	ErrDownloadBinaryCode = "linkerd_test_code"
+	// ErrInstallBinaryCode is the error code for ErrInstallBinary
+	ErrInstallBinaryCode = "linkerd_test_code"
+	// ErrClientConfigCode is the error code for ErrClientConfig
+	ErrClientConfigCode = "linkerd_test_code"
+	// ErrClientSetCode is the error code for ErrClientSet
+	ErrClientSetCode = "linkerd_test_code"
+	// ErrStreamEventCode is the error code for ErrStreamEvent
+	ErrStreamEventCode = "linkerd_test_code"
+	// ErrSampleAppCode is the error code for ErrSampleApp
+	ErrSampleAppCode = "linkerd_test_code"
+	// ErrCustomOperationCode is the error code for ErrCustomOperation
 	ErrCustomOperationCode = "linkerd_test_code"
 
+	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
-// ErrInstallMesh is the error for install mesh
+// ErrInstallLinkerd is the error for install mesh
 func ErrInstallLinkerd(err error) error {
 	return errors.NewDefault(ErrInstallLinkerdCode, fmt.Sprintf("Error with linkerd operation: %s", err.Error()))
 }

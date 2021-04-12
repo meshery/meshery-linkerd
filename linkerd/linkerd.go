@@ -12,11 +12,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
-const (
-	// SMIManifest is the manifest.yaml file for smi conformance tool
-	SMIManifest = "https://raw.githubusercontent.com/layer5io/learn-layer5/master/smi-conformance/manifest.yml"
-)
-
+// Linkerd is the handler for the adapter
 type Linkerd struct {
 	adapter.Adapter // Type Embedded
 }
@@ -34,7 +30,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 
 // ApplyOperation applies the operation on linkerd
 func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
-	operations := make(adapter.Operations, 0)
+	operations := make(adapter.Operations)
 	err := linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
@@ -82,7 +78,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				Ctx:         context.TODO(),
 				OperationID: ee.Operationid,
 				Namespace:   "meshery",
-				Manifest:    SMIManifest,
+				Manifest:    string(operations[opReq.OperationName].Templates[0]),
 				Labels:      make(map[string]string),
 				Annotations: map[string]string{
 					"linkerd.io/inject": "enabled",
@@ -94,6 +90,9 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				hh.StreamErr(e, err)
 				return
 			}
+			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
+			ee.Details = ""
+			hh.StreamInfo(e)
 		}(linkerd, e)
 	case common.CustomOperation:
 		go func(hh *Linkerd, ee *adapter.Event) {
