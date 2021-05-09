@@ -1,10 +1,10 @@
-name: Meshery-Linkerd Build and Releaser
+name: Meshery Linkerd Build and Releaser
 on:
+  release:
+    types: [published]
   push:
     branches:
-      - 'master'
-    tags:
-      - 'v*'
+      - "master"
 
 jobs:
   build:
