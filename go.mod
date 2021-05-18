@@ -7,7 +7,7 @@ replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200
 require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/layer5io/meshery-adapter-library v0.1.17
-	github.com/layer5io/meshkit v0.2.8
+	github.com/layer5io/meshkit v0.2.10
 	github.com/layer5io/service-mesh-performance v0.3.3
 	k8s.io/apimachinery v0.18.12
 )
