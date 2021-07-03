@@ -7,28 +7,30 @@ import (
 
 var (
 	// ErrInstallLinkerdCode is the error code for ErrInstallLinkerd
-	ErrInstallLinkerdCode = "linkerd_test_code"
+	ErrInstallLinkerdCode = "1002"
 	// ErrMeshConfigCode is the error code for ErrMeshConfig
-	ErrMeshConfigCode = "linkerd_test_code"
+	ErrMeshConfigCode = "1003"
 	// ErrFetchManifestCode is the error code for ErrFetchManifest
-	ErrFetchManifestCode = "linkerd_test_code"
+	ErrFetchManifestCode = "1004"
 	// ErrDownloadBinaryCode is the error code for ErrDownloadBinary
-	ErrDownloadBinaryCode = "linkerd_test_code"
+	ErrDownloadBinaryCode = "1005"
 	// ErrInstallBinaryCode is the error code for ErrInstallBinary
-	ErrInstallBinaryCode = "linkerd_test_code"
+	ErrInstallBinaryCode = "1006"
 	// ErrClientConfigCode is the error code for ErrClientConfig
-	ErrClientConfigCode = "linkerd_test_code"
+	ErrClientConfigCode = "1007"
 	// ErrClientSetCode is the error code for ErrClientSet
-	ErrClientSetCode = "linkerd_test_code"
+	ErrClientSetCode = "1008"
 	// ErrStreamEventCode is the error code for ErrStreamEvent
-	ErrStreamEventCode = "linkerd_test_code"
+	ErrStreamEventCode = "1009"
 	// ErrSampleAppCode is the error code for ErrSampleApp
-	ErrSampleAppCode = "linkerd_test_code"
+	ErrSampleAppCode = "1010"
 	// ErrCustomOperationCode is the error code for ErrCustomOperation
-	ErrCustomOperationCode = "linkerd_test_code"
+	ErrCustomOperationCode = "1011"
+	// ErrOpInvalidCode is the error code for ErrOpInvalid
+	ErrOpInvalidCode = "1012"
 
 	// ErrOpInvalid is the error for invalid operation
-	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
+	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid Operation"}, []string{}, []string{}, []string{})
 )
 
 // ErrInstallLinkerd is the error for install mesh

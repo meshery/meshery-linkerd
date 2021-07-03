@@ -1,6 +1,6 @@
 GOPATH = $(shell go env GOPATH)
 
-check:
+check: error
 	golangci-lint run
 
 check-clean-cache:
@@ -25,6 +25,10 @@ docker-run:
 
 run:
 	DEBUG=true go run main.go
+
+.PHONY: error
+error:
+	go run github.com/layer5io/meshkit/cmd/errorutil -d . update
 
 .PHONY: local-check
 local-check: tidy

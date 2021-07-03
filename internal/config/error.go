@@ -20,8 +20,8 @@ import (
 
 const (
 	ErrEmptyConfigCode           = "11300"
-	ErrGetLatestReleasesCode     = "linkerd_test_code"
-	ErrGetLatestReleaseNamesCode = "linkerd_test_code"
+	ErrGetLatestReleasesCode     = "1000"
+	ErrGetLatestReleaseNamesCode = "1001"
 )
 
 var (

@@ -1,0 +1,132 @@
+{
+  "component_name": "linkerd",
+  "component_type": "adapter",
+  "errors": {
+    "1000": {
+      "name": "ErrGetLatestReleasesCode",
+      "code": "1000",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "unable to fetch release info: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1001": {
+      "name": "ErrGetLatestReleaseNamesCode",
+      "code": "1001",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "failed to extract release names: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1002": {
+      "name": "ErrInstallLinkerdCode",
+      "code": "1002",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error with linkerd operation: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1003": {
+      "name": "ErrMeshConfigCode",
+      "code": "1003",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error configuration mesh: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1004": {
+      "name": "ErrFetchManifestCode",
+      "code": "1004",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error fetching mesh manifest: %s",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1005": {
+      "name": "ErrDownloadBinaryCode",
+      "code": "1005",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error downloading linkerd binary: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1006": {
+      "name": "ErrInstallBinaryCode",
+      "code": "1006",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error installing linkerd binary: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1007": {
+      "name": "ErrClientConfigCode",
+      "code": "1007",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error setting client config: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1008": {
+      "name": "ErrClientSetCode",
+      "code": "1008",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error setting clientset: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1009": {
+      "name": "ErrStreamEventCode",
+      "code": "1009",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error streaming event: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1010": {
+      "name": "ErrSampleAppCode",
+      "code": "1010",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error with sample app operation: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1011": {
+      "name": "ErrCustomOperationCode",
+      "code": "1011",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Error with custom operation: ",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "1012": {
+      "name": "ErrOpInvalidCode",
+      "code": "1012",
+      "severity": "Alert",
+      "long_description": "",
+      "short_description": "Invalid Operation",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    },
+    "11300": {
+      "name": "ErrEmptyConfigCode",
+      "code": "11300",
+      "severity": "",
+      "long_description": "",
+      "short_description": "",
+      "probable_cause": "",
+      "suggested_remediation": ""
+    }
+  }
+}
