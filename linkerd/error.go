@@ -2,8 +2,6 @@
 package linkerd
 
 import (
-	"fmt"
-
 	"github.com/layer5io/meshkit/errors"
 )
 
@@ -35,50 +33,50 @@ var (
 
 // ErrInstallLinkerd is the error for install mesh
 func ErrInstallLinkerd(err error) error {
-	return errors.NewDefault(ErrInstallLinkerdCode, fmt.Sprintf("Error with linkerd operation: %s", err.Error()))
+	return errors.New(ErrInstallLinkerdCode, errors.Alert, []string{"Error with linkerd operation: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrMeshConfig is the error for mesh config
 func ErrMeshConfig(err error) error {
-	return errors.NewDefault(ErrMeshConfigCode, fmt.Sprintf("Error configuration mesh: %s", err.Error()))
+	return errors.New(ErrMeshConfigCode, errors.Alert, []string{"Error configuration mesh: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrFetchManifest is the error for mesh port forward
 func ErrFetchManifest(err error, des string) error {
-	return errors.NewDefault(ErrFetchManifestCode, fmt.Sprintf("Error fetching mesh manifest: %s", des))
+	return errors.New(ErrFetchManifestCode, errors.Alert, []string{"Error fetching mesh manifest: %s", des}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrDownloadBinary is the error while downloading linkerd binary
 func ErrDownloadBinary(err error) error {
-	return errors.NewDefault(ErrDownloadBinaryCode, fmt.Sprintf("Error downloading linkerd binary: %s", err.Error()))
+	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrInstallBinary is the error while downloading linkerd binary
 func ErrInstallBinary(err error) error {
-	return errors.NewDefault(ErrInstallBinaryCode, fmt.Sprintf("Error installing linkerd binary: %s", err.Error()))
+	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrClientConfig is the error for setting client config
 func ErrClientConfig(err error) error {
-	return errors.NewDefault(ErrClientConfigCode, fmt.Sprintf("Error setting client config: %s", err.Error()))
+	return errors.New(ErrClientConfigCode, errors.Alert, []string{"Error setting client config: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrClientSet is the error for setting clientset
 func ErrClientSet(err error) error {
-	return errors.NewDefault(ErrClientSetCode, fmt.Sprintf("Error setting clientset: %s", err.Error()))
+	return errors.New(ErrClientSetCode, errors.Alert, []string{"Error setting clientset: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrStreamEvent is the error for streaming event
 func ErrStreamEvent(err error) error {
-	return errors.NewDefault(ErrStreamEventCode, fmt.Sprintf("Error streaming event: %s", err.Error()))
+	return errors.New(ErrStreamEventCode, errors.Alert, []string{"Error streaming event: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
-	return errors.NewDefault(ErrSampleAppCode, fmt.Sprintf("Error with sample app operation: %s", err.Error()))
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.NewDefault(ErrCustomOperationCode, fmt.Sprintf("Error with custom operation: %s", err.Error()))
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation: ", err.Error()}, []string{}, []string{}, []string{})
 }

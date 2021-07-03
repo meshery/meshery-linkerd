@@ -15,8 +15,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/layer5io/meshkit/errors"
 )
 
@@ -32,10 +30,10 @@ var (
 
 // ErrGetLatestReleases is the error for fetching linkerd releases
 func ErrGetLatestReleases(err error) error {
-	return errors.NewDefault(ErrGetLatestReleasesCode, fmt.Sprintf("unable to fetch release info: %s", err.Error()))
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrGetLatestReleaseNames is the error for fetching linkerd releases
 func ErrGetLatestReleaseNames(err error) error {
-	return errors.NewDefault(ErrGetLatestReleaseNamesCode, fmt.Sprintf("failed to extract release names: %s", err.Error()))
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names: ", err.Error()}, []string{}, []string{}, []string{})
 }
