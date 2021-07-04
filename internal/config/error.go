@@ -19,13 +19,13 @@ import (
 )
 
 const (
-	ErrEmptyConfigCode           = "11300"
-	ErrGetLatestReleasesCode     = "1000"
-	ErrGetLatestReleaseNamesCode = "1001"
+	ErrEmptyConfigCode           = "1000"
+	ErrGetLatestReleasesCode     = "1001"
+	ErrGetLatestReleaseNamesCode = "1002"
 )
 
 var (
-	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
+	ErrEmptyConfig = errors.New(ErrEmptyConfigCode, errors.Alert, []string{"Config is empty"}, []string{}, []string{}, []string{})
 )
 
 // ErrGetLatestReleases is the error for fetching linkerd releases

@@ -30,12 +30,12 @@ var (
 	ErrOpInvalidCode = "1012"
 
 	// ErrOpInvalid is the error for invalid operation
-	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid Operation"}, []string{}, []string{}, []string{})
+	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 )
 
 // ErrInstallLinkerd is the error for install mesh
 func ErrInstallLinkerd(err error) error {
-	return errors.New(ErrInstallLinkerdCode, errors.Alert, []string{"Error with linkerd operation: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrInstallLinkerdCode, errors.Alert, []string{"Error with Linkerd operation: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrMeshConfig is the error for mesh config
@@ -50,12 +50,12 @@ func ErrFetchManifest(err error, des string) error {
 
 // ErrDownloadBinary is the error while downloading linkerd binary
 func ErrDownloadBinary(err error) error {
-	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading Linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrInstallBinary is the error while downloading linkerd binary
 func ErrInstallBinary(err error) error {
-	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing Linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
 }
 
 // ErrClientConfig is the error for setting client config

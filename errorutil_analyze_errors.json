@@ -2,14 +2,6 @@
   "entries": [
     {
       "name": "ErrEmptyConfigCode",
-      "old_code": "11300",
-      "code": "11300",
-      "code_is_literal": true,
-      "code_is_int": true,
-      "path": "internal/config/error.go"
-    },
-    {
-      "name": "ErrGetLatestReleasesCode",
       "old_code": "1000",
       "code": "1000",
       "code_is_literal": true,
@@ -17,9 +9,17 @@
       "path": "internal/config/error.go"
     },
     {
-      "name": "ErrGetLatestReleaseNamesCode",
+      "name": "ErrGetLatestReleasesCode",
       "old_code": "1001",
       "code": "1001",
+      "code_is_literal": true,
+      "code_is_int": true,
+      "path": "internal/config/error.go"
+    },
+    {
+      "name": "ErrGetLatestReleaseNamesCode",
+      "old_code": "1002",
+      "code": "1002",
       "code_is_literal": true,
       "code_is_int": true,
       "path": "internal/config/error.go"
@@ -132,7 +132,7 @@
   "literal_codes": {
     "1000": [
       {
-        "name": "ErrGetLatestReleasesCode",
+        "name": "ErrEmptyConfigCode",
         "old_code": "1000",
         "code": "1000",
         "code_is_literal": true,
@@ -142,7 +142,7 @@
     ],
     "1001": [
       {
-        "name": "ErrGetLatestReleaseNamesCode",
+        "name": "ErrGetLatestReleasesCode",
         "old_code": "1001",
         "code": "1001",
         "code_is_literal": true,
@@ -151,6 +151,14 @@
       }
     ],
     "1002": [
+      {
+        "name": "ErrGetLatestReleaseNamesCode",
+        "old_code": "1002",
+        "code": "1002",
+        "code_is_literal": true,
+        "code_is_int": true,
+        "path": "internal/config/error.go"
+      },
       {
         "name": "ErrInstallLinkerdCode",
         "old_code": "1002",
@@ -259,16 +267,6 @@
         "code_is_int": true,
         "path": "linkerd/error.go"
       }
-    ],
-    "11300": [
-      {
-        "name": "ErrEmptyConfigCode",
-        "old_code": "11300",
-        "code": "11300",
-        "code_is_literal": true,
-        "code_is_int": true,
-        "path": "internal/config/error.go"
-      }
     ]
   },
   "call_expr_codes": [
@@ -289,9 +287,7 @@
       "path": "linkerd/error.go"
     }
   ],
-  "deprecated_new_default": [
-    "internal/config/error.go"
-  ],
+  "deprecated_new_default": null,
   "errors_raw": {
     "ErrClientConfigCode": [
       {
@@ -332,7 +328,18 @@
         "code": "",
         "severity": "Alert",
         "long_description": "",
-        "short_description": "Error downloading linkerd binary: ",
+        "short_description": "Error downloading Linkerd binary: ",
+        "probable_cause": "",
+        "suggested_remediation": ""
+      }
+    ],
+    "ErrEmptyConfigCode": [
+      {
+        "name": "ErrEmptyConfigCode",
+        "code": "",
+        "severity": "Alert",
+        "long_description": "",
+        "short_description": "Config is empty",
         "probable_cause": "",
         "suggested_remediation": ""
       }
@@ -376,7 +383,7 @@
         "code": "",
         "severity": "Alert",
         "long_description": "",
-        "short_description": "Error installing linkerd binary: ",
+        "short_description": "Error installing Linkerd binary: ",
         "probable_cause": "",
         "suggested_remediation": ""
       }
@@ -387,7 +394,7 @@
         "code": "",
         "severity": "Alert",
         "long_description": "",
-        "short_description": "Error with linkerd operation: ",
+        "short_description": "Error with Linkerd operation: ",
         "probable_cause": "",
         "suggested_remediation": ""
       }
@@ -409,7 +416,7 @@
         "code": "",
         "severity": "Alert",
         "long_description": "",
-        "short_description": "Invalid Operation",
+        "short_description": "Invalid operation",
         "probable_cause": "",
         "suggested_remediation": ""
       }

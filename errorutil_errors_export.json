@@ -3,29 +3,20 @@
   "component_type": "adapter",
   "errors": {
     "1000": {
-      "name": "ErrGetLatestReleasesCode",
+      "name": "ErrEmptyConfigCode",
       "code": "1000",
       "severity": "Alert",
       "long_description": "",
-      "short_description": "unable to fetch release info: ",
+      "short_description": "Config is empty",
       "probable_cause": "",
       "suggested_remediation": ""
     },
     "1001": {
-      "name": "ErrGetLatestReleaseNamesCode",
+      "name": "ErrGetLatestReleasesCode",
       "code": "1001",
       "severity": "Alert",
       "long_description": "",
-      "short_description": "failed to extract release names: ",
-      "probable_cause": "",
-      "suggested_remediation": ""
-    },
-    "1002": {
-      "name": "ErrInstallLinkerdCode",
-      "code": "1002",
-      "severity": "Alert",
-      "long_description": "",
-      "short_description": "Error with linkerd operation: ",
+      "short_description": "unable to fetch release info: ",
       "probable_cause": "",
       "suggested_remediation": ""
     },
@@ -52,7 +43,7 @@
       "code": "1005",
       "severity": "Alert",
       "long_description": "",
-      "short_description": "Error downloading linkerd binary: ",
+      "short_description": "Error downloading Linkerd binary: ",
       "probable_cause": "",
       "suggested_remediation": ""
     },
@@ -61,7 +52,7 @@
       "code": "1006",
       "severity": "Alert",
       "long_description": "",
-      "short_description": "Error installing linkerd binary: ",
+      "short_description": "Error installing Linkerd binary: ",
       "probable_cause": "",
       "suggested_remediation": ""
     },
@@ -115,16 +106,7 @@
       "code": "1012",
       "severity": "Alert",
       "long_description": "",
-      "short_description": "Invalid Operation",
-      "probable_cause": "",
-      "suggested_remediation": ""
-    },
-    "11300": {
-      "name": "ErrEmptyConfigCode",
-      "code": "11300",
-      "severity": "",
-      "long_description": "",
-      "short_description": "",
+      "short_description": "Invalid operation",
       "probable_cause": "",
       "suggested_remediation": ""
     }

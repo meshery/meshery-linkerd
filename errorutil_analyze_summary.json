@@ -1,29 +1,31 @@
 {
   "min_code": 1000,
-  "max_code": 11300,
-  "duplicate_codes": {},
+  "max_code": 1012,
+  "duplicate_codes": {
+    "1002": [
+      "ErrGetLatestReleaseNamesCode",
+      "ErrInstallLinkerdCode"
+    ]
+  },
   "duplicate_names": [],
   "call_expr_codes": [
     "ErrEmptyConfig",
     "ErrOpInvalid"
   ],
   "int_codes": [
+    1001,
+    1004,
+    1008,
     1011,
     1012,
-    1000,
-    1001,
-    1002,
-    1006,
-    1007,
-    11300,
-    1003,
     1009,
     1010,
-    1004,
+    1000,
+    1002,
+    1003,
     1005,
-    1008
+    1006,
+    1007
   ],
-  "deprecated_new_default": [
-    "internal/config/error.go"
-  ]
+  "deprecated_new_default": null
 }
