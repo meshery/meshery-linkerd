@@ -1,10 +1,24 @@
 {
-  "min_code": 1000,
-  "max_code": 1012,
+  "min_code": 9223372036854775807,
+  "max_code": -9223372036854775808,
   "duplicate_codes": {
-    "1002": [
-      "ErrGetLatestReleaseNamesCode",
-      "ErrInstallLinkerdCode"
+    "replace": [
+      "ErrEmptyConfigCode",
+      "ErrGetLatestReleasesCode",
+      "ErrGetLatestReleaseNamesCode"
+    ],
+    "replace_me": [
+      "ErrInstallLinkerdCode",
+      "ErrMeshConfigCode",
+      "ErrFetchManifestCode",
+      "ErrDownloadBinaryCode",
+      "ErrInstallBinaryCode",
+      "ErrClientConfigCode",
+      "ErrClientSetCode",
+      "ErrStreamEventCode",
+      "ErrSampleAppCode",
+      "ErrCustomOperationCode",
+      "ErrOpInvalidCode"
     ]
   },
   "duplicate_names": [],
@@ -12,20 +26,6 @@
     "ErrEmptyConfig",
     "ErrOpInvalid"
   ],
-  "int_codes": [
-    1001,
-    1004,
-    1008,
-    1011,
-    1012,
-    1009,
-    1010,
-    1000,
-    1002,
-    1003,
-    1005,
-    1006,
-    1007
-  ],
+  "int_codes": null,
   "deprecated_new_default": null
 }
