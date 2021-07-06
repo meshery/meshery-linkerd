@@ -2,26 +2,26 @@
   "entries": [
     {
       "name": "ErrEmptyConfigCode",
-      "old_code": "replace",
+      "old_code": "1000",
       "code": "1000",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "internal/config/error.go"
     },
     {
       "name": "ErrGetLatestReleasesCode",
-      "old_code": "replace",
+      "old_code": "1001",
       "code": "1001",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "internal/config/error.go"
     },
     {
       "name": "ErrGetLatestReleaseNamesCode",
-      "old_code": "replace",
+      "old_code": "1002",
       "code": "1002",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "internal/config/error.go"
     },
     {
@@ -34,90 +34,90 @@
     },
     {
       "name": "ErrInstallLinkerdCode",
-      "old_code": "replace_me",
+      "old_code": "1003",
       "code": "1003",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrMeshConfigCode",
-      "old_code": "replace_me",
+      "old_code": "1004",
       "code": "1004",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrFetchManifestCode",
-      "old_code": "replace_me",
+      "old_code": "1005",
       "code": "1005",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrDownloadBinaryCode",
-      "old_code": "replace_me",
+      "old_code": "1006",
       "code": "1006",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrInstallBinaryCode",
-      "old_code": "replace_me",
+      "old_code": "1007",
       "code": "1007",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrClientConfigCode",
-      "old_code": "replace_me",
+      "old_code": "1008",
       "code": "1008",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrClientSetCode",
-      "old_code": "replace_me",
+      "old_code": "1009",
       "code": "1009",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrStreamEventCode",
-      "old_code": "replace_me",
+      "old_code": "1010",
       "code": "1010",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrSampleAppCode",
-      "old_code": "replace_me",
+      "old_code": "1011",
       "code": "1011",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrCustomOperationCode",
-      "old_code": "replace_me",
+      "old_code": "1012",
       "code": "1012",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
       "name": "ErrOpInvalidCode",
-      "old_code": "replace_me",
+      "old_code": "1013",
       "code": "1013",
       "code_is_literal": true,
-      "code_is_int": false,
+      "code_is_int": true,
       "path": "linkerd/error.go"
     },
     {
@@ -130,119 +130,143 @@
     }
   ],
   "literal_codes": {
-    "replace": [
+    "1000": [
       {
         "name": "ErrEmptyConfigCode",
-        "old_code": "replace",
+        "old_code": "1000",
         "code": "1000",
         "code_is_literal": true,
-        "code_is_int": false,
-        "path": "internal/config/error.go"
-      },
-      {
-        "name": "ErrGetLatestReleasesCode",
-        "old_code": "replace",
-        "code": "1001",
-        "code_is_literal": true,
-        "code_is_int": false,
-        "path": "internal/config/error.go"
-      },
-      {
-        "name": "ErrGetLatestReleaseNamesCode",
-        "old_code": "replace",
-        "code": "1002",
-        "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "internal/config/error.go"
       }
     ],
-    "replace_me": [
+    "1001": [
+      {
+        "name": "ErrGetLatestReleasesCode",
+        "old_code": "1001",
+        "code": "1001",
+        "code_is_literal": true,
+        "code_is_int": true,
+        "path": "internal/config/error.go"
+      }
+    ],
+    "1002": [
+      {
+        "name": "ErrGetLatestReleaseNamesCode",
+        "old_code": "1002",
+        "code": "1002",
+        "code_is_literal": true,
+        "code_is_int": true,
+        "path": "internal/config/error.go"
+      }
+    ],
+    "1003": [
       {
         "name": "ErrInstallLinkerdCode",
-        "old_code": "replace_me",
+        "old_code": "1003",
         "code": "1003",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1004": [
       {
         "name": "ErrMeshConfigCode",
-        "old_code": "replace_me",
+        "old_code": "1004",
         "code": "1004",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1005": [
       {
         "name": "ErrFetchManifestCode",
-        "old_code": "replace_me",
+        "old_code": "1005",
         "code": "1005",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1006": [
       {
         "name": "ErrDownloadBinaryCode",
-        "old_code": "replace_me",
+        "old_code": "1006",
         "code": "1006",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1007": [
       {
         "name": "ErrInstallBinaryCode",
-        "old_code": "replace_me",
+        "old_code": "1007",
         "code": "1007",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1008": [
       {
         "name": "ErrClientConfigCode",
-        "old_code": "replace_me",
+        "old_code": "1008",
         "code": "1008",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1009": [
       {
         "name": "ErrClientSetCode",
-        "old_code": "replace_me",
+        "old_code": "1009",
         "code": "1009",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1010": [
       {
         "name": "ErrStreamEventCode",
-        "old_code": "replace_me",
+        "old_code": "1010",
         "code": "1010",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1011": [
       {
         "name": "ErrSampleAppCode",
-        "old_code": "replace_me",
+        "old_code": "1011",
         "code": "1011",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1012": [
       {
         "name": "ErrCustomOperationCode",
-        "old_code": "replace_me",
+        "old_code": "1012",
         "code": "1012",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
-      },
+      }
+    ],
+    "1013": [
       {
         "name": "ErrOpInvalidCode",
-        "old_code": "replace_me",
+        "old_code": "1013",
         "code": "1013",
         "code_is_literal": true,
-        "code_is_int": false,
+        "code_is_int": true,
         "path": "linkerd/error.go"
       }
     ]
