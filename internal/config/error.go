@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	ErrEmptyConfigCode           = "1000"
-	ErrGetLatestReleasesCode     = "1001"
-	ErrGetLatestReleaseNamesCode = "1002"
+	ErrEmptyConfigCode           = "replace"
+	ErrGetLatestReleasesCode     = "replace"
+	ErrGetLatestReleaseNamesCode = "replace"
 )
 
 var (
