@@ -7,27 +7,27 @@ import (
 
 var (
 	// ErrInstallLinkerdCode is the error code for ErrInstallLinkerd
-	ErrInstallLinkerdCode = "replace"
+	ErrInstallLinkerdCode = "1003"
 	// ErrMeshConfigCode is the error code for ErrMeshConfig
-	ErrMeshConfigCode = "replace"
+	ErrMeshConfigCode = "1004"
 	// ErrFetchManifestCode is the error code for ErrFetchManifest
-	ErrFetchManifestCode = "replace"
+	ErrFetchManifestCode = "1005"
 	// ErrDownloadBinaryCode is the error code for ErrDownloadBinary
-	ErrDownloadBinaryCode = "replace"
+	ErrDownloadBinaryCode = "1006"
 	// ErrInstallBinaryCode is the error code for ErrInstallBinary
-	ErrInstallBinaryCode = "replace"
+	ErrInstallBinaryCode = "1007"
 	// ErrClientConfigCode is the error code for ErrClientConfig
-	ErrClientConfigCode = "replace"
+	ErrClientConfigCode = "1008"
 	// ErrClientSetCode is the error code for ErrClientSet
-	ErrClientSetCode = "replace"
+	ErrClientSetCode = "1009"
 	// ErrStreamEventCode is the error code for ErrStreamEvent
-	ErrStreamEventCode = "replace"
+	ErrStreamEventCode = "1010"
 	// ErrSampleAppCode is the error code for ErrSampleApp
-	ErrSampleAppCode = "replace"
+	ErrSampleAppCode = "1011"
 	// ErrCustomOperationCode is the error code for ErrCustomOperation
-	ErrCustomOperationCode = "replace"
+	ErrCustomOperationCode = "1012"
 	// ErrOpInvalidCode is the error code for ErrOpInvalid
-	ErrOpInvalidCode = "replace"
+	ErrOpInvalidCode = "1013"
 
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
