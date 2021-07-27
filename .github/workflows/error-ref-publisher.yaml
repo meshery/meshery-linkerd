@@ -2,9 +2,9 @@ name: Meshkit Error Codes Utility Runner
 on:
   push:
     branches:
-      - "master"
+      - 'master'
     paths:
-      - "**.go"
+      - '**.go'
 
 jobs:
   error-ref:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        # token here with write access to linkerd repo
+        # token here with write access to meshery-linkerd repo
         with:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           ref: "master"
@@ -27,7 +27,7 @@ jobs:
         run: |
           go get github.com/layer5io/meshkit/cmd/errorutil
           go run github.com/layer5io/meshkit/cmd/errorutil -d . update --skip-dirs meshery -i ./helpers -o ./helpers
-      # to update errorutil* files in meshkit repo
+      # to update errorutil* files in meshery-linkerd repo
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
