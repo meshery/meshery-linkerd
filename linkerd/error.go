@@ -20,8 +20,6 @@ var (
 	ErrClientConfigCode = "1008"
 	// ErrClientSetCode is the error code for ErrClientSet
 	ErrClientSetCode = "1009"
-	// ErrStreamEventCode is the error code for ErrStreamEvent
-	ErrStreamEventCode = "1010"
 	// ErrSampleAppCode is the error code for ErrSampleApp
 	ErrSampleAppCode = "1011"
 	// ErrCustomOperationCode is the error code for ErrCustomOperation
@@ -35,12 +33,12 @@ var (
 
 // ErrInstallLinkerd is the error for install mesh
 func ErrInstallLinkerd(err error) error {
-	return errors.New(ErrInstallLinkerdCode, errors.Alert, []string{"Error with Linkerd operation: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrInstallLinkerdCode, errors.Alert, []string{"Error with Linkerd operation: "}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrMeshConfig is the error for mesh config
 func ErrMeshConfig(err error) error {
-	return errors.New(ErrMeshConfigCode, errors.Alert, []string{"Error configuration mesh: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrMeshConfigCode, errors.Alert, []string{"Error configuration mesh: "}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrFetchManifest is the error for mesh port forward
@@ -50,35 +48,30 @@ func ErrFetchManifest(err error, des string) error {
 
 // ErrDownloadBinary is the error while downloading linkerd binary
 func ErrDownloadBinary(err error) error {
-	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading Linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading Linkerd binary: "}, []string{err.Error()}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more details"}, []string{})
 }
 
 // ErrInstallBinary is the error while downloading linkerd binary
 func ErrInstallBinary(err error) error {
-	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing Linkerd binary: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing Linkerd binary: "}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrClientConfig is the error for setting client config
 func ErrClientConfig(err error) error {
-	return errors.New(ErrClientConfigCode, errors.Alert, []string{"Error setting client config: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrClientConfigCode, errors.Alert, []string{"Error setting client config: "}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrClientSet is the error for setting clientset
 func ErrClientSet(err error) error {
-	return errors.New(ErrClientSetCode, errors.Alert, []string{"Error setting clientset: ", err.Error()}, []string{}, []string{}, []string{})
-}
-
-// ErrStreamEvent is the error for streaming event
-func ErrStreamEvent(err error) error {
-	return errors.New(ErrStreamEventCode, errors.Alert, []string{"Error streaming event: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrClientSetCode, errors.Alert, []string{"Error setting clientset: "}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation: ", err.Error()}, []string{}, []string{}, []string{})
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occured while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Make sure to apply a valid kubernetes manifest"})
 }
