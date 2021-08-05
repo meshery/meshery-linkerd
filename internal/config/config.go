@@ -2,7 +2,7 @@ package config
 
 import (
 	"path"
-
+	"strings"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
@@ -20,6 +20,10 @@ const (
 )
 
 var (
+	// LinkerdMeshOperation is the default name for the install
+	// and uninstall commands on the Linkerd Mesh
+	LinkerdMeshOperation = strings.ToLower(smp.ServiceMesh_LINKERD_MESH.Enum().String())
+
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
