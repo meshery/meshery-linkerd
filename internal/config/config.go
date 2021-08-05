@@ -3,6 +3,7 @@ package config
 import (
 	"path"
 	"strings"
+
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
@@ -12,9 +13,8 @@ import (
 )
 
 const (
-
-	Development      = "development"
-	Production       = "production"
+	Development = "development"
+	Production  = "production"
 
 	AnnotateNamespace = "annotate-namespace"
 )
