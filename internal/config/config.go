@@ -22,7 +22,7 @@ const (
 var (
 	// LinkerdOperation is the default name for the install
 	// and uninstall commands on the Linkerd
-	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD_MESH.Enum().String())
+	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD.Enum().String())
 
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
