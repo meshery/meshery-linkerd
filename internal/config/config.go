@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	LinkerdOperation = "linkerd"
+
 	Development      = "development"
 	Production       = "production"
 
@@ -20,9 +20,9 @@ const (
 )
 
 var (
-	// LinkerdMeshOperation is the default name for the install
-	// and uninstall commands on the Linkerd Mesh
-	LinkerdMeshOperation = strings.ToLower(smp.ServiceMesh_LINKERD_MESH.Enum().String())
+	// LinkerdOperation is the default name for the install
+	// and uninstall commands on the Linkerd
+	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD_MESH.Enum().String())
 
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
