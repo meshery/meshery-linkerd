@@ -34,7 +34,7 @@ type Asset struct {
 // limited by the "limit" parameter. The first version in the list
 // is always is the latest "stable" version.
 func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
-	releases, err := GetLatestReleases(10)
+	releases, err := GetLatestReleases(30)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
