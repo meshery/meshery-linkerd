@@ -38,11 +38,9 @@ var (
 	// ErrParseLinkerdCoreComponentCode represents the error code which is
 	// generated when linkerd core component manifest parsing fails
 	ErrParseLinkerdCoreComponentCode = "1017"
-
 	// ErrParseOAMComponentCode represents the error code which is
 	// generated during the OAM component parsing
 	ErrParseOAMComponentCode = "1018"
-
 	// ErrParseOAMConfigCode represents the error code which is
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfigCode = "1019"
