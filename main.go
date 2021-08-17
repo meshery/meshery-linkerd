@@ -17,9 +17,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/layer5io/meshery-linkerd/linkerd"
+	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
 
 	// "github.com/layer5io/meshkit/tracing"
@@ -48,7 +50,8 @@ func init() {
 func main() {
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
-		Format: logger.SyslogLogFormat,
+		Format:     logger.SyslogLogFormat,
+		DebugLevel: isDebug(),
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -68,7 +71,7 @@ func main() {
 
 	// Initialize application specific configs and dependencies
 	// App and request config
-	cfg, err := config.New(configprovider.ViperKey)
+	cfg, err := config.New(configprovider.InMemKey)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -81,7 +84,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
+	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.InMemKey)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -104,11 +107,53 @@ func main() {
 	service.Version = version
 	service.GitSHA = gitsha
 
+	go registerCapabilities(service.Port, log)
+
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
+	}
+}
+
+func isDebug() bool {
+	return os.Getenv("DEBUG") == "true"
+}
+
+func mesheryServerAddress() string {
+	meshReg := os.Getenv("MESHERY_SERVER")
+
+	if meshReg != "" {
+		if strings.HasPrefix(meshReg, "http") {
+			return meshReg
+		}
+
+		return "http://" + meshReg
+	}
+
+	return "http://localhost:9081"
+}
+
+func serviceAddress() string {
+	svcAddr := os.Getenv("SERVICE_ADDR")
+
+	if svcAddr != "" {
+		return svcAddr
+	}
+
+	return "mesherylocal.layer5.io"
+}
+
+func registerCapabilities(port string, log logger.Handler) {
+	// Register workloads
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Info(err.Error())
+	}
+
+	// Register traits
+	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Info(err.Error())
 	}
 }
