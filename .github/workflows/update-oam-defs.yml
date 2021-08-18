@@ -2,7 +2,7 @@ name: Linkerd Pattern Components Generator
 on:
   push:
     branches:
-      - 'master'
+      - 'linkerd-comps-test'
 
 jobs:
   check_linkerd_version:
@@ -76,7 +76,7 @@ jobs:
 
           template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_LINKERD_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
 
-          crds=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
+          crds=$(./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
 
           for t in ${crds[@]}; do
 
@@ -84,9 +84,9 @@ jobs:
             nameLower=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
             definitionRef=$(printf %s.linkerd.meshery.layer5.io $nameLower)
 
-            apiVersion=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
+            apiVersion=$(./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
 
-            apiGroup=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
+            apiGroup=$(./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
             jq '
