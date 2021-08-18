@@ -1,0 +1,119 @@
+name: Linkerd Pattern Components Generator
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  check_linkerd_version:
+    name: Check Linkerd Version
+    runs-on: ubuntu-latest
+    outputs:
+      NEW_LINKERD_VERSION: ${{ steps.glrt.outputs.release }}
+      EXISTS: ${{ env.EXISTS }}
+    steps:
+      - name: Get latest release tag
+        id: glrt
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: linkerd/linkerd2
+          excludes: prerelease, draft
+
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Check if manifests for latest release exist
+        run: |
+          if [ -d templates/oam/workloads/workloads-${{ steps.glrt.outputs.release }} ]
+          then
+            echo "EXISTS=true" > $GITHUB_ENV
+          else
+            export "EXISTS=false" > $GITHUB_ENV
+          fi
+
+  generator:
+    name: Generate and push OAM definitions
+    needs: [ check_linkerd_version ]
+    if: ${{ !needs.check_linkerd_version.outputs.EXISTS }}
+    env:
+      NEW_LINKERD_VERSION: ${{ needs.check_linkerd_version.outputs.NEW_LINKERD_VERSION }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Get Linkerd manifests
+        run: |
+          mkdir ./linkerd-crds; cd linkerd-crds;
+          curl --remote-name-all `curl --silent -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/linkerd/linkerd2/contents/charts/linkerd2/templates\?ref\=main | jq 'map(.download_url) | .[]' | tr -d '"' | grep crd`;
+          awk 'FNR==1 && NR>1 { printf("\n%s\n\n","---") } 1' ./*.yaml > ~/linkerd.yaml;
+
+      - name: Build jsonschema util
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+          nvm install v14.15.3
+          nvm install-latest-npm
+          git clone https://github.com/layer5io/kubeopenapi-jsonschema util
+          cd util
+          npm i; npm i nexe -g
+          make linux
+
+      - name: Generate Workload definitions
+        run: |
+          dirPath=../templates/oam/workloads/workloads-$NEW_LINKERD_VERSION
+          cd util
+          mkdir -p $dirPath
+
+          meshName=Linkerd
+          smpMeshName=LINKERD
+
+          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_LINKERD_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
+
+          crds=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
+
+          for t in ${crds[@]}; do
+
+            nameUpper=`echo $t  | tr -d '"'`
+            nameLower=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
+            definitionRef=$(printf %s.linkerd.meshery.layer5.io $nameLower)
+
+            apiVersion=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
+
+            apiGroup=$(./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
+
+            ./kubeopenapi-jsonschema --location ~/linkerd.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
+            jq '
+            .[]
+            | .version = "'$NEW_LINKERD_VERSION'"
+            | ."object-type" = "'$nameUpper'"
+            | ."service-mesh" = "'$meshName'" ' > $dirPath/$nameLower.linkerd.meshery.layer5io.schema.json
+
+            echo $template |\
+            jq '
+            ."metadata"."name" = "'$(printf %s.Linkerd $nameUpper)'"
+            | ."spec"."metadata"."k8sAPIVersion" = "'$(printf $apiGroup/$apiVersion $apiGroup $apiVersion)'"
+            | ."spec"."metadata"."k8sKind" = "'$nameUpper'"
+            | ."spec"."definitionRef"."name"="'$definitionRef'"' > $dirPath/$nameLower.linkerd.json
+
+          done
+
+      - name: Cleanup
+        run: |
+          rm -rf util
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: templates/
+          commit_user_name: l5io
+          commit_user_email: ci@layer5.io
+          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          commit_options: '--signoff'
+          commit_message: "[Patterns] Pattern components generated from latest Linkerd manifests"
