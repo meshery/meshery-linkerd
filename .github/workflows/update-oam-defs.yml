@@ -2,7 +2,7 @@ name: Linkerd Pattern Components Generator
 on:
   push:
     branches:
-      - 'linkerd-comps-test'
+      - 'master'
 
 jobs:
   check_linkerd_version:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Check if manifests for latest release exist
         run: |
-          if [ -d templates/oam/workloads/workloads-${{ steps.glrt.outputs.release }} ]
+          if [ -d templates/oam/workloads/${{ steps.glrt.outputs.release }} ]
           then
             echo "EXISTS=true" > $GITHUB_ENV
           else
@@ -67,7 +67,7 @@ jobs:
 
       - name: Generate Workload definitions
         run: |
-          dirPath=../templates/oam/workloads/workloads-$NEW_LINKERD_VERSION
+          dirPath=../templates/oam/workloads/$NEW_LINKERD_VERSION
           cd util
           mkdir -p $dirPath
 
@@ -100,7 +100,7 @@ jobs:
             ."metadata"."name" = "'$(printf %s.Linkerd $nameUpper)'"
             | ."spec"."metadata"."k8sAPIVersion" = "'$(printf $apiGroup/$apiVersion $apiGroup $apiVersion)'"
             | ."spec"."metadata"."k8sKind" = "'$nameUpper'"
-            | ."spec"."definitionRef"."name"="'$definitionRef'"' > $dirPath/$nameLower.linkerd.json
+            | ."spec"."definitionRef"."name"="'$definitionRef'"' > $dirPath/$nameLower.linkerd_definition.json
 
           done
 
