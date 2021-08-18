@@ -15,7 +15,7 @@ jobs:
       - name: Get latest release tag
         id: glrt
         run: |
-          NEW_LINKERD_VERSION=$(curl --silent "https://api.github.com/repos/linkerd/linkerd2/releases" | jq '.[] | ."tag_name"' | jq ' .[] | select(.tag_name|test("stable")) | ."tag_name"' | sed -n 1p$'\n' | tr -d '"')
+          NEW_LINKERD_VERSION=$(curl --silent "https://api.github.com/repos/linkerd/linkerd2/releases" | jq ' .[] | select(.tag_name|test("stable")) | ."tag_name"' | sed -n 1p$'\n' | tr -d '"')
           echo "::set-output name=release::$NEW_LINKERD_VERSION"
 
       - name: Check out code
