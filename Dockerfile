@@ -16,6 +16,7 @@ ENV DISTRO="debian"
 ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-linkerd"
 ENV MESHERY_SERVER="http://meshery:9081"
-WORKDIR /$HOME/.meshery
+WORKDIR /
+COPY templates/ ./templates
 COPY --from=build-env /github.com/layer5io/meshery-linkerd/meshery-linkerd .
 ENTRYPOINT ["./meshery-linkerd"]
