@@ -1,0 +1,82 @@
+{
+  "type": "object",
+  "required": [
+    "podSelector",
+    "port"
+  ],
+  "properties": {
+    "podSelector": {
+      "type": "object",
+      "description": "Selects pods in the same namespace.",
+      "oneOf": [
+        {
+          "required": [
+            "matchExpressions"
+          ]
+        },
+        {
+          "required": [
+            "matchLabels"
+          ]
+        }
+      ],
+      "properties": {
+        "matchLabels": {
+          "type": "object",
+          "x-kubernetes-preserve-unknown-fields": true
+        },
+        "matchExpressions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "operator"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string",
+                "enum": [
+                  "In",
+                  "NotIn",
+                  "Exists",
+                  "DoesNotExist"
+                ]
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "port": {
+      "description": "A port name or number. Must exist in a pod spec.",
+      "x-kubernetes-int-or-string": true
+    },
+    "proxyProtocol": {
+      "description": "Configures protocol discovery for inbound connections.\nSupersedes the `config.linkerd.io/opaque-ports` annotation.",
+      "type": "string",
+      "default": "unknown",
+      "enum": [
+        "unknown",
+        "HTTP/1",
+        "HTTP/2",
+        "gRPC",
+        "opaque",
+        "TLS"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "stable-2.10.2",
+  "object-type": "Server",
+  "service-mesh": "Linkerd"
+}
