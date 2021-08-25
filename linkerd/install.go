@@ -21,8 +21,10 @@ import (
 )
 
 const (
+	// LinkerdHelmStableRepo is the URL for linkerd stable helm repo
 	LinkerdHelmStableRepo = "https://helm.linkerd.io/stable"
-	LinkerdHelmEdgeRepo   = "https://helm.linkerd.io/edge"
+	// LinkerdHelmEdgeRepo is the URL for linkerd edge helm repo
+	LinkerdHelmEdgeRepo = "https://helm.linkerd.io/edge"
 )
 
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
