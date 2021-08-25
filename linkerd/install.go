@@ -64,7 +64,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 			return st, ErrInstallLinkerd(err)
 		}
 
-		return st, ErrInstallLinkerd(err)
+		return st, nil
 	}
 
 	if del {
@@ -117,6 +117,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 			"global": map[string]interface{}{
 				"identityTrustAnchorsPEM": string(certPEM),
 			},
+			"identityTrustAnchorsPEM": string(certPEM),
 			"identity": map[string]interface{}{
 				"issuer": map[string]interface{}{
 					"crtExpiry": exp,
