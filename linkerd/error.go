@@ -126,7 +126,7 @@ func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrorApplyHelmChart is an error which is thrown when apply helm chart fails
+// ErrApplyHelmChart is an error which is thrown when apply helm chart fails
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"error applying helm chart"}, []string{err.Error()}, []string{}, []string{})
 }
