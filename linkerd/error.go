@@ -45,6 +45,10 @@ var (
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfigCode = "1019"
 
+	// ErrApplyHelmChartCode represents the error code which is
+	// generated during the Helm Chart installation
+	ErrApplyHelmChartCode = "1020"
+
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -120,4 +124,9 @@ func ErrLinkerdCoreComponentFail(err error) error {
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
 func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrorApplyHelmChart is an error which is thrown when apply helm chart fails
+func ErrApplyHelmChart(err error) error {
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"error applying helm chart"}, []string{err.Error()}, []string{}, []string{})
 }

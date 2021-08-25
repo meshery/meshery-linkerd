@@ -10,11 +10,19 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strings"
+	"time"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshery-linkerd/internal/config"
+	"github.com/layer5io/meshery-linkerd/linkerd/cert"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+)
+
+const (
+	LinkerdHelmStableRepo = "https://helm.linkerd.io/stable"
+	LinkerdHelmEdgeRepo   = "https://helm.linkerd.io/edge"
 )
 
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
@@ -36,15 +44,24 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 		return st, ErrMeshConfig(err)
 	}
 
-	manifest, err := linkerd.fetchManifest(version, namespace, del)
-	if err != nil {
+	if err := linkerd.applyHelmChart(version, namespace, del); err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
-		return st, ErrInstallLinkerd(err)
-	}
 
-	err = linkerd.applyManifest([]byte(manifest), del, namespace)
-	if err != nil {
-		linkerd.Log.Error(ErrInstallLinkerd(err))
+		linkerd.Log.Info("Attempting manifest installation...")
+
+		// Attempt manifest installation
+		manifest, err := linkerd.fetchManifest(version, namespace, del)
+		if err != nil {
+			linkerd.Log.Error(ErrInstallLinkerd(err))
+			return st, ErrInstallLinkerd(err)
+		}
+
+		err = linkerd.applyManifest([]byte(manifest), del, namespace)
+		if err != nil {
+			linkerd.Log.Error(ErrInstallLinkerd(err))
+			return st, ErrInstallLinkerd(err)
+		}
+
 		return st, ErrInstallLinkerd(err)
 	}
 
@@ -52,6 +69,75 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 		return status.Removed, nil
 	}
 	return status.Installed, nil
+}
+
+func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool) error {
+	loc, cver := getChartLocationAndVersion(version)
+	if loc == "" || cver == "" {
+		return nil
+	}
+
+	// Generate certificates for linkerd
+	c, pk, err := cert.GenerateRootCAWithDefaults("cluster.local")
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
+
+	// Encode private key
+	keyPEM, err := cert.EncodePrivateKeyPEM(pk)
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
+
+	// Encode certificate
+	certPEM, err := cert.EncodeCertificatesPEM(c)
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
+
+	// Get expiry
+	exp := c.NotAfter.Format(time.RFC3339)
+
+	// Create namespace in which the installation was requested - Both
+	// Helm and Linkerd to are too picky about this
+	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
+
+	return linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+		ChartLocation: mesherykube.HelmChartLocation{
+			Repository: loc,
+			Chart:      "linkerd2",
+			Version:    cver,
+		},
+		Namespace: namespace,
+		// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
+		Delete: isDel,
+		OverrideValues: map[string]interface{}{
+			"global": map[string]interface{}{
+				"identityTrustAnchorsPEM": string(certPEM),
+			},
+			"identity": map[string]interface{}{
+				"issuer": map[string]interface{}{
+					"crtExpiry": exp,
+					"tls": map[string]interface{}{
+						"keyPEM": string(keyPEM),
+						"crtPEM": string(certPEM),
+					},
+				},
+			},
+		},
+	})
+}
+
+func getChartLocationAndVersion(version string) (string, string) {
+	if strings.HasPrefix(version, "edge-") {
+		return LinkerdHelmEdgeRepo, strings.TrimPrefix(version, "edge-")
+	}
+
+	if strings.HasPrefix(version, "stable-") {
+		return LinkerdHelmStableRepo, strings.TrimPrefix(version, "stable-")
+	}
+
+	return "", ""
 }
 
 func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bool) (string, error) {
@@ -198,4 +284,22 @@ func installBinary(location, platform string, res *http.Response) error {
 	case "windows":
 	}
 	return nil
+}
+
+func createHelmNS(c *mesherykube.Client, ns, relName string) {
+	const linkerdNS = `apiVersion: v1
+kind: Namespace
+metadata:
+  name: %s
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    config.linkerd.io/admission-webhooks: disabled
+    meta.helm.sh/release-name: %s
+    meta.helm.sh/release-namespace: %s`
+
+	_ = c.ApplyManifest([]byte(fmt.Sprintf(linkerdNS, ns, relName, ns)), mesherykube.ApplyOptions{
+		Update:       true,
+		IgnoreErrors: true,
+	})
 }
