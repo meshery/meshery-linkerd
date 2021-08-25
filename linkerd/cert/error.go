@@ -14,13 +14,13 @@ var (
 	// ErrEncodePrivateKeyPEMCode represents the error code which is
 	// generated when an private key PEM encode operations fails
 	ErrEncodePrivateKeyPEMCode = "1103"
-	// ErrProcessOAMCode represents the error code which is
+	// ErrCreateRootCACode represents the error code which is
 	// generated when root CA generation fails
 	ErrCreateRootCACode = "1104"
-	// ErrProcessOAMCode represents the error code which is
+	// ErrGeneratePKCode represents the error code which is
 	// generated when private key generation fails
 	ErrGeneratePKCode = "1105"
-	// ErrProcessOAMCode represents the error code which is
+	// ErrGenerateDefaultRootCACode represents the error code which is
 	// generated when defaut root CA generation fails
 	ErrGenerateDefaultRootCACode = "1106"
 )
