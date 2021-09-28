@@ -46,7 +46,7 @@ func init() {
 	}
 }
 
-// main is the entrypoint of the adaptor
+// main is the entrypoint of the adapter
 func main() {
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
@@ -110,7 +110,7 @@ func main() {
 	go registerCapabilities(service.Port, log)
 
 	// Server Initialization
-	log.Info("Adaptor Listening at port: ", service.Port)
+	log.Info("Adapter Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
 		log.Error(err)
