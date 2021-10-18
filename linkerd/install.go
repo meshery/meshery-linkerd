@@ -103,7 +103,12 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Create namespace in which the installation was requested - Both
 	// Helm and Linkerd to are too picky about this
 	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
-
+	var act mesherykube.HelmChartAction
+	if isDel {
+		act = mesherykube.UNINSTALL
+	} else {
+		act = mesherykube.INSTALL
+	}
 	return linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: loc,
@@ -112,7 +117,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 		},
 		Namespace: namespace,
 		// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
-		Delete: isDel,
+		Action: act,
 		OverrideValues: map[string]interface{}{
 			"global": map[string]interface{}{
 				"identityTrustAnchorsPEM": string(certPEM),
