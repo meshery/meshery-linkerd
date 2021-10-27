@@ -23,12 +23,14 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils/manifests"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	configprovider "github.com/layer5io/meshkit/config/provider"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
@@ -108,7 +110,7 @@ func main() {
 	service.GitSHA = gitsha
 
 	go registerCapabilities(service.Port, log)
-
+	go registerDynamicCapabilities(service.Port, log)
 	// Server Initialization
 	log.Info("Adapter Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
@@ -156,4 +158,67 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+}
+func registerDynamicCapabilities(port string, log logger.Handler) {
+	registerWorkloads(port, log)
+	//Start the ticker
+	const reRegisterAfter = 24
+	ticker := time.NewTicker(reRegisterAfter * time.Hour)
+	for {
+		<-ticker.C
+		registerWorkloads(port, log)
+	}
+
+}
+
+func registerWorkloads(port string, log logger.Handler) {
+	names, err := config.GetFileNames("linkerd", "linkerd2", "/charts/linkerd2/templates")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	var crds []string
+	for _, n := range names {
+		if strings.HasSuffix(n, "-crd.yaml") {
+			crds = append(crds, n)
+		}
+	}
+
+	rel, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest version ", err.Error())
+		return
+	}
+	appVersion := rel[0].TagName
+	log.Info("Registering latest workload components for version ", appVersion)
+	// Register workloads
+	for _, manifest := range crds {
+		log.Info("Registering for ", manifest)
+		if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
+			TimeoutInMinutes: 60,
+			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd2/templates/" + manifest,
+			GenerationMethod: adapter.Manifests,
+			Config: manifests.Config{
+				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
+				MeshVersion: appVersion,
+				Filter: manifests.CrdFilter{
+					RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
+					NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
+					VersionFilter: []string{"$[0]..spec.versions[0]"},
+					GroupFilter:   []string{"$[0]..spec"},
+					SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
+					ItrFilter:     []string{"$[?(@.spec.names.kind"},
+					ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
+					VField:        "name",
+					GField:        "group",
+				},
+			},
+			Operation: config.LinkerdOperation,
+		}); err != nil {
+			log.Error(err)
+			return
+		}
+		log.Info(manifest, " registered")
+	}
+	log.Info("Latest workload components successfully registered.")
 }

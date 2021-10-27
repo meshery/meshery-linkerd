@@ -10,6 +10,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
+	"github.com/layer5io/meshkit/utils/walker"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
@@ -123,4 +124,15 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 // RootPath returns the config root path for the adapter
 func RootPath() string {
 	return configRootPath
+}
+
+// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
+func GetFileNames(owner string, repo string, path string) ([]string, error) {
+	var g walker.Github
+	var filenames []string
+	err := g.Owner(owner).Repo(repo).Branch("master").Root(path).Mode(walker.CloneAndWalk).RegisterLocalFileInterceptor(func(f walker.File) error {
+		filenames = append(filenames, f.Name)
+		return nil
+	}).Walk()
+	return filenames, err
 }
