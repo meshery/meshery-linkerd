@@ -168,7 +168,6 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 		<-ticker.C
 		registerWorkloads(port, log)
 	}
-
 }
 
 func registerWorkloads(port string, log logger.Handler) {
