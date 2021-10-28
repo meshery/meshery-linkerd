@@ -41,5 +41,5 @@ func ErrGetLatestReleaseNames(err error) error {
 
 // ErrGetFileNames is the error for fetching linkerd releases
 func ErrGetFileNames(err error) error {
-	return errors.New(ErrGetFileNamesCode, errors.Alert, []string{"failed to get filenames for dynamic component generation"}, []string{err.Error()}, []string{"The repository url is invalid", "Could not reach the remote git repository"}, []string{"Make sure the owner, repo and path is correct for fetching crd names"})
+	return errors.New(ErrGetFileNamesCode, errors.Alert, []string{"failed to get filenames for dynamic component generation"}, []string{err.Error()}, []string{"The repository could not be cloned or reached", "The repository url is invalid", "Could not reach the remote git repository"}, []string{"Make sure the owner, repo and path is correct for fetching crd names"})
 }
