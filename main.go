@@ -172,11 +172,13 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 }
 
 func registerWorkloads(port string, log logger.Handler) {
-	names, err := config.GetFileNames("linkerd", "linkerd2", "/charts/linkerd2/templates")
+	log.Info("Getting crd names from repository for component generation...")
+	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd2/templates")
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	log.Info("CRD names extracted successfully")
 	var crds []string
 	for _, n := range names {
 		if strings.HasSuffix(n, "-crd.yaml") {

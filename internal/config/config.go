@@ -128,11 +128,14 @@ func RootPath() string {
 
 // GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
 func GetFileNames(owner string, repo string, path string) ([]string, error) {
-	var g walker.Github
+	g := walker.NewGit()
 	var filenames []string
-	err := g.Owner(owner).Repo(repo).Branch("master").Root(path).Mode(walker.CloneAndWalk).RegisterLocalFileInterceptor(func(f walker.File) error {
+	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
 		filenames = append(filenames, f.Name)
 		return nil
 	}).Walk()
-	return filenames, err
+	if err != nil {
+		return nil, ErrGetFileNames(err)
+	}
+	return filenames, nil
 }
