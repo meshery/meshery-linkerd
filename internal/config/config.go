@@ -130,7 +130,7 @@ func RootPath() string {
 func GetFileNames(owner string, repo string, path string) ([]string, error) {
 	g := walker.NewGit()
 	var filenames []string
-	err := g.Owner(owner).Repo(repo).Root(path).ShowLogs().RegisterFileInterceptor(func(f walker.File) error {
+	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
 		filenames = append(filenames, f.Name)
 		return nil
 	}).Walk()
