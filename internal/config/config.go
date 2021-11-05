@@ -3,6 +3,7 @@ package config
 import (
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -125,13 +126,19 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 func RootPath() string {
 	return configRootPath
 }
+func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
+	m.Lock()
+	defer m.Unlock()
+	*fs = append(*fs, name)
+}
 
 // GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
 func GetFileNames(owner string, repo string, path string) ([]string, error) {
 	g := walker.NewGit()
 	var filenames []string
+	var m sync.RWMutex
 	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
-		filenames = append(filenames, f.Name)
+		threadSafeAppend(&filenames, f.Name, &m)
 		return nil
 	}).Walk()
 	if err != nil {
