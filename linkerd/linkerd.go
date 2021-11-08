@@ -109,6 +109,28 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
+	case internalconfig.JaegerAddon:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			patches := make([]string, 0)
+			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
+			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL)
+			operation := "install"
+			if opReq.IsDeleteOperation {
+				operation = "uninstall"
+			}
+
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(linkerd, e)
 	case internalconfig.AnnotateNamespace:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)

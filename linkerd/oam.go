@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/layer5io/meshery-adapter-library/common"
+	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -17,7 +19,8 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 	var msgs []string
 
 	compFuncMap := map[string]CompHandler{
-		"LinkerdMesh": handleComponentLinkerdMesh,
+		"LinkerdMesh":        handleComponentLinkerdMesh,
+		"JaegerLinkerdAddon": handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
@@ -140,6 +143,35 @@ func handleLinkerdCoreComponent(
 	return msg, linkerd.applyManifest(yamlByt, isDel, comp.Namespace)
 }
 
+func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool) (string, error) {
+	var addonName string
+	var version = "2.10.2" //default value
+	switch comp.Spec.Type {
+	case "JaegerLinkerdAddon":
+		addonName = config.JaegerAddon
+		version = comp.Spec.Settings["version"].(string)
+	default:
+		return "", nil
+	}
+
+	// Get the service
+	svc := config.Operations[addonName].AdditionalProperties[common.ServiceName]
+
+	// Get the patches
+	patches := make([]string, 0)
+	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
+	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
+	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
+
+	helmURL := "https://helm.linkerd.io/stable/linkerd-jaeger-" + version + ".tgz"
+	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL)
+	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
+	if isDel {
+		msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+	}
+
+	return msg, err
+}
 func getAPIVersionFromComponent(comp v1alpha1.Component) string {
 	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
 }

@@ -49,6 +49,12 @@ var (
 	// generated during the Helm Chart installation
 	ErrApplyHelmChartCode = "1020"
 
+	// ErrNilClientCode represents the error code which is
+	// generated when kubernetes client is nil
+	ErrNilClientCode = "1019"
+
+	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
+	ErrAddonFromHelmCode = "replace"
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -59,6 +65,9 @@ var (
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
+	// ErrNilClient represents the error which is
+	// generated when kubernetes client is nil
+	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 )
 
 // ErrInstallLinkerd is the error for install mesh
@@ -129,4 +138,9 @@ func ErrProcessOAM(err error) error {
 // ErrApplyHelmChart is an error which is thrown when apply helm chart fails
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"error applying helm chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrAddonFromHelm is the error for installing addons through helm chart
+func ErrAddonFromHelm(err error) error {
+	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon Operation might be incorrect", "The helm installation failed due to any other reason"}, []string{})
 }

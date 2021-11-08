@@ -24,6 +24,14 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Annotate Namespace",
 	}
-
+	dev[JaegerAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Jaeger",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "linkerd-zaeger",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.1.tgz",
+		},
+	}
 	return dev
 }
