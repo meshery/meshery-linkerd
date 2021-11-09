@@ -82,7 +82,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool) error {
 	loc, cver := getChartLocationAndVersion(version)
 	if loc == "" || cver == "" {
-		return nil
+		return ErrInvalidVersionForMeshInstallation
 	}
 
 	// Generate certificates for linkerd
@@ -109,13 +109,20 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Create namespace in which the installation was requested - Both
 	// Helm and Linkerd to are too picky about this
 	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
+	if namespace != "linkerd" {
+		linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
+			"app.kubernetes.io/managed-by":   "helm",
+			"meta.helm.sh/release-name":      "linkerd2",
+			"meta.helm.sh/release-namespace": namespace,
+		})
+	}
 	var act mesherykube.HelmChartAction
 	if isDel {
 		act = mesherykube.UNINSTALL
 	} else {
 		act = mesherykube.INSTALL
 	}
-	return linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+	err = linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: loc,
 			Chart:      "linkerd2",
@@ -125,6 +132,8 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 		// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
 		Action: act,
 		OverrideValues: map[string]interface{}{
+			"namespace":        namespace,
+			"installNamespace": false,
 			"global": map[string]interface{}{
 				"identityTrustAnchorsPEM": string(certPEM),
 			},
@@ -140,6 +149,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 			},
 		},
 	})
+	return err
 }
 
 func getChartLocationAndVersion(version string) (string, string) {

@@ -133,7 +133,9 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(linkerd, e)
 	case internalconfig.AnnotateNamespace:
 		go func(hh *Linkerd, ee *adapter.Event) {
-			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			err := hh.AnnotateNamespace(opReq.Namespace, opReq.IsDeleteOperation, map[string]string{
+				"linkerd.io/inject": "enabled",
+			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while annotating %s", opReq.Namespace)
 				e.Details = err.Error()

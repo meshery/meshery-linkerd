@@ -23,7 +23,7 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 		"JaegerLinkerdAddon":       handleComponentLinkerdAddon,
 		"VizLinkerdAddon":          handleComponentLinkerdAddon,
 		"MultiClusterLinkerdAddon": handleComponentLinkerdAddon,
-		"SMIclusterLinkerdAddon":   handleComponentLinkerdAddon,
+		"SMIClusterLinkerdAddon":   handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
@@ -82,7 +82,9 @@ func (linkerd *Linkerd) HandleApplicationConfiguration(config v1alpha1.Configura
 func handleNamespaceLabel(linkerd *Linkerd, namespaces []string, isDel bool) error {
 	var errs []error
 	for _, ns := range namespaces {
-		if err := linkerd.LoadNamespaceToMesh(ns, isDel); err != nil {
+		if err := linkerd.AnnotateNamespace(ns, isDel, map[string]string{
+			"linkerd.io/inject": "enabled",
+		}); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -148,23 +150,20 @@ func handleLinkerdCoreComponent(
 
 func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool) (string, error) {
 	var addonName string
-	var version = "2.10.1" //default value
 	var helmURL string
+	version := removePrefixFromVersionIfPresent(comp.Spec.Settings["version"].(string))
 	switch comp.Spec.Type {
 	case "JaegerLinkerdAddon":
 		addonName = config.JaegerAddon
-		version = comp.Spec.Settings["version"].(string)
 		helmURL = "https://helm.linkerd.io/stable/linkerd-jaeger-" + version + ".tgz"
 	case "VizLinkerdAddon":
 		addonName = config.VizAddon
-		version = comp.Spec.Settings["version"].(string)
 		helmURL = "https://helm.linkerd.io/stable/linkerd-viz-" + version + ".tgz"
 	case "MultiClusterLinkerdAddon":
 		addonName = config.MultiClusterAddon
-		version = comp.Spec.Settings["version"].(string)
 		helmURL = "https://helm.linkerd.io/stable/linkerd-multicluster-" + version + ".tgz"
-	case "SMIclusterLinkerdAddon":
-		addonName = config.MultiClusterAddon
+	case "SMIClusterLinkerdAddon":
+		addonName = config.SMIAddon
 		helmURL = "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz"
 	default:
 		return "", nil
@@ -224,4 +223,16 @@ func mergeErrors(errs []error) error {
 
 func mergeMsgs(strs []string) string {
 	return strings.Join(strs, "\n")
+}
+func removePrefixFromVersionIfPresent(version string) string {
+	if version == "" {
+		return "2.10.1" //default, to avoid any errors
+	}
+	if strings.HasPrefix(version, "stable-") {
+		return strings.TrimPrefix(version, "stable-")
+	}
+	if strings.HasPrefix(version, "edge-") {
+		return strings.TrimPrefix(version, "edge-")
+	}
+	return version
 }
