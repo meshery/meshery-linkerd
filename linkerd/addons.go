@@ -14,7 +14,7 @@ import (
 
 // installAddon installs/uninstalls an addon in the given namespace
 func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string) (string, error) {
-	var act kubernetes.HelmChartAction = kubernetes.INSTALL
+	act := kubernetes.INSTALL
 	st := status.Installing
 
 	if del {
