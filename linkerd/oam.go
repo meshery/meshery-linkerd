@@ -145,7 +145,7 @@ func handleLinkerdCoreComponent(
 
 func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool) (string, error) {
 	var addonName string
-	var version = "2.10.2" //default value
+	var version = "2.10.1" //default value
 	switch comp.Spec.Type {
 	case "JaegerLinkerdAddon":
 		addonName = config.JaegerAddon

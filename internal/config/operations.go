@@ -28,9 +28,9 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Jaeger",
 		AdditionalProperties: map[string]string{
-			ServiceName:      "linkerd-zaeger",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
-			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.1.tgz",
+			ServiceName:      "jaeger",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.2.tgz",
 		},
 	}
 	return dev

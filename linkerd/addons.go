@@ -21,6 +21,10 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 	err := linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
 		URL:       helmChartURL,
 		Namespace: namespace,
+		OverrideValues: map[string]interface{}{
+			"installNamespace": false, //Set to false when installing in a custom namespace.
+			"namespace":        namespace,
+		},
 	})
 	if err != nil {
 		return st, ErrAddonFromHelm(err)
