@@ -12,6 +12,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Linkerd is the handler for the adapter
@@ -202,4 +203,31 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	}
 
 	return msg1 + "\n" + msg2, nil
+}
+
+// AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not)
+func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels map[string]string) error {
+	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	if ns.ObjectMeta.Annotations == nil {
+		ns.ObjectMeta.Annotations = map[string]string{}
+	}
+	for key, val := range labels {
+		ns.ObjectMeta.Annotations[key] = val
+	}
+
+	if remove {
+		for key := range labels {
+			delete(ns.ObjectMeta.Annotations, key)
+		}
+	}
+
+	_, err = linkerd.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }

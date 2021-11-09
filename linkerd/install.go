@@ -110,11 +110,12 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Helm and Linkerd to are too picky about this
 	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
 	if namespace != "linkerd" {
-		linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
+		err := linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
 			"app.kubernetes.io/managed-by":   "helm",
 			"meta.helm.sh/release-name":      "linkerd2",
 			"meta.helm.sh/release-namespace": namespace,
 		})
+		return ErrAnnotatingNamespace(err)
 	}
 	var act mesherykube.HelmChartAction
 	if isDel {

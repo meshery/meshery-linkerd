@@ -59,6 +59,8 @@ var (
 	//ErrInvalidVersionForMeshInstallationCode represents the error while installing mesh through helm charts with invalid version
 	ErrInvalidVersionForMeshInstallationCode = "replace"
 
+	//ErrAnnotatingNamespaceCode represents the error while annotating namespace
+	ErrAnnotatingNamespaceCode = "replace"
 	//ErrInvalidVersionForHelmAddonInstallation represents the error while installing mesh through helm charts with invalid version
 	ErrInvalidVersionForMeshInstallation = errors.New(ErrInvalidVersionForMeshInstallationCode, errors.Alert, []string{"Invalid version passed for helm based installation"}, []string{"Version passed is invalid"}, []string{"Version might not be prefixed with \"stable-\" or \"edge-\""}, []string{"Version should be prefixed with \"stable-\" or \"edge-\"", "Version might be empty"})
 	// ErrOpInvalid is the error for invalid operation
@@ -149,4 +151,9 @@ func ErrApplyHelmChart(err error) error {
 // ErrAddonFromHelm is the error for installing addons through helm chart
 func ErrAddonFromHelm(err error) error {
 	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon Operation might be incorrect", "The helm installation failed due to any other reason"}, []string{})
+}
+
+//ErrAnnotatingNamespace is the error while annotating the namespace
+func ErrAnnotatingNamespace(err error) error {
+	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with annotating namespace"}, []string{err.Error()}, []string{"Could not get the namespace in cluster", "Could not update namespace in cluster"}, []string{"Make sure the cluster is reachable"})
 }

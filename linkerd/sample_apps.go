@@ -51,30 +51,3 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 
 	return nil
 }
-
-// AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not)
-func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels map[string]string) error {
-	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	if ns.ObjectMeta.Annotations == nil {
-		ns.ObjectMeta.Annotations = map[string]string{}
-	}
-	for key, val := range labels {
-		ns.ObjectMeta.Annotations[key] = val
-	}
-
-	if remove {
-		for key := range labels {
-			delete(ns.ObjectMeta.Annotations, key)
-		}
-	}
-
-	_, err = linkerd.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-	return nil
-}
