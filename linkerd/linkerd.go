@@ -109,7 +109,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
-	case internalconfig.JaegerAddon, internalconfig.VizAddon:
+	case internalconfig.JaegerAddon, internalconfig.VizAddon, internalconfig.MultiClusterAddon, internalconfig.SMIAddon:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patches := make([]string, 0)

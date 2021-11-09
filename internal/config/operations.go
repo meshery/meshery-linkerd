@@ -42,5 +42,23 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-2.10.2.tgz",
 		},
 	}
+	dev[MultiClusterAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Multi-cluster",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "linkerd-gateway",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-multicluster-2.10.2.tgz",
+		},
+	}
+	dev[SMIAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: SMI Addon",
+		AdditionalProperties: map[string]string{
+			// ServiceName:      "linkerd-gateway",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz",
+		},
+	}
 	return dev
 }

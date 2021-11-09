@@ -19,9 +19,10 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 	var msgs []string
 
 	compFuncMap := map[string]CompHandler{
-		"LinkerdMesh":        handleComponentLinkerdMesh,
-		"JaegerLinkerdAddon": handleComponentLinkerdAddon,
-		"VizLinkerdAddon":    handleComponentLinkerdAddon,
+		"LinkerdMesh":              handleComponentLinkerdMesh,
+		"JaegerLinkerdAddon":       handleComponentLinkerdAddon,
+		"VizLinkerdAddon":          handleComponentLinkerdAddon,
+		"MulticlusterLinkerdAddon": handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
@@ -157,6 +158,13 @@ func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel 
 		addonName = config.VizAddon
 		version = comp.Spec.Settings["version"].(string)
 		helmURL = "https://helm.linkerd.io/stable/linkerd-viz-" + version + ".tgz"
+	case "MulticlusterLinkerdAddon":
+		addonName = config.MultiClusterAddon
+		version = comp.Spec.Settings["version"].(string)
+		helmURL = "https://helm.linkerd.io/stable/linkerd-multicluster-" + version + ".tgz"
+	case "SMIclusterLinkerdAddon":
+		addonName = config.MultiClusterAddon
+		helmURL = "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz"
 	default:
 		return "", nil
 	}

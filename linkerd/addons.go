@@ -14,10 +14,12 @@ import (
 
 // installAddon installs/uninstalls an addon in the given namespace
 func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string) (string, error) {
+	var act kubernetes.HelmChartAction = kubernetes.INSTALL
 	st := status.Installing
 
 	if del {
 		st = status.Removing
+		act = kubernetes.UNINSTALL
 	}
 	var err error
 	switch addon {
@@ -25,6 +27,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
 			URL:       helmChartURL,
 			Namespace: namespace,
+			Action:    act,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"namespace":        namespace,
@@ -34,9 +37,31 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
 			URL:       helmChartURL,
 			Namespace: namespace,
+			Action:    act,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"linkerdNamespace": linkerdNamespace,
+				"namespace":        namespace,
+			},
+		})
+	case config.MultiClusterAddon:
+		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+			URL:       helmChartURL,
+			Namespace: namespace,
+			Action:    act,
+			OverrideValues: map[string]interface{}{
+				"installNamespace": false, //Set to false when installing in a custom namespace.
+				"linkerdNamespace": linkerdNamespace,
+				"namespace":        namespace,
+			},
+		})
+	case config.SMIAddon:
+		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+			URL:       helmChartURL,
+			Namespace: namespace,
+			Action:    act,
+			OverrideValues: map[string]interface{}{
+				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"namespace":        namespace,
 			},
 		})
