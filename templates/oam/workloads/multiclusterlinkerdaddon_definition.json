@@ -1,0 +1,12 @@
+{
+    "apiVersion": "core.oam.dev/v1alpha1",
+    "kind": "WorkloadDefinition",
+    "metadata": {
+        "name": "MultiClusterLinkerdAddon"
+    },
+    "spec": {
+        "definitionRef": {
+            "name": "MultiClusterlinkerdaddon.meshery.layer5.io"
+        }
+    }
+}
