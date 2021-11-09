@@ -23,7 +23,7 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 		"JaegerLinkerdAddon":       handleComponentLinkerdAddon,
 		"VizLinkerdAddon":          handleComponentLinkerdAddon,
 		"MultiClusterLinkerdAddon": handleComponentLinkerdAddon,
-		"SMIClusterLinkerdAddon":   handleComponentLinkerdAddon,
+		"SMILinkerdAddon":          handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
