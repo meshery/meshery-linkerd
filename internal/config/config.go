@@ -25,7 +25,7 @@ const (
 
 	// Addons that the adapter supports
 	JaegerAddon = "jaeger-addon"
-
+	VizAddon    = "viz-addon"
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"

@@ -27,7 +27,13 @@ const (
 	LinkerdHelmEdgeRepo = "https://helm.linkerd.io/edge"
 )
 
+var (
+	//Namespace in which Linkerd is installed, (addons need to know this)
+	linkerdNamespace = "linkerd-system"
+)
+
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
+	linkerdNamespace = namespace
 	linkerd.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is in namespace: %s", namespace))

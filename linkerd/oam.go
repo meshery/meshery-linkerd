@@ -21,6 +21,7 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 	compFuncMap := map[string]CompHandler{
 		"LinkerdMesh":        handleComponentLinkerdMesh,
 		"JaegerLinkerdAddon": handleComponentLinkerdAddon,
+		"VizLinkerdAddon":    handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
@@ -146,10 +147,16 @@ func handleLinkerdCoreComponent(
 func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool) (string, error) {
 	var addonName string
 	var version = "2.10.1" //default value
+	var helmURL string
 	switch comp.Spec.Type {
 	case "JaegerLinkerdAddon":
 		addonName = config.JaegerAddon
 		version = comp.Spec.Settings["version"].(string)
+		helmURL = "https://helm.linkerd.io/stable/linkerd-jaeger-" + version + ".tgz"
+	case "VizLinkerdAddon":
+		addonName = config.VizAddon
+		version = comp.Spec.Settings["version"].(string)
+		helmURL = "https://helm.linkerd.io/stable/linkerd-viz-" + version + ".tgz"
 	default:
 		return "", nil
 	}
@@ -163,8 +170,7 @@ func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel 
 	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
 	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
 
-	helmURL := "https://helm.linkerd.io/stable/linkerd-jaeger-" + version + ".tgz"
-	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL)
+	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL, addonName)
 	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
 	if isDel {
 		msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)

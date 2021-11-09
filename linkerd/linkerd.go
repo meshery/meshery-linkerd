@@ -109,13 +109,13 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
-	case internalconfig.JaegerAddon:
+	case internalconfig.JaegerAddon, internalconfig.VizAddon:
 		go func(hh *Linkerd, ee *adapter.Event) {
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
 			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
-			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL)
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL, opReq.OperationName)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"

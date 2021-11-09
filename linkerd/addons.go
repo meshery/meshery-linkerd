@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/layer5io/meshery-adapter-library/status"
+	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,20 +13,35 @@ import (
 )
 
 // installAddon installs/uninstalls an addon in the given namespace
-func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string) (string, error) {
+func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string) (string, error) {
 	st := status.Installing
 
 	if del {
 		st = status.Removing
 	}
-	err := linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-		URL:       helmChartURL,
-		Namespace: namespace,
-		OverrideValues: map[string]interface{}{
-			"installNamespace": false, //Set to false when installing in a custom namespace.
-			"namespace":        namespace,
-		},
-	})
+	var err error
+	switch addon {
+	case config.JaegerAddon:
+		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+			URL:       helmChartURL,
+			Namespace: namespace,
+			OverrideValues: map[string]interface{}{
+				"installNamespace": false, //Set to false when installing in a custom namespace.
+				"namespace":        namespace,
+			},
+		})
+	case config.VizAddon:
+		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+			URL:       helmChartURL,
+			Namespace: namespace,
+			OverrideValues: map[string]interface{}{
+				"installNamespace": false, //Set to false when installing in a custom namespace.
+				"linkerdNamespace": linkerdNamespace,
+				"namespace":        namespace,
+			},
+		})
+	}
+
 	if err != nil {
 		return st, ErrAddonFromHelm(err)
 	}

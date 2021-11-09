@@ -33,5 +33,14 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.2.tgz",
 		},
 	}
+	dev[VizAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Viz",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "web",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-2.10.2.tgz",
+		},
+	}
 	return dev
 }
