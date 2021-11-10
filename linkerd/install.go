@@ -29,7 +29,7 @@ const (
 
 var (
 	//Namespace in which Linkerd is installed, (addons need to know this)
-	linkerdNamespace = "linkerd-system"
+	linkerdNamespace = "linkerd"
 )
 
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
@@ -109,14 +109,16 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Create namespace in which the installation was requested - Both
 	// Helm and Linkerd to are too picky about this
 	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
-	if namespace != "linkerd" {
-		err := linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
-			"app.kubernetes.io/managed-by":   "helm",
-			"meta.helm.sh/release-name":      "linkerd2",
-			"meta.helm.sh/release-namespace": namespace,
-		})
+
+	err = linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
+		"app.kubernetes.io/managed-by":   "helm",
+		"meta.helm.sh/release-name":      "linkerd2",
+		"meta.helm.sh/release-namespace": namespace,
+	})
+	if err != nil {
 		return ErrAnnotatingNamespace(err)
 	}
+
 	var act mesherykube.HelmChartAction
 	if isDel {
 		act = mesherykube.UNINSTALL
