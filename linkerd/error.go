@@ -61,7 +61,7 @@ var (
 
 	//ErrAnnotatingNamespaceCode represents the error while annotating namespace
 	ErrAnnotatingNamespaceCode = "replace"
-	//ErrInvalidVersionForHelmAddonInstallation represents the error while installing mesh through helm charts with invalid version
+	//ErrInvalidVersionForMeshInstallation represents the error while installing mesh through helm charts with invalid version
 	ErrInvalidVersionForMeshInstallation = errors.New(ErrInvalidVersionForMeshInstallationCode, errors.Alert, []string{"Invalid version passed for helm based installation"}, []string{"Version passed is invalid"}, []string{"Version might not be prefixed with \"stable-\" or \"edge-\""}, []string{"Version should be prefixed with \"stable-\" or \"edge-\"", "Version might be empty"})
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
