@@ -7,6 +7,12 @@
     "spec": {
         "definitionRef": {
             "name": "jaegerlinkerdaddon.meshery.layer5.io"
-        }
+        },
+        "metadata": {
+            "@type": "pattern.meshery.io/mesh/workload",
+            "meshName": "LINKERD",
+            "k8sKind": "JaegerAddon"
+          }
+         
     }
 }

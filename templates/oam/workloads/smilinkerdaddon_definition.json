@@ -7,6 +7,11 @@
     "spec": {
         "definitionRef": {
             "name": "smilinkerdaddon.meshery.layer5.io"
-        }
+        },
+        "metadata": {
+            "@type": "pattern.meshery.io/mesh/workload",
+            "meshName": "LINKERD",
+            "k8sKind": "SMIAddon"
+          }
     }
 }

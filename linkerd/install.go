@@ -109,10 +109,6 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Get expiry
 	exp := c.NotAfter.Format(time.RFC3339)
 
-	// // Create namespace in which the installation was requested - Both
-	// // Helm and Linkerd to are too picky about this
-	// createHelmNS(linkerd.MesheryKubeclient, namespace)
-
 	err = linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
 		"app.kubernetes.io/managed-by":   "helm",
 		"meta.helm.sh/release-name":      "linkerd2",
@@ -317,14 +313,6 @@ func installBinary(location, platform string, res *http.Response) error {
 }
 
 func createNS(c *mesherykube.Client, ns string) (*v1.Namespace, error) {
-	// 	const linkerdNS = `apiVersion: v1
-	// kind: Namespace
-	// metadata:
-	//   name: %s`
-	// 	fmt.Println("THIS IS MAN ", fmt.Sprintf(linkerdNS, ns))
-	// return c.ApplyManifest([]byte(fmt.Sprintf(linkerdNS, ns)), mesherykube.ApplyOptions{
-	// 	Update: true,
-	// })
 	var namespace *v1.Namespace = &v1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Namespace",
