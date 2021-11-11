@@ -6,7 +6,7 @@
     },
     "spec": {
         "definitionRef": {
-            "name": "JaegerLinkerdAddon.meshery.layer5.io"
+            "name": "jaegerlinkerdaddon.meshery.layer5.io"
         }
     }
 }

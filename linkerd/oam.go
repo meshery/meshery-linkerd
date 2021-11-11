@@ -174,7 +174,7 @@ func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel 
 
 	// Get the patches
 	patches := make([]string, 0)
-	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
+	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
 	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
 	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
 

@@ -3,6 +3,7 @@ package linkerd
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,8 @@ import (
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshery-linkerd/linkerd/cert"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -106,9 +109,9 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Get expiry
 	exp := c.NotAfter.Format(time.RFC3339)
 
-	// Create namespace in which the installation was requested - Both
-	// Helm and Linkerd to are too picky about this
-	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
+	// // Create namespace in which the installation was requested - Both
+	// // Helm and Linkerd to are too picky about this
+	// createHelmNS(linkerd.MesheryKubeclient, namespace)
 
 	err = linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
 		"app.kubernetes.io/managed-by":   "helm",
@@ -313,20 +316,23 @@ func installBinary(location, platform string, res *http.Response) error {
 	return nil
 }
 
-func createHelmNS(c *mesherykube.Client, ns, relName string) {
-	const linkerdNS = `apiVersion: v1
-kind: Namespace
-metadata:
-  name: %s
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    config.linkerd.io/admission-webhooks: disabled
-    meta.helm.sh/release-name: %s
-    meta.helm.sh/release-namespace: %s`
-
-	_ = c.ApplyManifest([]byte(fmt.Sprintf(linkerdNS, ns, relName, ns)), mesherykube.ApplyOptions{
-		Update:       true,
-		IgnoreErrors: true,
-	})
+func createNS(c *mesherykube.Client, ns string) (*v1.Namespace, error) {
+	// 	const linkerdNS = `apiVersion: v1
+	// kind: Namespace
+	// metadata:
+	//   name: %s`
+	// 	fmt.Println("THIS IS MAN ", fmt.Sprintf(linkerdNS, ns))
+	// return c.ApplyManifest([]byte(fmt.Sprintf(linkerdNS, ns)), mesherykube.ApplyOptions{
+	// 	Update: true,
+	// })
+	var namespace *v1.Namespace = &v1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Namespace",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ns,
+		},
+	}
+	namespace, err := c.KubeClient.CoreV1().Namespaces().Create(context.Background(), namespace, metav1.CreateOptions{})
+	return namespace, err
 }

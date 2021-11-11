@@ -205,11 +205,16 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	return msg1 + "\n" + msg2, nil
 }
 
-// AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not)
+// AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not). If the namespace is not present, it will create one, instead of throwing error.
 func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels map[string]string) error {
 	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
-		return err
+		linkerd.Log.Info("Namespace \"", namespace, "\" not present. Creating namespace")
+		var er error
+		ns, er = createNS(linkerd.MesheryKubeclient, namespace)
+		if er != nil {
+			return ErrAnnotatingNamespace(er)
+		}
 	}
 
 	if ns.ObjectMeta.Annotations == nil {
@@ -227,7 +232,7 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 
 	_, err = linkerd.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return ErrAnnotatingNamespace(err)
 	}
 	return nil
 }
