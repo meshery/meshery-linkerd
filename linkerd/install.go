@@ -313,7 +313,7 @@ func installBinary(location, platform string, res *http.Response) error {
 }
 
 func createNS(c *mesherykube.Client, ns string) (*v1.Namespace, error) {
-	var namespace *v1.Namespace = &v1.Namespace{
+	var namespace = &v1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Namespace",
 		},
