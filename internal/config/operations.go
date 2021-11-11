@@ -56,8 +56,8 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Description: "Add-on: SMI Addon",
 		AdditionalProperties: map[string]string{
 			// ServiceName:      "linkerd-gateway",
-			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
-			HelmChartURL:     "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz",
+			// ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL: "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz",
 		},
 	}
 	return dev

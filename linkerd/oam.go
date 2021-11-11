@@ -175,8 +175,6 @@ func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel 
 	// Get the patches
 	patches := make([]string, 0)
 	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
-	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
-	// patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
 
 	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL, addonName)
 	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)

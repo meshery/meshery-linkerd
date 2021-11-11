@@ -25,9 +25,10 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 	switch addon {
 	case config.JaegerAddon:
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-			URL:       helmChartURL,
-			Namespace: namespace,
-			Action:    act,
+			URL:             helmChartURL,
+			Namespace:       namespace,
+			CreateNamespace: true,
+			Action:          act,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"namespace":        namespace,
@@ -35,9 +36,10 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		})
 	case config.VizAddon:
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-			URL:       helmChartURL,
-			Namespace: namespace,
-			Action:    act,
+			URL:             helmChartURL,
+			Namespace:       namespace,
+			CreateNamespace: true,
+			Action:          act,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"linkerdNamespace": linkerdNamespace,
@@ -46,9 +48,10 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		})
 	case config.MultiClusterAddon:
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-			URL:       helmChartURL,
-			Namespace: namespace,
-			Action:    act,
+			URL:             helmChartURL,
+			Namespace:       namespace,
+			CreateNamespace: true,
+			Action:          act,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"linkerdNamespace": linkerdNamespace,
@@ -57,9 +60,10 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		})
 	case config.SMIAddon:
 		err = linkerd.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-			URL:       helmChartURL,
-			Namespace: namespace,
-			Action:    act,
+			URL:             helmChartURL,
+			Namespace:       namespace,
+			Action:          act,
+			CreateNamespace: true,
 			OverrideValues: map[string]interface{}{
 				"installNamespace": false, //Set to false when installing in a custom namespace.
 				"namespace":        namespace,

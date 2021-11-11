@@ -20,8 +20,6 @@ const (
 	AnnotateNamespace = "annotate-namespace"
 	ServicePatchFile  = "service-patch-file"
 	HelmChartURL      = "helm-chart-url"
-	CPPatchFile       = "cp-patch-file"
-	ControlPatchFile  = "control-patch-file"
 
 	// Addons that the adapter supports
 	JaegerAddon       = "jaeger-addon"
