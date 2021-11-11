@@ -9,9 +9,8 @@
             "name": "linkerdmesh.meshery.layer5.io"
         },
         "metadata": {
-            "@type": "pattern.meshery.io/mesh/workload",
-            "meshName": "LINKERD",
-            "k8sKind": "LinkerdMesh"
+            "@type": "pattern.meshery.io/mesh/workload"
+
           }
     }
 }
