@@ -18,9 +18,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ secrets.GO_VERSION }}
+          go-version: '1.16'
       - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./linkerd/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
   error_check:
     name: Error check
@@ -31,9 +31,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ secrets.GO_VERSION }}
+          go-version: '1.16'
       - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
   static_check:
     name: Static check
@@ -44,10 +44,10 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./linkerd/... # https://staticcheck.io/docs/checks
+          go-version: '1.16'
+      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go install -mod=mod honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./linkerd/... # https://staticcheck.io/docs/checks
   vet:
     name: Vet
     runs-on: ubuntu-latest
@@ -57,9 +57,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ secrets.GO_VERSION }}
+          go-version: '1.16'
       - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
   sec_check:
     name: Security check
@@ -87,9 +87,9 @@ jobs:
        with:
         fetch-depth: 1
      - name: Setup Go
-       uses: actions/setup-go@v1
+       uses: actions/setup-go@v2
        with:
-        go-version: ${{ secrets.GO_VERSION }}
+        go-version: '1.16'
      - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.3.0
        with:
