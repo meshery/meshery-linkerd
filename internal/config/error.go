@@ -22,6 +22,7 @@ const (
 	ErrEmptyConfigCode           = "1000"
 	ErrGetLatestReleasesCode     = "1001"
 	ErrGetLatestReleaseNamesCode = "1002"
+	ErrGetFileNamesCode          = "1003"
 )
 
 var (
@@ -36,4 +37,9 @@ func ErrGetLatestReleases(err error) error {
 // ErrGetLatestReleaseNames is the error for fetching linkerd releases
 func ErrGetLatestReleaseNames(err error) error {
 	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{"Invalid release format"}, []string{})
+}
+
+// ErrGetFileNames is the error for fetching linkerd releases
+func ErrGetFileNames(err error) error {
+	return errors.New(ErrGetFileNamesCode, errors.Alert, []string{"failed to get filenames for dynamic component generation"}, []string{err.Error()}, []string{"The repository could not be cloned or reached", "The repository url is invalid", "Could not reach the remote git repository"}, []string{"Make sure the owner, repo and path is correct for fetching crd names"})
 }

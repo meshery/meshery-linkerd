@@ -46,7 +46,3 @@ golangci-lint: $(GOLANGCILINT)
 
 $(GOLANGCILINT):
 	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
-
-# If your internet was blocked by sth, you can use this proxy
-#$(GOLANGCILINT):
-#	(cd /; GO111MODULE=on GOPROXY="https://goproxy.cn,direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)

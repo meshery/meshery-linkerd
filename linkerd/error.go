@@ -68,7 +68,7 @@ var (
 
 	// ErrParseOAMComponent represents the error which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occured while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
@@ -115,12 +115,12 @@ func ErrClientSet(err error) error {
 
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occurred while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occured while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Make sure to apply a valid kubernetes manifest"})
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occurred while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Make sure to apply a valid kubernetes manifest"})
 }
 
 // ErrParseLinkerdCoreComponent is the error when linkerd core component manifest parsing fails

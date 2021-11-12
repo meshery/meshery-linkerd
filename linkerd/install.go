@@ -289,6 +289,7 @@ func installBinary(location, platform string, res *http.Response) error {
 	if err != nil {
 		return err
 	}
+	/* #nosec G307 */
 	defer func() {
 		if err := out.Close(); err != nil {
 			fmt.Println(err)
