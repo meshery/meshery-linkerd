@@ -75,7 +75,7 @@ var (
 	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 	// ErrNilClient represents the error which is
 	// generated when kubernetes client is nil
-	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adapter to Meshery server"})
+	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"Kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"Kubernetes client not initialized"}, []string{"Reconnect the Meshery Adapter to Meshery Server"})
 )
 
 // ErrInstallLinkerd is the error for install mesh
@@ -150,7 +150,7 @@ func ErrApplyHelmChart(err error) error {
 
 // ErrAddonFromHelm is the error for installing addons through helm chart
 func ErrAddonFromHelm(err error) error {
-	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon Operation might be incorrect", "The helm installation failed due to any other reason"}, []string{})
+	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon operation might be incorrect", "Could not apply service patch file for the given addon"}, []string{})
 }
 
 //ErrAnnotatingNamespace is the error while annotating the namespace
