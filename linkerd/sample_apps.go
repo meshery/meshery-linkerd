@@ -56,7 +56,7 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 func (linkerd *Linkerd) LoadNamespaceToMesh(namespace string, remove bool) error {
 	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
-		return err
+		return ErrLoadNamespace(err, namespace)
 	}
 
 	if ns.ObjectMeta.Annotations == nil {
@@ -72,5 +72,5 @@ func (linkerd *Linkerd) LoadNamespaceToMesh(namespace string, remove bool) error
 	if err != nil {
 		return err
 	}
-	return nil
+	return ErrLoadNamespace(err, namespace)
 }

@@ -49,6 +49,10 @@ var (
 	// generated during the Helm Chart installation
 	ErrApplyHelmChartCode = "1020"
 
+	//ErrLoadNamespaceCode occur during the process of applying namespace
+	ErrLoadNamespaceCode = "replace"
+
+
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -129,4 +133,10 @@ func ErrProcessOAM(err error) error {
 // ErrApplyHelmChart is an error which is thrown when apply helm chart fails
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"error applying helm chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrLoadNamespace is the occurend while applying namespace
+func ErrLoadNamespace(err error, s string ) error{
+	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occured while applying namespace "}, []string{err.Error()}, []string{"Trying to access a namespace which is not available"}, []string{"Verify presence of namespace. Confirm Meshery ServiceAccount permissions"})
+
 }
