@@ -70,7 +70,7 @@ func (linkerd *Linkerd) LoadNamespaceToMesh(namespace string, remove bool) error
 
 	_, err = linkerd.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return ErrLoadNamespace(err, namespace)
 	}
-	return ErrLoadNamespace(err, namespace)
+	return nil
 }
