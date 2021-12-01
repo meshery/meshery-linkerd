@@ -1,4 +1,4 @@
-FROM golang:1.16 as build-env
+FROM golang:1.17 as build-env
 ARG VERSION
 ARG GIT_COMMITSHA
 
@@ -11,7 +11,7 @@ COPY linkerd/ linkerd/
 
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-linkerd main.go
 
-FROM gcr.io/distroless/base:nonroot-amd64
+FROM gcr.io/distroless/static
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-linkerd"
