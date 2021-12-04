@@ -12,6 +12,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Linkerd is the handler for the adapter
@@ -109,9 +110,33 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(linkerd, e)
+	case internalconfig.JaegerAddon, internalconfig.VizAddon, internalconfig.MultiClusterAddon, internalconfig.SMIAddon:
+		go func(hh *Linkerd, ee *adapter.Event) {
+			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			patches := make([]string, 0)
+			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
+			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL, opReq.OperationName)
+			operation := "install"
+			if opReq.IsDeleteOperation {
+				operation = "uninstall"
+			}
+
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(linkerd, e)
 	case internalconfig.AnnotateNamespace:
 		go func(hh *Linkerd, ee *adapter.Event) {
-			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			err := hh.AnnotateNamespace(opReq.Namespace, opReq.IsDeleteOperation, map[string]string{
+				"linkerd.io/inject": "enabled",
+			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while annotating %s", opReq.Namespace)
 				e.Details = err.Error()
@@ -178,4 +203,36 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	}
 
 	return msg1 + "\n" + msg2, nil
+}
+
+// AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not). If the namespace is not present, it will create one, instead of throwing error.
+func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels map[string]string) error {
+	ns, err := linkerd.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+	if err != nil {
+		linkerd.Log.Info("Namespace \"", namespace, "\" not present. Creating namespace")
+		var er error
+		ns, er = createNS(linkerd.MesheryKubeclient, namespace)
+		if er != nil {
+			return ErrAnnotatingNamespace(er)
+		}
+	}
+
+	if ns.ObjectMeta.Annotations == nil {
+		ns.ObjectMeta.Annotations = map[string]string{}
+	}
+	for key, val := range labels {
+		ns.ObjectMeta.Annotations[key] = val
+	}
+
+	if remove {
+		for key := range labels {
+			delete(ns.ObjectMeta.Annotations, key)
+		}
+	}
+
+	_, err = linkerd.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+	if err != nil {
+		return ErrAnnotatingNamespace(err)
+	}
+	return nil
 }

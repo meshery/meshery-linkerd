@@ -3,6 +3,7 @@ package linkerd
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,8 @@ import (
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshery-linkerd/linkerd/cert"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -27,7 +30,13 @@ const (
 	LinkerdHelmEdgeRepo = "https://helm.linkerd.io/edge"
 )
 
+var (
+	//Namespace in which Linkerd is installed, (addons need to know this)
+	linkerdNamespace = "linkerd"
+)
+
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
+	linkerdNamespace = namespace
 	linkerd.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -76,7 +85,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool) error {
 	loc, cver := getChartLocationAndVersion(version)
 	if loc == "" || cver == "" {
-		return nil
+		return ErrInvalidVersionForMeshInstallation
 	}
 
 	// Generate certificates for linkerd
@@ -100,16 +109,22 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	// Get expiry
 	exp := c.NotAfter.Format(time.RFC3339)
 
-	// Create namespace in which the installation was requested - Both
-	// Helm and Linkerd to are too picky about this
-	createHelmNS(linkerd.MesheryKubeclient, namespace, "linkerd2")
+	err = linkerd.AnnotateNamespace(namespace, isDel, map[string]string{
+		"app.kubernetes.io/managed-by":   "helm",
+		"meta.helm.sh/release-name":      "linkerd2",
+		"meta.helm.sh/release-namespace": namespace,
+	})
+	if err != nil {
+		return ErrAnnotatingNamespace(err)
+	}
+
 	var act mesherykube.HelmChartAction
 	if isDel {
 		act = mesherykube.UNINSTALL
 	} else {
 		act = mesherykube.INSTALL
 	}
-	return linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+	err = linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: loc,
 			Chart:      "linkerd2",
@@ -119,6 +134,8 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 		// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
 		Action: act,
 		OverrideValues: map[string]interface{}{
+			"namespace":        namespace,
+			"installNamespace": false,
 			"global": map[string]interface{}{
 				"identityTrustAnchorsPEM": string(certPEM),
 			},
@@ -134,6 +151,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 			},
 		},
 	})
+	return err
 }
 
 func getChartLocationAndVersion(version string) (string, string) {
@@ -295,20 +313,15 @@ func installBinary(location, platform string, res *http.Response) error {
 	return nil
 }
 
-func createHelmNS(c *mesherykube.Client, ns, relName string) {
-	const linkerdNS = `apiVersion: v1
-kind: Namespace
-metadata:
-  name: %s
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    config.linkerd.io/admission-webhooks: disabled
-    meta.helm.sh/release-name: %s
-    meta.helm.sh/release-namespace: %s`
-
-	_ = c.ApplyManifest([]byte(fmt.Sprintf(linkerdNS, ns, relName, ns)), mesherykube.ApplyOptions{
-		Update:       true,
-		IgnoreErrors: true,
-	})
+func createNS(c *mesherykube.Client, ns string) (*v1.Namespace, error) {
+	var namespace = &v1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Namespace",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ns,
+		},
+	}
+	namespace, err := c.KubeClient.CoreV1().Namespaces().Create(context.Background(), namespace, metav1.CreateOptions{})
+	return namespace, err
 }
