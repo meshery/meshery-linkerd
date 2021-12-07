@@ -200,7 +200,7 @@ func registerWorkloads(port string, log logger.Handler) {
 			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd2/templates/" + manifest,
 			GenerationMethod: adapter.Manifests,
 			Config: manifests.Config{
-				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
+				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_LINKERD)],
 				MeshVersion: appVersion,
 				Filter: manifests.CrdFilter{
 					RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},

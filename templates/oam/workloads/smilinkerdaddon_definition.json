@@ -9,7 +9,7 @@
             "name": "smilinkerdaddon.meshery.layer5.io"
         },
         "metadata": {
-            "@type": "pattern.meshery.io/mesh/workload"
+            "@type": "pattern.meshery.io/core"
           }
     }
 }
