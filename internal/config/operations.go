@@ -1,3 +1,17 @@
+// Copyright 2020 Layer5, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package config
 
 import (
@@ -24,6 +38,41 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Annotate Namespace",
 	}
-
+	dev[JaegerAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Jaeger",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "jaeger",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.2.tgz",
+		},
+	}
+	dev[VizAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Viz",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "web",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-2.10.2.tgz",
+		},
+	}
+	dev[MultiClusterAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Multi-cluster",
+		AdditionalProperties: map[string]string{
+			ServiceName:      "linkerd-gateway",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-multicluster-2.10.2.tgz",
+		},
+	}
+	dev[SMIAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: SMI Addon",
+		AdditionalProperties: map[string]string{
+			// ServiceName:      "linkerd-gateway",
+			// ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL: "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz",
+		},
+	}
 	return dev
 }

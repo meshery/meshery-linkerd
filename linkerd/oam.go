@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/layer5io/meshery-adapter-library/common"
+	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -17,7 +19,11 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool)
 	var msgs []string
 
 	compFuncMap := map[string]CompHandler{
-		"LinkerdMesh": handleComponentLinkerdMesh,
+		"LinkerdMesh":              handleComponentLinkerdMesh,
+		"JaegerLinkerdAddon":       handleComponentLinkerdAddon,
+		"VizLinkerdAddon":          handleComponentLinkerdAddon,
+		"MultiClusterLinkerdAddon": handleComponentLinkerdAddon,
+		"SMILinkerdAddon":          handleComponentLinkerdAddon,
 	}
 
 	for _, comp := range comps {
@@ -76,7 +82,9 @@ func (linkerd *Linkerd) HandleApplicationConfiguration(config v1alpha1.Configura
 func handleNamespaceLabel(linkerd *Linkerd, namespaces []string, isDel bool) error {
 	var errs []error
 	for _, ns := range namespaces {
-		if err := linkerd.LoadNamespaceToMesh(ns, isDel); err != nil {
+		if err := linkerd.AnnotateNamespace(ns, isDel, map[string]string{
+			"linkerd.io/inject": "enabled",
+		}); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -140,6 +148,42 @@ func handleLinkerdCoreComponent(
 	return msg, linkerd.applyManifest(yamlByt, isDel, comp.Namespace)
 }
 
+func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool) (string, error) {
+	var addonName string
+	var helmURL string
+	version := removePrefixFromVersionIfPresent(comp.Spec.Settings["version"].(string))
+	switch comp.Spec.Type {
+	case "JaegerLinkerdAddon":
+		addonName = config.JaegerAddon
+		helmURL = "https://helm.linkerd.io/stable/linkerd-jaeger-" + version + ".tgz"
+	case "VizLinkerdAddon":
+		addonName = config.VizAddon
+		helmURL = "https://helm.linkerd.io/stable/linkerd-viz-" + version + ".tgz"
+	case "MultiClusterLinkerdAddon":
+		addonName = config.MultiClusterAddon
+		helmURL = "https://helm.linkerd.io/stable/linkerd-multicluster-" + version + ".tgz"
+	case "SMIClusterLinkerdAddon":
+		addonName = config.SMIAddon
+		helmURL = "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz"
+	default:
+		return "", nil
+	}
+
+	// Get the service
+	svc := config.Operations[addonName].AdditionalProperties[common.ServiceName]
+
+	// Get the patches
+	patches := make([]string, 0)
+	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
+
+	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL, addonName)
+	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
+	if isDel {
+		msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+	}
+
+	return msg, err
+}
 func getAPIVersionFromComponent(comp v1alpha1.Component) string {
 	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
 }
@@ -177,4 +221,16 @@ func mergeErrors(errs []error) error {
 
 func mergeMsgs(strs []string) string {
 	return strings.Join(strs, "\n")
+}
+func removePrefixFromVersionIfPresent(version string) string {
+	if version == "" {
+		return "2.10.1" //default, to avoid any errors
+	}
+	if strings.HasPrefix(version, "stable-") {
+		return strings.TrimPrefix(version, "stable-")
+	}
+	if strings.HasPrefix(version, "edge-") {
+		return strings.TrimPrefix(version, "edge-")
+	}
+	return version
 }

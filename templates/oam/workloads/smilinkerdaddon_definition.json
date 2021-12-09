@@ -2,11 +2,11 @@
     "apiVersion": "core.oam.dev/v1alpha1",
     "kind": "WorkloadDefinition",
     "metadata": {
-        "name": "LinkerdMesh"
+        "name": "SMILinkerdAddon"
     },
     "spec": {
         "definitionRef": {
-            "name": "linkerdmesh.meshery.layer5.io"
+            "name": "smilinkerdaddon.meshery.layer5.io"
         },
         "metadata": {
             "@type": "pattern.meshery.io/core"

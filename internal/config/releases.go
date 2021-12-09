@@ -1,3 +1,17 @@
+// Copyright 2020 Layer5, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package config
 
 import (
@@ -9,10 +23,6 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
-
-// cacheCheck is the time in weeks when the releases
-// should be updated grom github release pages
-const cacheCheck = 1
 
 // Release is used to save the release informations
 type Release struct {
@@ -55,7 +65,7 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 		limit = len(releaseNames)
 	}
 
-	result := make([]adapter.Version, limit, limit)
+	result := make([]adapter.Version, limit)
 
 	// Make latest stable as the first name
 	result[0] = latestStable
