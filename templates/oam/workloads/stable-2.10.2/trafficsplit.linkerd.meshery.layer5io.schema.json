@@ -31,8 +31,5 @@
       }
     }
   },
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "stable-2.10.2",
-  "object-type": "TrafficSplit",
-  "service-mesh": "Linkerd"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

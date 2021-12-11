@@ -88,11 +88,7 @@ jobs:
             apiGroup=$(./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '
-            .[]
-            | .version = "'$NEW_LINKERD_VERSION'"
-            | ."object-type" = "'$nameUpper'"
-            | ."service-mesh" = "'$meshName'" ' > $dirPath/$nameLower.linkerd.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameLower'"'  > $dirPath/$nameLower.linkerd.meshery.layer5io.schema.json
 
             echo $template |\
             jq '
