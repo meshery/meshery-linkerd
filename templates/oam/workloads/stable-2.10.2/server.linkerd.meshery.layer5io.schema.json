@@ -76,7 +76,5 @@
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "stable-2.10.2",
-  "object-type": "Server",
-  "service-mesh": "Linkerd"
+  "title": "Server"
 }
