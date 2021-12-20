@@ -49,7 +49,7 @@ jobs:
       - name: Get Linkerd manifests
         run: |
           mkdir ./linkerd-crds; cd linkerd-crds;
-          curl --remote-name-all `curl --silent -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/linkerd/linkerd2/contents/charts/linkerd2/templates\?ref\=main | jq 'map(.download_url) | .[]' | tr -d '"' | grep crd`;
+          curl --remote-name-all `curl --silent -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/linkerd/linkerd2/contents/charts/linkerd-crds/templates\?ref\=main | jq 'map(.download_url) | .[]' | tr -d '"' | grep crd`;
           awk 'FNR==1 && NR>1 { printf("\n%s\n\n","---") } 1' ./*.yaml > ~/linkerd.yaml;
 
       - name: Build jsonschema util
