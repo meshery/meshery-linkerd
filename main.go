@@ -23,6 +23,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
 
 	// "github.com/layer5io/meshkit/tracing"
@@ -172,7 +173,7 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Getting crd names from repository for component generation...")
-	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd2/templates")
+	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates")
 	if err != nil {
 		log.Error(err)
 		return
@@ -185,19 +186,23 @@ func registerWorkloads(port string, log logger.Handler) {
 		}
 	}
 
-	rel, err := config.GetLatestReleases(1)
+	versions, err := utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
+	if err != nil {
+		log.Info("Could not get latest stable release")
+		return
+	}
+	appVersion := versions[len(versions)-1]
 	if err != nil {
 		log.Info("Could not get latest version ", err.Error())
 		return
 	}
-	appVersion := rel[0].TagName
 	log.Info("Registering latest workload components for version ", appVersion)
 	// Register workloads
 	for _, manifest := range crds {
 		log.Info("Registering for ", manifest)
 		if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 			TimeoutInMinutes: 60,
-			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd2/templates/" + manifest,
+			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd-crds/templates/" + manifest,
 			GenerationMethod: adapter.Manifests,
 			Config: manifests.Config{
 				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_LINKERD)],
