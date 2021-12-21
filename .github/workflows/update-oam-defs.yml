@@ -49,7 +49,7 @@ jobs:
       - name: Get Linkerd manifests
         run: |
           mkdir ./linkerd-crds; cd linkerd-crds;
-          curl --remote-name-all `curl --silent -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/linkerd/linkerd2/contents/charts/linkerd2/templates\?ref\=main | jq 'map(.download_url) | .[]' | tr -d '"' | grep crd`;
+          curl --remote-name-all `curl --silent -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/linkerd/linkerd2/contents/charts/linkerd-crds/templates\?ref\=main | jq 'map(.download_url) | .[]' | tr -d '"' | grep crd`;
           awk 'FNR==1 && NR>1 { printf("\n%s\n\n","---") } 1' ./*.yaml > ~/linkerd.yaml;
 
       - name: Build jsonschema util
@@ -88,11 +88,7 @@ jobs:
             apiGroup=$(./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/linkerd.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '
-            .[]
-            | .version = "'$NEW_LINKERD_VERSION'"
-            | ."object-type" = "'$nameUpper'"
-            | ."service-mesh" = "'$meshName'" ' > $dirPath/$nameLower.linkerd.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameUpper'"'  > $dirPath/$nameLower.linkerd.meshery.layer5io.schema.json
 
             echo $template |\
             jq '
