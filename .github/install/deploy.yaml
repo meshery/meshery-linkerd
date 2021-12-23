@@ -1,0 +1,7 @@
+name: LinkerdMesh
+services:
+  linkerd:
+    type: LinkerdMesh
+    namespace: linkerd-system
+    settings:
+      version:  #will be inserted dynamically
