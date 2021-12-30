@@ -50,7 +50,7 @@ var (
 	ErrApplyHelmChartCode = "1020"
 
 	// ErrNilClientCode represents the error code which is
-	// generated when kubernetes client is nil
+	// generated when Kubernetes client is nil
 	ErrNilClientCode = "1019"
 
 	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
@@ -74,7 +74,7 @@ var (
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 	// ErrNilClient represents the error which is
-	// generated when kubernetes client is nil
+	// generated when Kubernetes client is nil
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"Kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"Kubernetes client not initialized"}, []string{"Reconnect the Meshery Adapter to Meshery Server"})
 )
 
@@ -120,7 +120,7 @@ func ErrSampleApp(err error) error {
 
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occurred while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Make sure to apply a valid kubernetes manifest"})
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occurred while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Make sure to apply a valid Kubernetes manifest"})
 }
 
 // ErrParseLinkerdCoreComponent is the error when linkerd core component manifest parsing fails
