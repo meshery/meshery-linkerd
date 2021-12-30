@@ -35,7 +35,7 @@ import (
 )
 
 var (
-	serviceName = "linkerd-adaptor"
+	serviceName = "linkerd-adapter"
 	version     = "none"
 	gitsha      = "none"
 )
@@ -146,7 +146,7 @@ func serviceAddress() string {
 		return svcAddr
 	}
 
-	return "mesherylocal.layer5.io"
+	return "localhost"
 }
 
 func registerCapabilities(port string, log logger.Handler) {
