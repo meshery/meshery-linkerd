@@ -1,4 +1,4 @@
-// Copyright 2019 Layer5.io
+// Copyright 2022 Meshery Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import (
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
-
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
@@ -172,13 +171,13 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 }
 
 func registerWorkloads(port string, log logger.Handler) {
-	log.Info("Getting crd names from repository for component generation...")
+	log.Info("Generating latest service mesh components...")
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates")
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Info("CRD names extracted successfully")
+	log.Info("Component names successfully extracted")
 	var crds []string
 	for _, n := range names {
 		if strings.HasSuffix(n, "-crd.yaml") {
@@ -188,15 +187,15 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	versions, err := utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
 	if err != nil {
-		log.Info("Could not get latest stable release")
+		log.Info("Could not get latest stable service mesh release")
 		return
 	}
 	appVersion := versions[len(versions)-1]
 	if err != nil {
-		log.Info("Could not get latest version ", err.Error())
+		log.Info("Could not get latest service mesh version ", err.Error())
 		return
 	}
-	log.Info("Registering latest workload components for version ", appVersion)
+	log.Info("Registering latest service mesh components for version ", appVersion)
 	// Register workloads
 	for _, manifest := range crds {
 		log.Info("Registering for ", manifest)
@@ -226,5 +225,5 @@ func registerWorkloads(port string, log logger.Handler) {
 		}
 		log.Info(manifest, " registered")
 	}
-	log.Info("Latest workload components successfully registered.")
+	log.Info("Successfully registered service mesh components with Meshery Server at ",mesheryServerAddress())
 }
