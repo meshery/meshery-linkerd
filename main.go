@@ -35,7 +35,7 @@ import (
 
 var (
 	serviceName = "linkerd-adapter"
-	version     = "none"
+	version     = "edge"
 	gitsha      = "none"
 )
 
