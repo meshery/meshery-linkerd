@@ -7,5 +7,6 @@ updates:
   open-pull-requests-limit: 10
   reviewers:
   - aisuko
+  - Revolyssup
   labels:
     - "dependencies"
