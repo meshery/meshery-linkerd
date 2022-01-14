@@ -5,7 +5,7 @@ go 1.17
 replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 
 require (
-	github.com/layer5io/meshery-adapter-library v0.5.0
+	github.com/layer5io/meshery-adapter-library v0.5.1
 	github.com/layer5io/meshkit v0.5.1
 	github.com/layer5io/service-mesh-performance v0.3.3
 	gopkg.in/yaml.v2 v2.4.0
@@ -143,7 +143,7 @@ require (
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
+	golang.org/x/sys v0.0.0-20220110181412-a018aaa089fe // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
 	golang.org/x/text v0.3.5 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
