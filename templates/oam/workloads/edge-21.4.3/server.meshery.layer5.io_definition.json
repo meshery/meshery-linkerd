@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "Server",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "server.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "policy.linkerd.io/v1alpha1",
+   "k8sKind": "Server",
+   "meshName": "LINKERD",
+   "meshVersion": "edge-21.4.3"
+  }
+ }
+}

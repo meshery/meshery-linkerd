@@ -12,7 +12,7 @@ import (
 
 var (
 	basePath, _  = os.Getwd()
-	workloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
+	WorkloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
 	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
@@ -29,7 +29,7 @@ type schemaDefinitionPathSet struct {
 func RegisterWorkloads(runtime, host string) error {
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
 
-	pathSets, err := load(workloadPath)
+	pathSets, err := load(WorkloadPath)
 	if err != nil {
 		return err
 	}

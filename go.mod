@@ -6,7 +6,7 @@ replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200
 
 require (
 	github.com/layer5io/meshery-adapter-library v0.5.2
-	github.com/layer5io/meshkit v0.5.1
+	github.com/layer5io/meshkit v0.5.2
 	github.com/layer5io/service-mesh-performance v0.3.3
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.21.0
@@ -50,6 +50,7 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
