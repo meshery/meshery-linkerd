@@ -149,6 +149,9 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 					},
 				},
 			},
+			"proxyInit": map[string]interface{}{ //This is allowed due to this issue https://github.com/linkerd/linkerd2/issues/7308
+				"runAsRoot": true,
+			},
 		},
 	})
 	return err
