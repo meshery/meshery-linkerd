@@ -32,7 +32,7 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: linkerd/linkerd2
-          excludes: prerelease, draft
+          excludes: prerelease, draft, edge
       - name: Change service mesh version in patternfile
         run: | 
            
