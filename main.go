@@ -185,22 +185,19 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	log.Info("Registering latest service mesh components for version ", version)
 	// Register workloads
-	for _, version := range build.AllVersions {
-		for _, manifest := range build.CRDnames {
-			log.Info("Registering for ", manifest)
-			fmt.Println("THIS ", build.GenerationURL(version, manifest))
-			if err := adapter.CreateComponents(adapter.StaticCompConfig{
-				URL:     build.GenerationURL(version, manifest),
-				Method:  gm,
-				Path:    build.WorkloadPath,
-				DirName: version,
-				Config:  build.NewConfig(version),
-			}); err != nil {
-				log.Error(err)
-				return
-			}
-			log.Info(manifest, " registered")
+	for _, manifest := range build.CRDnames {
+		log.Info("Registering for ", manifest)
+		if err := adapter.CreateComponents(adapter.StaticCompConfig{
+			URL:     build.GenerationURL(manifest),
+			Method:  gm,
+			Path:    build.WorkloadPath,
+			DirName: version,
+			Config:  build.NewConfig(version),
+		}); err != nil {
+			log.Error(err)
+			return
 		}
+		log.Info(manifest, " registered")
 	}
 
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated

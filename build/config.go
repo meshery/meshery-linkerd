@@ -49,7 +49,7 @@ func init() {
 	for _, v := range vs {
 		AllVersions = append(AllVersions, string(v))
 	}
-	LatestVersion = AllVersions[len(AllVersions)-1]
+	LatestVersion = AllVersions[0]
 	DefaultGenerationMethod = adapter.Manifests
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates")
 	if err != nil {
@@ -62,7 +62,7 @@ func init() {
 	}
 }
 
-func GenerationURL(version string, crd string) string {
-	return "https://raw.githubusercontent.com/linkerd/linkerd2/" + version + "/charts/linkerd-crds/templates/" + crd
+func GenerationURL(crd string) string {
+	return "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd-crds/templates/" + crd
 
 }
