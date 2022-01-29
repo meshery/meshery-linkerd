@@ -17,20 +17,20 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/layer5io/meshery-linkerd/build"
 	"github.com/layer5io/meshery-linkerd/linkerd"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/utils"
-	"github.com/layer5io/meshkit/utils/manifests"
+
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	configprovider "github.com/layer5io/meshkit/config/provider"
-	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
@@ -172,58 +172,51 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Generating latest service mesh components...")
-	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates")
-	if err != nil {
-		log.Error(err)
+
+	//First we create and store any new components if available
+	version := build.LatestVersion
+	gm := build.DefaultGenerationMethod
+
+	// Prechecking to skip comp gen
+	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
+		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
 		return
 	}
-	log.Info("Component names successfully extracted")
-	var crds []string
-	for _, n := range names {
-		if strings.HasSuffix(n, "-crd.yaml") {
-			crds = append(crds, n)
+
+	log.Info("Registering latest service mesh components for version ", version)
+	// Register workloads
+	for _, version := range build.AllVersions {
+		for _, manifest := range build.CRDnames {
+			log.Info("Registering for ", manifest)
+			fmt.Println("THIS ", build.GenerationURL(version, manifest))
+			if err := adapter.CreateComponents(adapter.StaticCompConfig{
+				URL:     build.GenerationURL(version, manifest),
+				Method:  gm,
+				Path:    build.WorkloadPath,
+				DirName: version,
+				Config:  build.NewConfig(version),
+			}); err != nil {
+				log.Error(err)
+				return
+			}
+			log.Info(manifest, " registered")
 		}
 	}
 
-	versions, err := utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
-	if err != nil {
-		log.Info("Could not get latest stable service mesh release")
+	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
+	log.Info("Component creation completed for version ", version)
+
+	//Now we will register in case
+	log.Info("Registering workloads with Meshery Server for version ", version)
+	originalPath := oam.WorkloadPath
+	oam.WorkloadPath = filepath.Join(originalPath, version)
+	defer resetWorkloadPath(originalPath)
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Error(err)
 		return
 	}
-	appVersion := versions[len(versions)-1]
-	if err != nil {
-		log.Info("Could not get latest service mesh version ", err.Error())
-		return
-	}
-	log.Info("Registering latest service mesh components for version ", appVersion)
-	// Register workloads
-	for _, manifest := range crds {
-		log.Info("Registering for ", manifest)
-		if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-			TimeoutInMinutes: 60,
-			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd-crds/templates/" + manifest,
-			GenerationMethod: adapter.Manifests,
-			Config: manifests.Config{
-				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_LINKERD)],
-				MeshVersion: appVersion,
-				Filter: manifests.CrdFilter{
-					RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-					NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-					VersionFilter: []string{"$[0]..spec.versions[0]"},
-					GroupFilter:   []string{"$[0]..spec"},
-					SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-					ItrFilter:     []string{"$[?(@.spec.names.kind"},
-					ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-					VField:        "name",
-					GField:        "group",
-				},
-			},
-			Operation: config.LinkerdOperation,
-		}); err != nil {
-			log.Error(err)
-			return
-		}
-		log.Info(manifest, " registered")
-	}
-	log.Info("Successfully registered service mesh components with Meshery Server at ",mesheryServerAddress())
+	log.Info("Latest workload components successfully registered for version ", version)
+}
+func resetWorkloadPath(orig string) {
+	oam.WorkloadPath = orig
 }
