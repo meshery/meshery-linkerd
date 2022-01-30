@@ -64,5 +64,4 @@ func init() {
 
 func GenerationURL(crd string) string {
 	return "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd-crds/templates/" + crd
-
 }
