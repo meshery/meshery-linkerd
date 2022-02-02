@@ -72,7 +72,7 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 	// ErrNilClient represents the error which is
 	// generated when Kubernetes client is nil
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"Kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"Kubernetes client not initialized"}, []string{"Reconnect the Meshery Adapter to Meshery Server"})

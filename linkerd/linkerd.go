@@ -128,8 +128,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
-			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Successfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(linkerd, e)
 	case internalconfig.AnnotateNamespace:

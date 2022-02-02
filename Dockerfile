@@ -8,7 +8,7 @@ RUN go mod download
 COPY main.go main.go
 COPY internal/ internal/
 COPY linkerd/ linkerd/
-
+COPY build/ build/
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-linkerd main.go
 
 FROM alpine:3.15 as jsonschema-util
