@@ -10,8 +10,8 @@ replace (
 )
 
 require (
-	github.com/layer5io/meshery-adapter-library v0.5.2
-	github.com/layer5io/meshkit v0.5.7
+	github.com/layer5io/meshery-adapter-library v0.5.3
+	github.com/layer5io/meshkit v0.5.8
 	github.com/layer5io/service-mesh-performance v0.3.3
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.4
