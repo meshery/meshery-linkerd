@@ -1,4 +1,4 @@
-name: Meshery Linkerd Build and Releaser
+name: Build and Releaser
 on:
   release:
     types: [published]
@@ -17,9 +17,9 @@ jobs:
       with:
         fetch-depth: 1
     - name: Setup Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3.0.0
       with:
-        go-version: '1.16'
+        go-version: '1.17'
     - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go build .
   docker:
     name: Docker build and push
@@ -58,7 +58,7 @@ jobs:
         docker push ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_SHA::7}
     - name: Docker Hub Description
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
-      uses: peter-evans/dockerhub-description@v2.0.0
+      uses: peter-evans/dockerhub-description@v2.4.3
       env:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
