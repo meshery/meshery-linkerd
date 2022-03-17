@@ -1,4 +1,4 @@
-name: Meshery Linkerd Build and Releaser
+name: Build and Releaser
 on:
   release:
     types: [published]
