@@ -15,7 +15,7 @@ jobs:
   SetPatternfile:
     runs-on: ubuntu-latest
     outputs:
-      sm_version: ${{ steps.gettag.outputs.release }}
+      sm_version: ${{ steps.glrt.outputs.release }}
       adapter_version:  ${{ env.version }}
     steps:
       - name: Checkout Code
@@ -28,15 +28,13 @@ jobs:
                 echo "version=edge" >> $GITHUB_ENV
             fi
       - name: Get latest release tag
-        id: gettag
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: linkerd/linkerd2
-          excludes: prerelease, draft
+        id: glrt
+        run: |
+          NEW_LINKERD_VERSION=$(curl --silent "https://api.github.com/repos/linkerd/linkerd2/releases" | jq ' .[] | select(.tag_name|test("stable")) | ."tag_name"' | sed -n 1p$'\n' | tr -d '"')
+          echo "::set-output name=release::$NEW_LINKERD_VERSION"
       - name: Change service mesh version in patternfile
         run: | 
-           
-           yq e -i '.services.linkerd.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.settings.version="${{ steps.glrt.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -98,7 +96,7 @@ jobs:
           filename=(`date +%m-%d-%Y-%H-%M-%m_${SHORT_SHA}`)
           echo $filename
           echo "---
-          timestamp: $(jq '.metadata.runon' data.json)
+          timestamp: $(jq '.metadata.runon| strptime("%a %b %e %X %Z %Y") | strftime("%Y-%m-%d %X %Z %a")' data.json)
           meshery-component: meshery-linkerd
           meshery-component-version: $version
           meshery-server-version: $(jq '.metadata."meshery-server-version"' data.json)

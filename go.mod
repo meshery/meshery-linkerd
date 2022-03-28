@@ -2,8 +2,9 @@ module github.com/layer5io/meshery-linkerd
 
 go 1.17
 
+replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
+
 replace (
-	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 	go.opentelemetry.io/otel v1.3.0 => go.opentelemetry.io/otel v0.11.0
 	go.opentelemetry.io/otel/sdk v1.3.0 => go.opentelemetry.io/otel/sdk v0.11.0
 )
@@ -11,11 +12,13 @@ replace (
 require (
 	github.com/layer5io/meshery-adapter-library v0.5.3
 	github.com/layer5io/meshkit v0.5.11
-	github.com/layer5io/service-mesh-performance v0.3.3
+	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.23.0-alpha.1
 	k8s.io/apimachinery v0.23.0-alpha.1
 )
+
+require oras.land/oras-go v0.4.0 // indirect
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
@@ -169,7 +172,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/kubectl v0.23.0-alpha.1 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
-	oras.land/oras-go v0.4.0 // indirect
 	sigs.k8s.io/kustomize/api v0.10.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.13.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
