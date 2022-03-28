@@ -125,6 +125,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 		act = mesherykube.INSTALL
 	}
 	err = linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+		ReleaseName: "linkerd2",
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: loc,
 			Chart:      "linkerd2",
