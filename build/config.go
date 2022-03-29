@@ -51,12 +51,12 @@ func init() {
 	}
 	LatestVersion = AllVersions[0]
 	DefaultGenerationMethod = adapter.Manifests
-	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates")
+	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
 	if err != nil {
 		return
 	}
 	for _, n := range names {
-		if strings.HasSuffix(n, "-crd.yaml") {
+		if strings.HasSuffix(n, ".yaml") {
 			CRDnames = append(CRDnames, n)
 		}
 	}

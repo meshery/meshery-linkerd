@@ -158,11 +158,11 @@ func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
 
 // GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
 func GetFileNames(owner string, repo string, path string) ([]string, error) {
-	g := walker.NewGit()
+	g := walker.NewGithub()
 	var filenames []string
 	var m sync.RWMutex
-	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
-		threadSafeAppend(&filenames, f.Name, &m)
+	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
+		threadSafeAppend(&filenames, gca.Name, &m)
 		return nil
 	}).Walk()
 	if err != nil {
