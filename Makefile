@@ -1,5 +1,6 @@
 IMAGE?=layer5/meshery-linkerd
 GOPATH = $(shell go env GOPATH)
+BUILDER=buildx-multi-arch
 
 GIT_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1`)
 GIT_STRIPPED_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1` | cut -c 2-)
@@ -50,8 +51,10 @@ $(GOLANGCILINT):
 prepare-buildx: ## Create buildx builder for multi-arch build, if not exists
 	docker buildx inspect $(BUILDER) || docker buildx create --name=$(BUILDER) --driver=docker-container --driver-opt=network=host
 
-multi: ## Build service image to be deployed as a desktop extension
-	docker build --tag=$(IMAGE) --build-arg GIT_VERSION=$(GIT_VERSION) --build-arg GIT_STRIPPED_VERSION=$(GIT_STRIPPED_VERSION) .
+multi: prepare-buildx## Build service image to be deployed as a desktop extension
+	docker buildx build --builder=$(BUILDER) --platform=linux/amd64,linux/arm64 --tag=$(IMAGE) --build-arg GIT_VERSION=$(GIT_VERSION) --build-arg GIT_STRIPPED_VERSION=$(GIT_STRIPPED_VERSION) .
+
+
 
 help: ## Show this help
 	@echo Please specify a build target. The choices are:
