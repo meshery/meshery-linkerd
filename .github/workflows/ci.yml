@@ -1,13 +1,15 @@
-name: Meshery Linkerd
+name: Build Meshery Linkerd
 on:
   push:
     branches:
       - "*"
-    tags:
-      - "v*"
+    paths-ignore:
+      - '.github/**'
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - '.github/**'
 jobs:
   lint:
     name: Check & Review code
@@ -18,9 +20,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3.0.0
         with:
-          go-version: '1.16'
+          go-version: '1.17'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./linkerd/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
   error_check:
     name: Error check
@@ -31,7 +33,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3.0.0
         with:
           go-version: '1.16'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
@@ -60,9 +62,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3.0.0
         with:
-          go-version: '1.16'
+          go-version: '1.17'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
   sec_check:
     name: Security check
@@ -71,7 +73,7 @@ jobs:
       GO111MODULE: on
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
         with:
           fetch-depth: 1
       - name: Run Gosec Security Scanner
@@ -91,9 +93,9 @@ jobs:
        with:
         fetch-depth: 1
      - name: Setup Go
-       uses: actions/setup-go@v2
+       uses: actions/setup-go@v3.0.0
        with:
-        go-version: '1.16'
+        go-version: '1.17'
      - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.3.0
        with:

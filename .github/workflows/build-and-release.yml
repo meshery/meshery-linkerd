@@ -1,11 +1,12 @@
-name: Build and Releaser
+name: Release Meshery Linkerd Adapter
 on:
   release:
     types: [published]
   push:
     branches:
       - "master"
-
+    paths-ignore:
+      - '.github/**'
 jobs:
   build:
     name: Build check
