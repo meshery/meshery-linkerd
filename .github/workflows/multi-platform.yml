@@ -19,6 +19,9 @@ on:
           default: ''
 jobs:
   docker:
+    defaults:
+      run:
+        working-directory: /
     runs-on: ubuntu-latest
     steps:
       - name: Determine Release Channel
