@@ -33,7 +33,6 @@ const (
 var (
 	//Namespace in which Linkerd is installed, (addons need to know this)
 	linkerdNamespace = "linkerd"
-	chart = "linkerd2"
 )
 
 func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
@@ -155,7 +154,6 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 				"runAsRoot": true,
 			},
 		},
-		ReleaseName: chart,
 	})
 	return err
 }
