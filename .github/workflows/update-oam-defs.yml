@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - 'master'
-
+    paths-ignore:
+      - '.github/**'
 jobs:
   check_linkerd_version:
     name: Check Linkerd Version

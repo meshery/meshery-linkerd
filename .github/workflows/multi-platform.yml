@@ -5,8 +5,8 @@ on:
       - 'v*'  
     branches:
       - 'master'
-    paths-ignore:
-      - '.github/**'
+    # paths-ignore:
+    #   - '.github/**'
   workflow_dispatch:
     inputs:
       release-ver:
