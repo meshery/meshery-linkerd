@@ -44,7 +44,7 @@ jobs:
         echo "Env GIT_STRIPPED_VERSION: ${{env.GIT_STRIPPED_VERSION}}"
         echo "Env GIT_TAG: ${{ github.event.release.tag_name }}"
   
-  docker-extension:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
       - 
@@ -82,7 +82,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: layer5/meshery-linkerd
+          images: ${{ secrets.IMAGE_NAME }}
           flavor: |
             latest=false
           tags: |
