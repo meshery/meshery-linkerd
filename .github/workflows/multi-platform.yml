@@ -24,6 +24,13 @@ on:
           description: 'Release Channel'     
           required: true
           default: 'edge'
+
+env:
+  GIT_VERSION: ${{github.event.inputs.release-ver}}
+  GIT_STRIPPED_VERSION: ${{github.event.inputs.stripped-release-ver}}
+  RELEASE_CHANNEL: ${{github.event.inputs.release-channel}}
+  GIT_TAG: ${{ github.event.release.tag_name }}
+
 jobs:
   print-inputs:
     runs-on: ubuntu-latest
@@ -37,10 +44,8 @@ jobs:
         echo "Env GIT_STRIPPED_VERSION: ${{env.GIT_STRIPPED_VERSION}}"
         echo "Env GIT_TAG: ${{ github.event.release.tag_name }}"
   
-jobs:
-  docker-build:
-    defaults:
-      runs-on: ubuntu-latest
+  docker-extension:
+    runs-on: ubuntu-latest
     steps:
       - 
         name: Checkout repo
@@ -77,7 +82,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: layer5io/meshery-linkerd
+          images: layer5/meshery-linkerd
           flavor: |
             latest=false
           tags: |
@@ -97,7 +102,7 @@ jobs:
         name: Build and Push 
         uses: docker/build-push-action@v2
         with:
-          context: "{{defaultContext}}:install/docker-extension"
+          context: "{{defaultContext}}"
           push: true
           build-args: |
             GIT_STRIPPED_VERSION=${{env.GIT_STRIPPED_VERSION}}
@@ -114,4 +119,3 @@ jobs:
       #     password: ${{ secrets.DOCKER_PASSWORD }}
       #     repository: meshery/meshery-docker-extension  
       #     readme-filepath: /install/docker-extension/README.md 
-
