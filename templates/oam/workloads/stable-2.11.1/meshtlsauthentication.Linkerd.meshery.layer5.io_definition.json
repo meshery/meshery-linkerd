@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "MeshTLSAuthentication.Linkerd",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "meshtlsauthentication.Linkerd.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "policy.linkerd.io/v1alpha1",
+   "k8sKind": "MeshTLSAuthentication",
+   "meshName": "LINKERD",
+   "meshVersion": "stable-2.11.1"
+  }
+ }
+}
