@@ -3,37 +3,8 @@
  "properties": {
   "client": {
    "description": "Describes clients authorized to access a server.",
-   "oneOf": [
-    {
-     "required": [
-      "meshTLS"
-     ]
-    },
-    {
-     "required": [
-      "unauthenticated"
-     ]
-    }
-   ],
    "properties": {
     "meshTLS": {
-     "oneOf": [
-      {
-       "required": [
-        "unauthenticatedTLS"
-       ]
-      },
-      {
-       "required": [
-        "identities"
-       ]
-      },
-      {
-       "required": [
-        "serviceAccounts"
-       ]
-      }
-     ],
      "properties": {
       "identities": {
        "description": "Authorizes clients with the provided proxy identity strings (as provided via MTLS)\nThe `*` prefix can be used to match all identities in a domain. An identity string of `*` indicates that all authentication clients are authorized.",
@@ -122,18 +93,6 @@
     },
     "selector": {
      "description": "A label query over servers on which this authorization applies.",
-     "oneOf": [
-      {
-       "required": [
-        "matchLabels"
-       ]
-      },
-      {
-       "required": [
-        "matchExpressions"
-       ]
-      }
-     ],
      "properties": {
       "matchExpressions": {
        "items": {

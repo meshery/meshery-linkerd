@@ -1,6 +1,7 @@
 package build
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +17,7 @@ var DefaultGenerationMethod string
 var LatestVersion string
 var WorkloadPath string
 var AllVersions []string
-var CRDnames []string
+var CRDnamesURL map[string]string
 
 const Component = "Linkerd"
 
@@ -42,8 +43,9 @@ func NewConfig(version string) manifests.Config {
 func init() {
 	wd, _ := os.Getwd()
 	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
-	vs, _ := config.GetLatestReleaseNames(30)
+	vs, err := config.GetLatestReleaseNames(30)
 	if len(vs) == 0 {
+		fmt.Println("dynamic component generation failure: ", err.Error())
 		return
 	}
 	for _, v := range vs {
@@ -53,15 +55,13 @@ func init() {
 	DefaultGenerationMethod = adapter.Manifests
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
 	if err != nil {
+		fmt.Println("dynamic component generation failure: ", err.Error())
 		return
 	}
-	for _, n := range names {
-		if strings.HasSuffix(n, ".yaml") {
-			CRDnames = append(CRDnames, n)
+	for n := range names {
+		if !strings.HasSuffix(n, ".yaml") {
+			delete(names, n)
 		}
 	}
-}
-
-func GenerationURL(crd string) string {
-	return "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd-crds/templates/" + crd
+	CRDnamesURL = names
 }

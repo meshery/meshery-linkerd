@@ -150,19 +150,19 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 func RootPath() string {
 	return configRootPath
 }
-func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
+func threadSafeAppend(fs *map[string]string, name string, url string, m *sync.RWMutex) {
 	m.Lock()
 	defer m.Unlock()
-	*fs = append(*fs, name)
+	(*fs)[name] = url
 }
 
-// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
-func GetFileNames(owner string, repo string, path string) ([]string, error) {
+// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames->URL from that directory
+func GetFileNames(owner string, repo string, path string) (map[string]string, error) {
 	g := walker.NewGithub()
-	var filenames []string
+	var filenames = make(map[string]string)
 	var m sync.RWMutex
 	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
-		threadSafeAppend(&filenames, gca.Name, &m)
+		threadSafeAppend(&filenames, gca.Name, gca.DownloadURL, &m)
 		return nil
 	}).Walk()
 	if err != nil {
