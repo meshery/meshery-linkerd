@@ -22,7 +22,7 @@ const (
 	ErrEmptyConfigCode           = "1000"
 	ErrGetLatestReleasesCode     = "1001"
 	ErrGetLatestReleaseNamesCode = "1002"
-	ErrGetFileNamesCode          = "1003"
+	ErrGetFileNamesCode          = "1107"
 )
 
 var (
