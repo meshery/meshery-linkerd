@@ -8,8 +8,7 @@ on:
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - '.github/**'
+            
 jobs:
   lint:
     name: Check & Review code
