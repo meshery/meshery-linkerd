@@ -213,6 +213,7 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 // AnnotateNamespace is used to label namespaces ,for cases like automatic sidecar injection (or not). If the namespace is not present, it will create one, instead of throwing error.
 func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels map[string]string, kubeconfigs []string) error {
 	var errs []error
+	var errMx sync.Mutex
 	var wg sync.WaitGroup
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
@@ -220,7 +221,9 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			ns, err := kClient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
@@ -229,7 +232,9 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 				var er error
 				ns, er = createNS(kClient, namespace)
 				if er != nil {
+					errMx.Lock()
 					errs = append(errs, err)
+					errMx.Unlock()
 					return
 				}
 			}
@@ -249,7 +254,9 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 
 			_, err = kClient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 		}(k8sconfig)

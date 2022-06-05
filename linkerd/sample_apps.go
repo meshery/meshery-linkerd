@@ -34,17 +34,23 @@ func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates [
 func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool, kubeconfigs []string) error {
 	var errs []error
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
 		go func(k8sconfig string) {
+			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			deploy, err := kClient.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
@@ -59,7 +65,9 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 
 			_, err = kClient.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 		}(k8sconfig)

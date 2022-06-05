@@ -25,13 +25,16 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 	}
 	var errs []error
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
 		go func(k8sconfig string) {
 			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			switch addon {
@@ -84,7 +87,9 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 			}
 
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
@@ -92,20 +97,26 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 				if !del {
 					_, err := url.ParseRequestURI(patch)
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
-						return
+						errMx.Unlock()
+						continue
 					}
 
 					content, err := utils.ReadFileSource(patch)
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
-						return
+						errMx.Unlock()
+						continue
 					}
 
 					_, err = kClient.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
-						return
+						errMx.Unlock()
+						continue
 					}
 				}
 			}

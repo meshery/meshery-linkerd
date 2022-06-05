@@ -127,13 +127,16 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	}
 	var wg sync.WaitGroup
 	var errs []error
+	var errMx sync.Mutex
 	for _, config := range kubeconfigs {
 		wg.Add(1)
 		go func(config string) {
 			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(config))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -168,7 +171,10 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 				},
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
+				return
 			}
 		}(config)
 	}
@@ -222,12 +228,16 @@ func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bo
 func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
 	var wg sync.WaitGroup
 	var errs []error
+	var errMx sync.Mutex
 	for _, config := range kubeconfigs {
 		wg.Add(1)
 		go func(config string) {
+			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(config))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			err = kClient.ApplyManifest(contents, mesherykube.ApplyOptions{
@@ -237,7 +247,10 @@ func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace str
 				IgnoreErrors: true,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
+				return
 			}
 		}(config)
 	}
