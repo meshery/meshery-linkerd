@@ -36,7 +36,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 }
 
 //CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
-func (istio *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
+func (linkerd *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {
 		kconfig := models.Kubeconfig{}
@@ -47,28 +47,28 @@ func (istio *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
 		}
 
 		// To have control over what exactly to take in on kubeconfig
-		istio.KubeconfigHandler.SetKey("kind", kconfig.Kind)
-		istio.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
-		istio.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
-		err = istio.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
+		linkerd.KubeconfigHandler.SetKey("kind", kconfig.Kind)
+		linkerd.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
+		linkerd.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
+		err = linkerd.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
-		err = istio.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
+		err = linkerd.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
-		err = istio.KubeconfigHandler.SetObject("users", kconfig.Users)
+		err = linkerd.KubeconfigHandler.SetObject("users", kconfig.Users)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
-		err = istio.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
+		err = linkerd.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
 		if err != nil {
 			errs = append(errs, err)
 			continue
