@@ -12,6 +12,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -35,7 +36,7 @@ var (
 	linkerdNamespace = "linkerd"
 )
 
-func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (string, error) {
+func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string, kubeconfigs []string) (string, error) {
 	linkerdNamespace = namespace
 	linkerd.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
 	linkerd.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
@@ -55,7 +56,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 		return st, ErrMeshConfig(err)
 	}
 
-	if err := linkerd.applyHelmChart(version, namespace, del); err != nil {
+	if err := linkerd.applyHelmChart(version, namespace, del, kubeconfigs); err != nil {
 		linkerd.Log.Error(ErrInstallLinkerd(err))
 
 		linkerd.Log.Info("Attempting manifest installation...")
@@ -67,7 +68,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 			return st, ErrInstallLinkerd(err)
 		}
 
-		err = linkerd.applyManifest([]byte(manifest), del, namespace)
+		err = linkerd.applyManifest([]byte(manifest), del, namespace, kubeconfigs)
 		if err != nil {
 			linkerd.Log.Error(ErrInstallLinkerd(err))
 			return st, ErrInstallLinkerd(err)
@@ -82,7 +83,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string) (str
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool) error {
+func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool, kubeconfigs []string) error {
 	loc, cver := getChartLocationAndVersion(version)
 	if loc == "" || cver == "" {
 		return ErrInvalidVersionForMeshInstallation
@@ -113,7 +114,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 		"app.kubernetes.io/managed-by":   "helm",
 		"meta.helm.sh/release-name":      "linkerd2",
 		"meta.helm.sh/release-namespace": namespace,
-	})
+	}, kubeconfigs)
 	if err != nil {
 		return ErrAnnotatingNamespace(err)
 	}
@@ -124,38 +125,64 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 	} else {
 		act = mesherykube.INSTALL
 	}
-	err = linkerd.MesheryKubeclient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		ReleaseName: "linkerd2",
-		ChartLocation: mesherykube.HelmChartLocation{
-			Repository: loc,
-			Chart:      "linkerd2",
-			Version:    cver,
-		},
-		Namespace: namespace,
-		// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
-		Action: act,
-		OverrideValues: map[string]interface{}{
-			"namespace":        namespace,
-			"installNamespace": false,
-			"global": map[string]interface{}{
-				"identityTrustAnchorsPEM": string(certPEM),
-			},
-			"identityTrustAnchorsPEM": string(certPEM),
-			"identity": map[string]interface{}{
-				"issuer": map[string]interface{}{
-					"crtExpiry": exp,
-					"tls": map[string]interface{}{
-						"keyPEM": string(keyPEM),
-						"crtPEM": string(certPEM),
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				ReleaseName: "linkerd2",
+				ChartLocation: mesherykube.HelmChartLocation{
+					Repository: loc,
+					Chart:      "linkerd2",
+					Version:    cver,
+				},
+				Namespace: namespace,
+				// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
+				Action: act,
+				OverrideValues: map[string]interface{}{
+					"namespace":        namespace,
+					"installNamespace": false,
+					"global": map[string]interface{}{
+						"identityTrustAnchorsPEM": string(certPEM),
+					},
+					"identityTrustAnchorsPEM": string(certPEM),
+					"identity": map[string]interface{}{
+						"issuer": map[string]interface{}{
+							"crtExpiry": exp,
+							"tls": map[string]interface{}{
+								"keyPEM": string(keyPEM),
+								"crtPEM": string(certPEM),
+							},
+						},
+					},
+					"proxyInit": map[string]interface{}{ //This is allowed due to this issue https://github.com/linkerd/linkerd2/issues/7308
+						"runAsRoot": true,
 					},
 				},
-			},
-			"proxyInit": map[string]interface{}{ //This is allowed due to this issue https://github.com/linkerd/linkerd2/issues/7308
-				"runAsRoot": true,
-			},
-		},
-	})
-	return err
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+		}(config)
+	}
+	wg.Wait()
+	if len(errs) != 0 {
+		return mergeErrors(errs)
+	}
+	return nil
 }
 
 func getChartLocationAndVersion(version string) (string, string) {
@@ -198,15 +225,39 @@ func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bo
 	return out.String(), nil
 }
 
-func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string) error {
-	err := linkerd.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
-		Namespace:    namespace,
-		Update:       true,
-		Delete:       isDel,
-		IgnoreErrors: true,
-	})
-	if err != nil {
-		return err
+func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			err = kClient.ApplyManifest(contents, mesherykube.ApplyOptions{
+				Namespace:    namespace,
+				Update:       true,
+				Delete:       isDel,
+				IgnoreErrors: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+		}(config)
+	}
+	wg.Wait()
+
+	if len(errs) != 0 {
+		return mergeErrors(errs)
 	}
 
 	return nil
