@@ -36,10 +36,6 @@ func NewConfig(version string) manifests.Config {
 		ExtractCrds: func(manifest string) []string {
 			manifests.RemoveHelmTemplatingFromCRD(&manifest)
 			crds := strings.Split(manifest, "---")
-			// trim the spaces
-			for _, crd := range crds {
-				crd = strings.TrimSpace(crd)
-			}
 			return crds
 		},
 	}
