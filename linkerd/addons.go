@@ -8,7 +8,6 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/utils"
-	"github.com/layer5io/meshkit/utils/kubernetes"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -16,12 +15,12 @@ import (
 
 // installAddon installs/uninstalls an addon in the given namespace
 func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string, kubeconfigs []string) (string, error) {
-	act := kubernetes.INSTALL
+	act := mesherykube.INSTALL
 	st := status.Installing
 
 	if del {
 		st = status.Removing
-		act = kubernetes.UNINSTALL
+		act = mesherykube.UNINSTALL
 	}
 	var errs []error
 	var wg sync.WaitGroup
@@ -39,7 +38,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 			}
 			switch addon {
 			case config.JaegerAddon:
-				err = kClient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -50,7 +49,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.VizAddon:
-				err = kClient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -62,7 +61,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.MultiClusterAddon:
-				err = kClient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -74,7 +73,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.SMIAddon:
-				err = kClient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					Action:          act,
