@@ -12,8 +12,10 @@ import (
 	internalconfig "github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -26,18 +28,68 @@ type Linkerd struct {
 func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) adapter.Handler {
 	return &Linkerd{
 		Adapter: adapter.Adapter{
-			Config: c,
-			Log:    l,
+			Config:            c,
+			Log:               l,
+			KubeconfigHandler: kc,
 		},
 	}
 }
 
+//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+func (istio *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
+	var errs = make([]error, 0)
+	for _, kubeconfig := range kubeconfigs {
+		kconfig := models.Kubeconfig{}
+		err := yaml.Unmarshal([]byte(kubeconfig), &kconfig)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// To have control over what exactly to take in on kubeconfig
+		istio.KubeconfigHandler.SetKey("kind", kconfig.Kind)
+		istio.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
+		istio.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
+		err = istio.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("users", kconfig.Users)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+}
+
 // ApplyOperation applies the operation on linkerd
 func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+	err := linkerd.CreateKubeconfigs(opReq.K8sConfigs)
+	if err != nil {
+		return err
+	}
 	operations := make(adapter.Operations)
 	linkerd.SetChannel(hchan)
 	kubeConfigs := opReq.K8sConfigs
-	err := linkerd.Config.GetObject(adapter.OperationsKey, &operations)
+	err = linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
 	}
@@ -160,6 +212,10 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
 func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
+	err := linkerd.CreateKubeconfigs(oamReq.K8sConfigs)
+	if err != nil {
+		return "", err
+	}
 	linkerd.SetChannel(hchan)
 	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
