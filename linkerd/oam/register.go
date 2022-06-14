@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-linkerd/internal/config"
@@ -20,6 +21,7 @@ var (
 
 // AvailableVersions denote the component versions available statically
 var AvailableVersions = map[string]bool{}
+var availableVersionGlobalMutext sync.Mutex
 
 type schemaDefinitionPathSet struct {
 	oamDefinitionPath string
@@ -113,7 +115,9 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
 				name:              filepath.Base(nameWithPath),
 			})
+			availableVersionGlobalMutext.Lock()
 			AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
+			availableVersionGlobalMutext.Unlock()
 		}
 
 		return nil
