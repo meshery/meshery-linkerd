@@ -4,6 +4,7 @@ BUILDER=buildx-multi-arch
 
 GIT_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1`)
 GIT_STRIPPED_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1` | cut -c 2-)
+v ?= 1.17.8 # Default go version to be used
 
 check: error
 	golangci-lint run
@@ -29,21 +30,22 @@ docker-run:
 	layer5/meshery-linkerd
 
 run: check
-	go mod tidy; \
-	DEBUG=true go run main.go
+	go$(v) mod tidy -compat=1.17; \
+	DEBUG=true go$(v) run main.go
 
 run-force-dynamic-reg:
-	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
+	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go$(v) run main.go
 
 error:
-	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
+	go$(v) mod tidy -compat=1.17; \
+	go$(v) run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
 local-check: tidy
 local-check: golangci-lint
 
 tidy:
 	@echo "Executing go mod tidy"
-	go mod tidy
+	go$(v) mod tidy -compat=1.17; \
 
 golangci-lint: $(GOLANGCILINT)
 	@echo
