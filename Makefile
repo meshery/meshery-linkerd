@@ -28,7 +28,8 @@ docker-run:
 	-e DEBUG=true \
 	layer5/meshery-linkerd
 
-run:
+run: check
+	go mod tidy; \
 	DEBUG=true go run main.go
 
 run-force-dynamic-reg:
