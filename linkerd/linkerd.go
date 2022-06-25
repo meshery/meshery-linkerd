@@ -316,7 +316,6 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 				return
 			}
 		}(k8sconfig)
-
 	}
 	wg.Wait()
 	if len(errs) != 0 {

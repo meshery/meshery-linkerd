@@ -29,7 +29,7 @@ docker-run:
 	-e DEBUG=true \
 	layer5/meshery-linkerd
 
-run: check
+run: 
 	go$(v) mod tidy -compat=1.17; \
 	DEBUG=true go$(v) run main.go
 
