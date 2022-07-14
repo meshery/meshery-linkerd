@@ -1,0 +1,47 @@
+name: Components to Documents
+on:
+  pull_request:
+    branches:
+      - "*"
+  release:
+    types: [published]
+
+jobs:
+  CopyComponents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Make components to .md files
+        run: |
+            mkdir output
+            folder_path=templates/oam/workloads/*
+            for file in $folder_path;
+            do
+                folder_name="$file/*"
+                onlyfolder=$(basename "$file")
+                echo "---
+            component: $onlyfolder
+            integrations:" > $onlyfolder.md
+                for indFile in $folder_name;
+                do
+                    filename=$(basename "$indFile")
+                    echo "    - ${filename%.*}" >> $onlyfolder.md
+                done
+
+                echo "---" >> $onlyfolder.md
+            mv $onlyfolder.md output
+            done
+
+      - name: Pushes folder to main repo
+        uses: crykn/copy_folder_to_another_repo_action@v1.0.6
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+        with:
+          source_folder: 'output'
+          destination_repo: 'meshery/meshery'
+          destination_folder: 'docs/_integrations/linkerd'
+          destination_branch: 'master'
+          user_email: 'frexpe@pm.me'
+          user_name: 'frexpe'
+          commit_msg: 'Adapters Component added'
