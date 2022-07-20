@@ -1,8 +1,11 @@
 name: Components to Documents
 on:
-  pull_request:
+  push:
     branches:
-      - "*"
+      - "master"
+  # pull_request:
+    # branches:
+      # - "*"
   release:
     types: [published]
 
