@@ -1,69 +1,77 @@
-IMAGE?=layer5/meshery-linkerd
-GOPATH = $(shell go env GOPATH)
-BUILDER=buildx-multi-arch
+# Copyright Meshery Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-GIT_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1`)
-GIT_STRIPPED_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1` | cut -c 2-)
+include build/Makefile.core.mk
+include build/Makefile.show-help.mk
+
+#-----------------------------------------------------------------------------
+# Environment Setup
+#-----------------------------------------------------------------------------
+BUILDER=buildx-multi-arch
+ADAPTER=linkerd
+
 v ?= 1.17.8 # Default go version to be used
 
-check: error
+
+#-----------------------------------------------------------------------------
+# Docker-based Builds
+#-----------------------------------------------------------------------------
+.PHONY: docker docker-run lint proto-setup proto error test run run-force-dynamic-reg
+
+
+## Lint check Golang
+lint:
 	golangci-lint run
 
-check-clean-cache:
-	golangci-lint cache clean
-	
-protoc-setup:
+## Retrieve protos
+proto-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
 
+## Generate protos
 proto:	
 	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
+## Build Adapter container image with "edge-latest" tag
 docker:
-	docker build -t layer5/meshery-linkerd .
+	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-$(ADAPTER):$(RELEASE_CHANNEL)-latest .
 
+## Run Adapter container with "edge-latest" tag
 docker-run:
-	(docker rm -f meshery-linkerd) || true
-	docker run --name meshery-linkerd -d \
-	-p 10001:10001 \
+	(docker rm -f meshery-$(ADAPTER)) || true
+	docker run --name meshery-$(ADAPTER) -d \
+	-p 10000:10000 \
 	-e DEBUG=true \
-	layer5/meshery-linkerd
+	layer5/meshery-$(ADAPTER):$(RELEASE_CHANNEL)-latest
 
-run: 
+## Build and run Adapter locally
+run:
 	go$(v) mod tidy -compat=1.17; \
-	DEBUG=true go$(v) run main.go
+	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
+## Build and run Adapter locally; force component registration
 run-force-dynamic-reg:
-	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go$(v) run main.go
+	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
+## Run Meshery Error utility
 error:
-	go$(v) mod tidy -compat=1.17; \
-	go$(v) run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
+	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
-local-check: tidy
-local-check: golangci-lint
-
-tidy:
-	@echo "Executing go mod tidy"
-	go$(v) mod tidy -compat=1.17; \
-
-golangci-lint: $(GOLANGCILINT)
-	@echo
-	$(GOPATH)/bin/golangci-lint run
-
-$(GOLANGCILINT):
-	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
-
-prepare-buildx: ## Create buildx builder for multi-arch build, if not exists
-	docker buildx inspect $(BUILDER) || docker buildx create --name=$(BUILDER) --driver=docker-container --driver-opt=network=host
-
-multi: prepare-buildx## Build service image to be deployed as a desktop extension
-	docker buildx build --builder=$(BUILDER) --platform=linux/amd64,linux/arm64 --tag=$(IMAGE) --build-arg GIT_VERSION=$(GIT_VERSION) --build-arg GIT_STRIPPED_VERSION=$(GIT_STRIPPED_VERSION) .
-
-
-
-help: ## Show this help
-	@echo Please specify a build target. The choices are:
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(INFO_COLOR)%-30s$(NO_COLOR) %s\n", $$1, $$2}'	
-
-.PHONY: error tidy golangci help run local-check
+## Run Golang tests
+test:
+	export CURRENTCONTEXT="$(kubectl config current-context)" 
+	echo "current-context:" ${CURRENTCONTEXT} 
+	export KUBECONFIG="${HOME}/.kube/config"
+	echo "environment-kubeconfig:" ${KUBECONFIG}
+	GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...
