@@ -17,6 +17,14 @@ jobs:
 
       - name: Make components to .md files
         run: |
+            
+            function join_by {
+              local d=${1-} f=${2-}
+              if shift 2; then
+                echo "$f${@/#/$d}"
+                
+              fi
+            }
             mkdir output
             folder_path=templates/oam/workloads/*
             for file in $folder_path;
@@ -29,9 +37,17 @@ jobs:
                 for indFile in $folder_name;
                 do
                     filename=$(basename "$indFile")
-                    echo "    - ${filename%.*}" >> $onlyfolder.md
-                done
-
+                    temp_filename=$filename
+                    IFS="."
+                    read -ra newarr <<< "$temp_filename"
+                    IFS=""
+                    if [[ "${newarr[7]}" == "schema" ]]
+                    then
+                        continue
+                    fi
+                    ans=$(join_by . ${newarr[0]} ${newarr[1]})
+                    echo "    - $ans" >> $onlyfolder.md
+                  done
                 echo "---" >> $onlyfolder.md
             mv $onlyfolder.md output
             done
@@ -45,6 +61,6 @@ jobs:
           destination_repo: 'meshery/meshery'
           destination_folder: 'docs/_integrations/linkerd'
           destination_branch: 'master'
-          user_email: 'frexpe@pm.me'
-          user_name: 'frexpe'
+          user_email: 'ci@layer5.io'
+          user_name: 'l5io'
           commit_msg: 'Adapters Component added'
