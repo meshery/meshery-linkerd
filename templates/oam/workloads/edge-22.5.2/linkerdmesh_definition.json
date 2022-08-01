@@ -1,0 +1,16 @@
+{
+	"apiVersion": "core.oam.dev/v1alpha1",
+	"kind": "WorkloadDefinition",
+	"metadata": {
+		"name": "LinkerdMesh"
+	},
+	"spec": {
+		"definitionRef": {
+			"name": "linkerdmesh.meshery.layer5.io"
+		},
+		"metadata": {
+			"@type": "pattern.meshery.io/core",
+			"version": "edge-22.5.2"
+		}
+	}
+}
