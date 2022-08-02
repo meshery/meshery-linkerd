@@ -93,11 +93,7 @@ func handleNamespaceLabel(linkerd *Linkerd, namespaces []string, isDel bool, kub
 }
 
 func handleComponentLinkerdMesh(linkerd *Linkerd, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
-	// Get the linkerd version from the settings
-	// we are sure that the version of linkerd would be present
-	// because the configuration is already validated against the schema
-	version := comp.Spec.Settings["version"].(string)
-
+	version := comp.Spec.Version
 	return linkerd.installLinkerd(isDel, version, comp.Namespace, kubeconfigs)
 }
 
@@ -152,7 +148,7 @@ func handleLinkerdCoreComponent(
 func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var addonName string
 	var helmURL string
-	version := removePrefixFromVersionIfPresent(comp.Spec.Settings["version"].(string))
+	version := removePrefixFromVersionIfPresent(comp.Spec.Version)
 	switch comp.Spec.Type {
 	case "JaegerLinkerdAddon":
 		addonName = config.JaegerAddon

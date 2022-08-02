@@ -1,7 +1,0 @@
-{
-    "$id": "http://meshery.layer5.io/definition/Workload/VizLinkerdAddon",
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "Viz Linkerd Addon",
-    "type": "object",
-    "properties": {}
-}

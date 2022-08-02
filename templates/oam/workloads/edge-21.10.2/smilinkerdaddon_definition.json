@@ -1,0 +1,16 @@
+{
+	"apiVersion": "core.oam.dev/v1alpha1",
+	"kind": "WorkloadDefinition",
+	"metadata": {
+		"name": "SMILinkerdAddon"
+	},
+	"spec": {
+		"definitionRef": {
+			"name": "smilinkerdaddon.meshery.layer5.io"
+		},
+		"metadata": {
+			"@type": "pattern.meshery.io/core",
+			"version": "edge-21.10.2"
+		}
+	}
+}
