@@ -1,9 +1,9 @@
 name: (E2E Tests) Meshery Adapter for Linkerd Tests
 
 on:
-  pull_request:
-    branches:
-      - "*"
+  push:
+    paths:
+      - templates/oam/workloads**
   release:
     types: [published]
 jobs:
