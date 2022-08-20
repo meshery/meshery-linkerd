@@ -98,6 +98,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		Operationid: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
+		Component:   internalconfig.ServerConfig["type"],
+		ComponentName: internalconfig.ServerConfig["name"],
 	}
 
 	switch opReq.OperationName {
@@ -106,9 +108,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			version := string(operations[opReq.OperationName].Versions[0])
 			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s Linkerd service mesh", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s Linkerd service mesh", stat)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Linkerd service mesh %s successfully", stat)
@@ -120,9 +121,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
@@ -143,9 +143,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				},
 			})
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s %s test", status.Running, name)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
@@ -156,9 +155,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		go func(hh *Linkerd, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s custom operation", stat)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
@@ -178,9 +176,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			}
 
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
@@ -193,9 +190,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				"linkerd.io/inject": "enabled",
 			}, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while annotating %s", opReq.Namespace)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while annotating %s", opReq.Namespace)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = "Annotation successful"
@@ -203,8 +199,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(linkerd, e)
 	default:
-		e.Summary = "Invalid Request"
-		linkerd.StreamErr(e, ErrOpInvalid)
+		summary := "Invalid Request"
+		linkerd.streamErr(summary, e, ErrOpInvalid)
 	}
 
 	return nil
@@ -322,4 +318,13 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 		return ErrAnnotatingNamespace(mergeErrors(errs))
 	}
 	return nil
+}
+
+func(linkerd *Linkerd) streamErr(summary string, e *adapter.Event, err error) {
+	e.Summary = summary
+	e.Details = err.Error()
+	e.ErrorCode = errors.GetCode(err)
+	e.ProbableCause = errors.GetCause(err)
+	e.SuggestedRemediation = errors.GetRemedy(err)
+	linkerd.StreamErr(e, err)
 }
