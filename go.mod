@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/layer5io/meshery-adapter-library v0.5.8
+	github.com/layer5io/meshery-adapter-library v0.5.9
 	github.com/layer5io/meshkit v0.5.32
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
@@ -182,3 +182,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/layer5io/meshery-adapter-library => /Users/shabana/Documents/OpenSource/meshery-adapter-library
