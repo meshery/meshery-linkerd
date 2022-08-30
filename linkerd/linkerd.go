@@ -16,6 +16,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"github.com/layer5io/meshkit/utils/events"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,12 +28,13 @@ type Linkerd struct {
 }
 
 // New initializes linkerd handler.
-func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) adapter.Handler {
+func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler, ev *events.EventStreamer) adapter.Handler {
 	return &Linkerd{
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
 			KubeconfigHandler: kc,
+			EventStreamer:     ev,
 		},
 	}
 }
@@ -83,13 +85,12 @@ func (linkerd *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
 }
 
 // ApplyOperation applies the operation on linkerd
-func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 	err := linkerd.CreateKubeconfigs(opReq.K8sConfigs)
 	if err != nil {
 		return err
 	}
 	operations := make(adapter.Operations)
-	linkerd.SetChannel(hchan)
 	kubeConfigs := opReq.K8sConfigs
 	err = linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
@@ -97,10 +98,10 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	}
 
 	e := &meshes.EventsResponse{
-		OperationId: opReq.OperationID,
-		Summary:     status.Deploying,
-		Details:     "Operation is not supported",
-		Component:   internalconfig.ServerConfig["type"],
+		OperationId:   opReq.OperationID,
+		Summary:       status.Deploying,
+		Details:       "Operation is not supported",
+		Component:     internalconfig.ServerConfig["type"],
 		ComponentName: internalconfig.ServerConfig["name"],
 	}
 
@@ -209,12 +210,11 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 }
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
+func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	err := linkerd.CreateKubeconfigs(oamReq.K8sConfigs)
 	if err != nil {
 		return "", err
 	}
-	linkerd.SetChannel(hchan)
 	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
@@ -322,7 +322,7 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 	return nil
 }
 
-func(linkerd *Linkerd) streamErr(summary string, e *meshes.EventsResponse, err error) {
+func (linkerd *Linkerd) streamErr(summary string, e *meshes.EventsResponse, err error) {
 	e.Summary = summary
 	e.Details = err.Error()
 	e.ErrorCode = errors.GetCode(err)

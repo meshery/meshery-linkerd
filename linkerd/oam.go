@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/common"
+	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-linkerd/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -17,7 +20,12 @@ type CompHandler func(*Linkerd, v1alpha1.Component, bool, []string) (string, err
 func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
-
+	stat1 := "deploying"
+	stat2 := "deployed"
+	if isDel {
+		stat1 = "removing"
+		stat2 = "removed"
+	}
 	compFuncMap := map[string]CompHandler{
 		"LinkerdMesh":              handleComponentLinkerdMesh,
 		"JaegerLinkerdAddon":       handleComponentLinkerdAddon,
@@ -27,24 +35,45 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool,
 	}
 
 	for _, comp := range comps {
+		ee := &meshes.EventsResponse{
+			OperationId:   uuid.New().String(),
+			Component:     config.ServerConfig["type"],
+			ComponentName: config.ServerConfig["name"],
+		}
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
 			msg, err := handleLinkerdCoreComponent(linkerd, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
+				ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				linkerd.StreamErr(ee, err)
 				errs = append(errs, err)
 				continue
 			}
-
+			ee.Summary = fmt.Sprintf("%s %s successfully", comp.Spec.Type, stat2)
+			ee.Details = fmt.Sprintf("The %s is now %s.", comp.Spec.Type, stat2)
+			linkerd.StreamInfo(ee)
 			msgs = append(msgs, msg)
 			continue
 		}
 
 		msg, err := fnc(linkerd, comp, isDel, kubeconfigs)
 		if err != nil {
+			ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+			ee.Details = err.Error()
+			ee.ErrorCode = errors.GetCode(err)
+			ee.ProbableCause = errors.GetCause(err)
+			ee.SuggestedRemediation = errors.GetRemedy(err)
+			linkerd.StreamErr(ee, err)
 			errs = append(errs, err)
 			continue
 		}
-
+		ee.Summary = fmt.Sprintf("%s %s %s successfully", comp.Name, comp.Spec.Type, stat2)
+		ee.Details = fmt.Sprintf("The %s %s is now %s.", comp.Name, comp.Spec.Type, stat2)
+		linkerd.StreamInfo(ee)
 		msgs = append(msgs, msg)
 	}
 
