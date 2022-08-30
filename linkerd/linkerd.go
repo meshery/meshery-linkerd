@@ -111,10 +111,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			version := string(operations[opReq.OperationName].Versions[0])
 			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s Linkerd service mesh", stat)
 				hh.streamErr(summary, ee, err)
 				return
@@ -128,10 +124,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
 				hh.streamErr(summary, ee, err)
 				return
@@ -154,10 +146,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				},
 			})
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s %s test", status.Running, name)
 				hh.streamErr(summary, ee, err)
 				return
@@ -170,10 +158,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s custom operation", stat)
 				hh.streamErr(summary, ee, err)
 				return
@@ -195,10 +179,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			}
 
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
 				hh.streamErr(summary, ee, err)
 				return
@@ -213,10 +193,6 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				"linkerd.io/inject": "enabled",
 			}, kubeConfigs)
 			if err != nil {
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while annotating %s", opReq.Namespace)
 				hh.streamErr(summary, ee, err)
 				return

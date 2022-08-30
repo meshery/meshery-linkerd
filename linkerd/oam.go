@@ -8,7 +8,6 @@ import (
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-linkerd/internal/config"
-	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -45,11 +44,7 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool,
 			msg, err := handleLinkerdCoreComponent(linkerd, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
 				ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
-				ee.Details = err.Error()
-				ee.ErrorCode = errors.GetCode(err)
-				ee.ProbableCause = errors.GetCause(err)
-				ee.SuggestedRemediation = errors.GetRemedy(err)
-				linkerd.StreamErr(ee, err)
+				linkerd.streamErr(ee.Summary, ee, err)
 				errs = append(errs, err)
 				continue
 			}
@@ -63,11 +58,7 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool,
 		msg, err := fnc(linkerd, comp, isDel, kubeconfigs)
 		if err != nil {
 			ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
-			ee.Details = err.Error()
-			ee.ErrorCode = errors.GetCode(err)
-			ee.ProbableCause = errors.GetCause(err)
-			ee.SuggestedRemediation = errors.GetRemedy(err)
-			linkerd.StreamErr(ee, err)
+			linkerd.streamErr(ee.Summary, ee, err)
 			errs = append(errs, err)
 			continue
 		}
