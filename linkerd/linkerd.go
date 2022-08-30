@@ -111,26 +111,34 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			version := string(operations[opReq.OperationName].Versions[0])
 			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s Linkerd service mesh", stat)
 				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Linkerd service mesh %s successfully", stat)
 			ee.Details = fmt.Sprintf("The Linkerd service mesh is now %s.", stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	case common.SmiConformanceOperation:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
@@ -146,25 +154,33 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				},
 			})
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s %s test", status.Running, name)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	case common.CustomOperation:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %s custom operation", stat)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	case internalconfig.JaegerAddon, internalconfig.VizAddon, internalconfig.MultiClusterAddon, internalconfig.SMIAddon:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
@@ -179,13 +195,17 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			}
 
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
 			ee.Details = fmt.Sprintf("Successfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	case internalconfig.AnnotateNamespace:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
@@ -193,13 +213,17 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				"linkerd.io/inject": "enabled",
 			}, kubeConfigs)
 			if err != nil {
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
 				summary := fmt.Sprintf("Error while annotating %s", opReq.Namespace)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = "Annotation successful"
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(linkerd, e)
 	default:
 		summary := "Invalid Request"
