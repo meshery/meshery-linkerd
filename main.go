@@ -25,6 +25,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils/events"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -98,13 +99,12 @@ func main() {
 	// 	log.Err("Tracing Init Failed", err.Error())
 	// 	os.Exit(1)
 	// }
-
+	e := events.NewEventStreamer()
 	// Initialize Handler intance
-	handler := linkerd.New(cfg, log, kubeconfigHandler)
+	handler := linkerd.New(cfg, log, kubeconfigHandler, e)
 	handler = adapter.AddLogger(log, handler)
-
+	service.EventStreamer = e
 	service.Handler = handler
-	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha

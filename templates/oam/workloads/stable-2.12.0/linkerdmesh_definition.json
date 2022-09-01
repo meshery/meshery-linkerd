@@ -1,0 +1,1 @@
+{"kind":"WorkloadDefinition","apiVersion":"core.oam.dev/v1alpha1","metadata":{"name":"LinkerdMesh","creationTimestamp":null},"spec":{"definitionRef":{"name":"linkerdmesh.meshery.layer5.io"},"metadata":{"@type":"pattern.meshery.io/core","version":"stable-2.12.0"}}}
