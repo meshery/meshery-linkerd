@@ -21,7 +21,7 @@ include build/Makefile.show-help.mk
 BUILDER=buildx-multi-arch
 ADAPTER=linkerd
 
-v ?= 1.17.8 # Default go version to be used
+v ?= 1.19.1 # Default go version to be used
 
 
 #-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ docker-run:
 
 ## Build and run Adapter locally
 run:
-	go$(v) mod tidy -compat=1.17; \
+	go$(v) mod tidy; \
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 ## Build and run Adapter locally; force component registration

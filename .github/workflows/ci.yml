@@ -21,7 +21,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3.0.0
         with:
-          go-version: '1.17'
+          go-version: '1.19'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./linkerd/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
   error_check:
     name: Error check
@@ -34,7 +34,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3.0.0
         with:
-          go-version: '1.17'
+          go-version: '1.19'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
   error_code_check:
     name: Error code utility check
@@ -47,7 +47,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.19
       - run: |
             errWillHave="level=error"
             GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go install github.com/layer5io/meshkit/cmd/errorutil;
@@ -69,12 +69,12 @@ jobs:
           fetch-depth: 1
       - uses: WillAbides/setup-go-faster@v1.7.0
         with:
-          go-version: '1.17'
+          go-version: '1.19'
       - uses: dominikh/staticcheck-action@v1.1.0
         with:
           version: "2021.1.1"
           install-go: false
-          cache-key: '1.17'
+          cache-key: '1.19'
   vet:
     name: Vet
     runs-on: ubuntu-latest
@@ -86,7 +86,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3.0.0
         with:
-          go-version: '1.17'
+          go-version: '1.19'
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
   sec_check:
     name: Security check
@@ -117,7 +117,7 @@ jobs:
      - name: Setup Go
        uses: actions/setup-go@v3.0.0
        with:
-        go-version: '1.17'
+        go-version: '1.19'
      - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.3.0
        with:
