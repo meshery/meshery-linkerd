@@ -154,7 +154,7 @@ func ErrAddonFromHelm(err error) error {
 	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon operation might be incorrect", "Could not apply service patch file for the given addon"}, []string{})
 }
 
-//ErrAnnotatingNamespace is the error while annotating the namespace
+// ErrAnnotatingNamespace is the error while annotating the namespace
 func ErrAnnotatingNamespace(err error) error {
 	return errors.New(ErrAnnotatingNamespaceCode, errors.Alert, []string{"Error with annotating namespace"}, []string{err.Error()}, []string{"Could not get the namespace in cluster", "Could not update namespace in cluster"}, []string{"Make sure the cluster is reachable"})
 }

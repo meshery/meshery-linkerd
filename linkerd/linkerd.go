@@ -18,7 +18,7 @@ import (
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"github.com/layer5io/meshkit/utils/events"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,7 +39,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler, ev
 	}
 }
 
-//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+// CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
 func (linkerd *Linkerd) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {

@@ -9,7 +9,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // CompHandler is the type for functions which can handle OAM components

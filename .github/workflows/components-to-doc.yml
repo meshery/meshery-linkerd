@@ -13,7 +13,7 @@ jobs:
   CopyComponents:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@master
 
       - name: Make components to .md files
         run: |
