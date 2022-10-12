@@ -108,8 +108,14 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	switch opReq.OperationName {
 	case internalconfig.LinkerdOperation:
 		go func(hh *Linkerd, ee *meshes.EventsResponse) {
-			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
+			var err error
+			var stat, version string
+			if len(operations[opReq.OperationName].Versions) == 0 {
+				err = ErrFetchLinkerdVersions
+			} else {
+				version = string(operations[opReq.OperationName].Versions[len(operations[opReq.OperationName].Versions)-1])
+				stat, err = hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
+			}
 			if err != nil {
 				summary := fmt.Sprintf("Error while %s Linkerd service mesh", stat)
 				hh.streamErr(summary, ee, err)
