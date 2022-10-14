@@ -1,6 +1,13 @@
 name: (E2E Tests) Meshery Adapter for Linkerd Tests
 
 on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "v*"
+    paths-ignore:
+      - 'docs/**'   
   pull_request:
     branches:
       - "*"
