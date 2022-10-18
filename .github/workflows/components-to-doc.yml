@@ -1,11 +1,8 @@
 name: Components to Documents
 on:
   push:
-    branches:
-      - "master"
-  # pull_request:
-    # branches:
-      # - "*"
+    paths:
+      - templates/oam/workloads**
   release:
     types: [published]
 
