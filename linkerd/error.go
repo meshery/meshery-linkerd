@@ -56,6 +56,10 @@ var (
 	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
 	ErrAddonFromHelmCode = "1022"
 
+	// ErrFetchLinkerdVersionsCode represents the error code which is 
+	// generated when linkerd version fetching fails
+	ErrFetchLinkerdVersionsCode = "1033"
+
 	//ErrInvalidVersionForMeshInstallationCode represents the error while installing mesh through helm charts with invalid version
 	ErrInvalidVersionForMeshInstallationCode = "1023"
 
@@ -63,6 +67,8 @@ var (
 	ErrAnnotatingNamespaceCode = "1024"
 	//ErrInvalidVersionForMeshInstallation represents the error while installing mesh through helm charts with invalid version
 	ErrInvalidVersionForMeshInstallation = errors.New(ErrInvalidVersionForMeshInstallationCode, errors.Alert, []string{"Invalid version passed for helm based installation"}, []string{"Version passed is invalid"}, []string{"Version might not be prefixed with \"stable-\" or \"edge-\""}, []string{"Version should be prefixed with \"stable-\" or \"edge-\"", "Version might be empty"})
+	//ErrFetchLinkerdVersions represents the error while fetching linkerd versions
+	ErrFetchLinkerdVersions = errors.New(ErrFetchLinkerdVersionsCode, errors.Alert, []string{"could not get any linkerd versions"}, []string{"versions for linkerd could not be fetched"}, []string{"could not reach github.com/linkerd/linkerd2", "no versions could be fetched from linkerd release page"}, []string{"make sure adapter is reachable to github"})
 	// ErrOpInvalid is the error for invalid operation
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
