@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/layer5io/meshery-adapter-library v0.5.10
+	github.com/layer5io/meshery-adapter-library v0.6.0
 	github.com/layer5io/meshkit v0.6.5
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
@@ -165,7 +165,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/gorm v1.23.7 // indirect
 	helm.sh/helm/v3 v3.9.4 // indirect
-	k8s.io/apiextensions-apiserver v0.24.2 // indirect
+	k8s.io/apiextensions-apiserver v0.25.1 // indirect
 	k8s.io/apiserver v0.25.1 // indirect
 	k8s.io/cli-runtime v0.25.1 // indirect
 	k8s.io/client-go v0.25.1 // indirect
