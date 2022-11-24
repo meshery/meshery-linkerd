@@ -45,7 +45,7 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestLinkerd:
+  TestLinkerdForServicemeshInstall:
     needs: SetPatternfileForServicemeshInstall
     uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
     with:
@@ -66,7 +66,7 @@ jobs:
 
 
   UpdateDocs:
-    needs: TestLinkerd
+    needs: TestLinkerdForServicemeshInstall
     if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
     steps:
@@ -106,7 +106,7 @@ jobs:
           meshery-server-version: $(jq '.metadata."meshery-server-version"' data.json)
           k8s-distro: minikube
           k8s-version: $(jq '.metadata.k8s_version' data.json)
-          service-mesh: Linkerd
+          service-mesh: linkerd
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
             pod/linkerd-destination: $(jq '.resources_status."pod/linkerd-destination"' data.json)
