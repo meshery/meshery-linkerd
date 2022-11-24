@@ -1,0 +1,15 @@
+name: linkerd
+services:
+  linkerdinstallation:
+    type: $(#use https://raw.githubusercontent.com/Zanda256/meshery-linkerd/Add-e2e-tests-linkerd/%23320/.github/install/installLinkerd.yaml)
+    settings: 
+        controlplaneNS: linkerd-system
+        namespace: default
+        linkerdVersion: 2.11.3
+        profile: default
+  emojivoto:
+    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/emojivoto.yaml)
+    settings: 
+      namespace: default
+    dependsOn:
+      - linkerdinstallation

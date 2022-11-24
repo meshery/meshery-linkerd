@@ -1,0 +1,18 @@
+name: user
+vars:
+  controlplaneNS: linkerd-system
+  namespace: default
+  linkerdVersion: 2.11.3
+  profile: default
+services:
+  linkerdservicemesh:
+    type: LinkerdMesh
+    namespace:  $(#ref.vars.controlplaneNS)
+    version: $(#ref.vars.linkerdVersion)
+    settings:
+      version: $(#ref.vars.linkerdVersion)
+      profile: $(#ref.vars.profile)
+    traits:
+      automaticSidecarInjection:
+        namespaces:
+          - $(#ref.vars.namespace)
