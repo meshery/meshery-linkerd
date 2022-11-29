@@ -65,7 +65,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
 
 
-  UpdateDocs:
+  UpdateDocsForServicemeshInstall:
     needs: TestLinkerdForServicemeshInstall
     if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
