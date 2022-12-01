@@ -1,1 +1,0 @@
-{"kind":"WorkloadDefinition","apiVersion":"core.oam.dev/v1alpha1","display-name":"","format":"","metadata":{"name":"MultiClusterLinkerdAddon"},"model":{"name":"","version":"edge-21.10.3","display-name":"","category":"","sub-category":""},"schema":""}
