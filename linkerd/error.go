@@ -56,7 +56,7 @@ var (
 	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
 	ErrAddonFromHelmCode = "1022"
 
-	// ErrFetchLinkerdVersionsCode represents the error code which is 
+	// ErrFetchLinkerdVersionsCode represents the error code which is
 	// generated when linkerd version fetching fails
 	ErrFetchLinkerdVersionsCode = "1033"
 
