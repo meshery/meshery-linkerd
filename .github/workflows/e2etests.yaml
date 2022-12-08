@@ -28,15 +28,16 @@ jobs:
                 echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             else 
                 echo "version=edge" >> $GITHUB_ENV
-            fi
+            fi      
       - name: Get latest release tag
-        id: glrt
-        run: |
-          NEW_LINKERD_VERSION=$(curl --silent "https://api.github.com/repos/linkerd/linkerd2/releases" | jq ' .[] | select(.tag_name|test("stable")) | ."tag_name"' | sed -n 1p$'\n' | tr -d '"')
-          echo "name=release::$NEW_LINKERD_VERSION" >> $GITHUB_OUTPUT
+        id: gettag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: linkerd/linkerd2
+          excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.linkerd.version="${{ steps.glrt.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v3
