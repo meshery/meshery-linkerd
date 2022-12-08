@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-linkerd/build"
 	"github.com/layer5io/meshery-linkerd/linkerd"
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
@@ -38,6 +39,7 @@ var (
 	serviceName = "linkerd-adapter"
 	version     = "edge"
 	gitsha      = "none"
+	instanceID  = uuid.NewString()
 )
 
 func init() {
@@ -158,6 +160,11 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+
+	// Register meshmodel components
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
+		log.Error(err)
+	}
 }
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
@@ -188,11 +195,13 @@ func registerWorkloads(port string, log logger.Handler) {
 	for name, url := range build.CRDnamesURL {
 		log.Info("Registering for ", name)
 		if err := adapter.CreateComponents(adapter.StaticCompConfig{
-			URL:     url,
-			Method:  gm,
-			Path:    build.WorkloadPath,
-			DirName: version,
-			Config:  build.NewConfig(version),
+			URL:             url,
+			Method:          gm,
+			OAMPath:         build.WorkloadPath,
+			MeshModelPath:   build.MeshModelPath,
+			MeshModelConfig: build.MeshModelConfig,
+			DirName:         version,
+			Config:          build.NewConfig(version),
 		}); err != nil {
 			log.Error(err)
 			return
