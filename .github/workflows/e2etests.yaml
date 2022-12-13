@@ -64,7 +64,6 @@ jobs:
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
 
-
   UpdateDocsForServicemeshInstall:
     needs: TestLinkerdForServicemeshInstall
     if:  "always() && github.event_name != 'pull_request' "
