@@ -83,12 +83,15 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string, kube
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool, kubeconfigs []string) error {
-	loc, cver := getChartLocationAndVersion(version)
-	if loc == "" || cver == "" {
+func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDel bool, kubeconfigs []string) error {
+	loc, ver := getChartLocationAndVersion(appversion)
+	if loc == "" || ver == "" {
 		return ErrInvalidVersionForMeshInstallation
 	}
-
+	cver, err := mesherykube.HelmAppVersionToChartVersion(loc, "linkerd2", ver)
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
 	// Generate certificates for linkerd
 	c, pk, err := cert.GenerateRootCAWithDefaults("cluster.local")
 	if err != nil {
@@ -187,11 +190,11 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 
 func getChartLocationAndVersion(version string) (string, string) {
 	if strings.HasPrefix(version, "edge-") {
-		return LinkerdHelmEdgeRepo, strings.TrimPrefix(version, "edge-")
+		return LinkerdHelmEdgeRepo, version
 	}
 
 	if strings.HasPrefix(version, "stable-") {
-		return LinkerdHelmStableRepo, strings.TrimPrefix(version, "stable-")
+		return LinkerdHelmStableRepo, version
 	}
 
 	return "", ""
