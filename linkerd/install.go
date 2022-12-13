@@ -83,9 +83,9 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string, kube
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel bool, kubeconfigs []string) error {
-	loc, cver := getChartLocationAndVersion(version)
-	if loc == "" || cver == "" {
+func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDel bool, kubeconfigs []string) error {
+	loc, ver := getChartLocationAndVersion(appversion)
+	if loc == "" || ver == "" {
 		return ErrInvalidVersionForMeshInstallation
 	}
 
@@ -144,7 +144,7 @@ func (linkerd *Linkerd) applyHelmChart(version string, namespace string, isDel b
 				ChartLocation: mesherykube.HelmChartLocation{
 					Repository: loc,
 					Chart:      "linkerd2",
-					Version:    cver,
+					AppVersion: ver,
 				},
 				Namespace: namespace,
 				// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
