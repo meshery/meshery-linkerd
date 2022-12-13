@@ -88,7 +88,10 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 	if loc == "" || ver == "" {
 		return ErrInvalidVersionForMeshInstallation
 	}
-
+	cver, err := mesherykube.HelmAppVersionToChartVersion(loc, "linkerd2", ver)
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
 	// Generate certificates for linkerd
 	c, pk, err := cert.GenerateRootCAWithDefaults("cluster.local")
 	if err != nil {
@@ -144,7 +147,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 				ChartLocation: mesherykube.HelmChartLocation{
 					Repository: loc,
 					Chart:      "linkerd2",
-					AppVersion: ver,
+					Version:    cver,
 				},
 				Namespace: namespace,
 				// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
@@ -187,11 +190,11 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 
 func getChartLocationAndVersion(version string) (string, string) {
 	if strings.HasPrefix(version, "edge-") {
-		return LinkerdHelmEdgeRepo, strings.TrimPrefix(version, "edge-")
+		return LinkerdHelmEdgeRepo, version
 	}
 
 	if strings.HasPrefix(version, "stable-") {
-		return LinkerdHelmStableRepo, strings.TrimPrefix(version, "stable-")
+		return LinkerdHelmStableRepo, version
 	}
 
 	return "", ""
