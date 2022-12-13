@@ -88,7 +88,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 	if loc == "" || ver == "" {
 		return ErrInvalidVersionForMeshInstallation
 	}
-	cver, err := mesherykube.HelmAppVersionToChartVersion(loc, "linkerd2", ver)
+	controlPlaneVer, err := mesherykube.HelmAppVersionToChartVersion(loc, "linkerd-control-plane", ver)
 	if err != nil {
 		return ErrApplyHelmChart(err)
 	}
@@ -143,11 +143,32 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 				return
 			}
 			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-				ReleaseName: "linkerd2",
+				ReleaseName: "linkerd-crds",
 				ChartLocation: mesherykube.HelmChartLocation{
 					Repository: loc,
-					Chart:      "linkerd2",
-					Version:    cver,
+					Chart:      "linkerd-crds",
+					Version:    "1.4.0",
+				},
+				Namespace: namespace,
+				// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
+				Action: act,
+				OverrideValues: map[string]interface{}{
+					"namespace":        namespace,
+					"installNamespace": false,
+				},
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				ReleaseName: "linkerd-control-plane",
+				ChartLocation: mesherykube.HelmChartLocation{
+					Repository: loc,
+					Chart:      "linkerd-control-plane",
+					Version:    controlPlaneVer,
 				},
 				Namespace: namespace,
 				// CreateNamespace: true, // Don't use this => Linkerd NS has "special" requirements
