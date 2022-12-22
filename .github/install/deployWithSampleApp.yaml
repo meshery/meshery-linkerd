@@ -1,7 +1,7 @@
 name: linkerd
 services:
   linkerdinstallation:
-    type: $(#use https://raw.githubusercontent.com/Zanda256/meshery-linkerd/Add-e2e-tests-linkerd/%23320/.github/install/installLinkerd.yaml)
+    type: $(#use https://raw.githubusercontent.com/Zanda256/meshery-linkerd/sample-app-e2e/.github/install/installLinkerd.yaml)
     settings: 
         controlplaneNS: linkerd-system
         namespace: default
