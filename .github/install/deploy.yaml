@@ -4,4 +4,3 @@ services:
     type: LinkerdMesh
     namespace: linkerd-system
     version:  #will be inserted dynamically
-
