@@ -13,4 +13,3 @@ services:
       namespace: default
     dependsOn:
       - linkerdinstallation
-      
