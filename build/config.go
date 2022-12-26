@@ -54,7 +54,12 @@ func NewConfig(version string) manifests.Config {
 func init() {
 	//Initialize Metadata including logo svgs
 	f, _ := os.Open("./build/meshmodel_metadata.json")
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
 	byt, _ := io.ReadAll(f)
 
 	_ = json.Unmarshal(byt, &Meshmodelmetadata)
