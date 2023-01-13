@@ -7,27 +7,28 @@ on:
       - "master"
     paths-ignore:
       - '.github/**'
+
 jobs:
   build:
     name: Build check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     # needs: [lint, error_check, static_check, vet, sec_check, tests]
     steps:
     - name: Check out code
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
       with:
         fetch-depth: 1
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
-        go-version: '1.19'
-    - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go build .
+        go-version: 1.19
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
   docker:
     name: Docker build and push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Check out code
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
       with:
         fetch-depth: 1
     - name: Docker login
