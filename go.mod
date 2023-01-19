@@ -16,7 +16,7 @@ require (
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.0
-	k8s.io/apimachinery v0.26.0
+	k8s.io/apimachinery v0.26.1
 )
 
 require oras.land/oras-go v1.2.0 // indirect
