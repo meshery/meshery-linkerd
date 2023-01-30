@@ -4,9 +4,9 @@ on:
     types: [labeled]
 jobs:
   good-first-issue-notify:
-    if: github.event.label.name == 'good first issue' || github.event.label.name == 'first-timers-only' 
+    if:  github.event_name == 'issues' && github.event.label.name == 'good first issue' || github.event.label.name == 'first-timers-only' 
     name: Notify Slack for new good-first-issue
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Notify slack
         env:
