@@ -182,6 +182,7 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	//First we create and store any new components if available
 	version := build.LatestVersion
+	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
 
 	// Prechecking to skip comp gen
@@ -190,23 +191,29 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 
-	log.Info("Registering latest service mesh components for version ", version)
-	// Register workloads
-	for name, url := range build.CRDnamesURL {
-		log.Info("Registering for ", name)
-		if err := adapter.CreateComponents(adapter.StaticCompConfig{
-			URL:             url,
-			Method:          gm,
-			OAMPath:         build.WorkloadPath,
-			MeshModelPath:   build.MeshModelPath,
-			MeshModelConfig: build.MeshModelConfig,
-			DirName:         version,
-			Config:          build.NewConfig(version),
-		}); err != nil {
-			log.Error(err)
-			return
-		}
-		log.Info(name, " registered")
+	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
+	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
+		url = os.Getenv("COMP_GEN_URL")
+		gm = os.Getenv("COMP_GEN_METHOD")
+		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
+	}
+
+	log.Info("Registering latest workload components for version ", version)
+
+	err := adapter.CreateComponents(adapter.StaticCompConfig{
+		URL:             url,
+		Method:          gm,
+		OAMPath:         build.WorkloadPath,
+		MeshModelPath:   build.MeshModelPath,
+		MeshModelConfig: build.MeshModelConfig,
+		DirName:         version,
+		Config:          build.NewConfig(version),
+	})
+	if err != nil {
+		log.Info("Failed to generate components for version " + version)
+		log.Error(err)
+		return
 	}
 
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated

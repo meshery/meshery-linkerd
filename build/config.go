@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshery-linkerd/internal/config"
 
 	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
@@ -17,11 +16,11 @@ import (
 )
 
 var DefaultGenerationMethod string
+var DefaultGenerationURL string
 var LatestVersion string
 var WorkloadPath string
 var MeshModelPath string
 var AllVersions []string
-var CRDnamesURL map[string]string
 
 const Component = "Linkerd"
 
@@ -72,15 +71,5 @@ func init() {
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
-	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
-	if err != nil {
-		fmt.Println("dynamic component generation failure: ", err.Error())
-		return
-	}
-	for n := range names {
-		if !strings.HasSuffix(n, ".yaml") {
-			delete(names, n)
-		}
-	}
-	CRDnamesURL = names
+	DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
 }
