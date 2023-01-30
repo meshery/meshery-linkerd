@@ -26,7 +26,7 @@ const Component = "Linkerd"
 
 var Meshmodelmetadata = make(map[string]interface{})
 
-var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
+var MeshModelConfig = adapter.MeshModelConfig{ // Move to build/config.go
 	Category:    "Orchestration & Management",
 	SubCategory: "Service Mesh",
 	Metadata:    Meshmodelmetadata,
@@ -52,7 +52,7 @@ func NewConfig(version string) manifests.Config {
 	}
 }
 func init() {
-	//Initialize Metadata including logo svgs
+	// Initialize Metadata including logo svgs
 	f, _ := os.Open("./build/meshmodel_metadata.json")
 	defer func() {
 		err := f.Close()

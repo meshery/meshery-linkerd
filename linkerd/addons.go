@@ -44,7 +44,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					CreateNamespace: true,
 					Action:          act,
 					OverrideValues: map[string]interface{}{
-						"installNamespace": false, //Set to false when installing in a custom namespace.
+						"installNamespace": false, // Set to false when installing in a custom namespace.
 						"namespace":        namespace,
 					},
 				})
@@ -55,7 +55,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					CreateNamespace: true,
 					Action:          act,
 					OverrideValues: map[string]interface{}{
-						"installNamespace": false, //Set to false when installing in a custom namespace.
+						"installNamespace": false, // Set to false when installing in a custom namespace.
 						"linkerdNamespace": linkerdNamespace,
 						"namespace":        namespace,
 					},
@@ -67,7 +67,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					CreateNamespace: true,
 					Action:          act,
 					OverrideValues: map[string]interface{}{
-						"installNamespace": false, //Set to false when installing in a custom namespace.
+						"installNamespace": false, // Set to false when installing in a custom namespace.
 						"linkerdNamespace": linkerdNamespace,
 						"namespace":        namespace,
 					},
@@ -79,7 +79,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					Action:          act,
 					CreateNamespace: true,
 					OverrideValues: map[string]interface{}{
-						"installNamespace": false, //Set to false when installing in a custom namespace.
+						"installNamespace": false, // Set to false when installing in a custom namespace.
 						"namespace":        namespace,
 					},
 				})

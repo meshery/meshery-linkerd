@@ -11,8 +11,8 @@ replace (
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/layer5io/meshery-adapter-library v0.6.3
-	github.com/layer5io/meshkit v0.6.17
+	github.com/layer5io/meshery-adapter-library v0.6.4
+	github.com/layer5io/meshkit v0.6.21
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.0
