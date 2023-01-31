@@ -65,7 +65,7 @@ func init() {
 	wd, _ := os.Getwd()
 	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
-	AllVersions, _ = utils.GetLatestReleaseTagsSorted("istio", "istio")
+	AllVersions, _ = utils.GetLatestReleaseTagsSorted("linkerd", "linkerd")
 	if len(AllVersions) == 0 {
 		return
 	}
