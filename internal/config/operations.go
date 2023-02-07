@@ -49,7 +49,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		AdditionalProperties: map[string]string{
 			ServiceName:      "jaeger",
 			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
-			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.2.tgz",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-30.4.5.tgz",
 		},
 	}
 	dev[VizAddon] = &adapter.Operation{
@@ -58,7 +58,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		AdditionalProperties: map[string]string{
 			ServiceName:      "web",
 			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
-			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-2.10.2.tgz",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-30.3.5.tgz",
 		},
 	}
 	dev[MultiClusterAddon] = &adapter.Operation{
