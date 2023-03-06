@@ -168,7 +168,7 @@ func registerCapabilities(port string, log logger.Handler) {
 }
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
-	//Start the ticker
+	// Start the ticker
 	const reRegisterAfter = 24
 	ticker := time.NewTicker(reRegisterAfter * time.Hour)
 	for {
@@ -180,7 +180,7 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Generating latest service mesh components...")
 
-	//First we create and store any new components if available
+	// First we create and store any new components if available
 	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
@@ -216,10 +216,10 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 
-	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
+	// The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component creation completed for version ", version)
 
-	//Now we will register in case
+	// Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version ", version)
 	originalPath := oam.WorkloadPath
 	oam.WorkloadPath = filepath.Join(originalPath, version)
