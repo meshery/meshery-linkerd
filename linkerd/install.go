@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	//Namespace in which Linkerd is installed, (addons need to know this)
+	// Namespace in which Linkerd is installed, (addons need to know this)
 	linkerdNamespace = "linkerd"
 )
 
@@ -189,7 +189,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 							},
 						},
 					},
-					"proxyInit": map[string]interface{}{ //This is allowed due to this issue https://github.com/linkerd/linkerd2/issues/7308
+					"proxyInit": map[string]interface{}{ // This is allowed due to this issue https://github.com/linkerd/linkerd2/issues/7308
 						"runAsRoot": true,
 					},
 				},

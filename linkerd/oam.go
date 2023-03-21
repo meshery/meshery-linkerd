@@ -3,6 +3,7 @@ package linkerd
 import (
 	"fmt"
 	"strings"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -226,7 +227,7 @@ func mergeErrors(errs []error) error {
 		errMsgs = append(errMsgs, err.Error())
 	}
 
-	return fmt.Errorf(strings.Join(errMsgs, "\n"))
+	return errors.New(strings.Join(errMsgs, "\n"))
 }
 
 func mergeMsgs(strs []string) string {
@@ -234,7 +235,7 @@ func mergeMsgs(strs []string) string {
 }
 func removePrefixFromVersionIfPresent(version string) string {
 	if version == "" {
-		return "2.10.1" //default, to avoid any errors
+		return "2.10.1" // default, to avoid any errors
 	}
 	if strings.HasPrefix(version, "stable-") {
 		return strings.TrimPrefix(version, "stable-")
