@@ -27,7 +27,7 @@ const Component = "Linkerd"
 var Meshmodelmetadata = make(map[string]interface{})
 
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
-	Category: "Orchestration & Management",
+	Category: "Cloud Native Network",
 	Metadata: Meshmodelmetadata,
 }
 
