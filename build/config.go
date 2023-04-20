@@ -63,15 +63,28 @@ func init() {
 	_ = json.Unmarshal(byt, &MeshModelConfig.Metadata)
 	wd, _ := os.Getwd()
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
-	AllVersions, _ = utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
+	allVersions, _ := utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
 	if len(AllVersions) == 0 {
 		return
 	}
+	for _, v := range allVersions {
+		if strings.HasPrefix(v, "stable-") {
+			AllVersions = append(AllVersions, v)
+		}
+	}
 	for _, v := range AllVersions {
-		walker.NewGithub().Owner("linkerd").Repo("linkerd2").Branch(v).Root("charts/linkerd-crds/templates").RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
-			VersionToURL[v] = append(VersionToURL[v], DefaultGenerationURL(v, gca.Name))
+		fmt.Println("I will try for", v)
+		_ = walker.NewGithub().Owner("linkerd").Repo("linkerd2").Branch(v).Root("charts/linkerd-crds/templates/**").RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
+			if strings.HasSuffix(gca.Name, ".yaml") {
+				if strings.Contains(gca.Path, "/policy/") {
+					gca.Name = "policy/" + gca.Name
+				}
+				url := DefaultGenerationURL(v, gca.Name)
+				VersionToURL[v] = append(VersionToURL[v], url)
+			}
 			return nil
 		}).Walk()
+
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
@@ -79,5 +92,5 @@ func init() {
 }
 
 func DefaultGenerationURL(version string, crd string) string {
-	return fmt.Sprintf("https://raw.githubusercontent.com/linkerd/linkerd2/%s/charts/linkerd-crds/templates/policy/%s", version, crd)
+	return fmt.Sprintf("https://raw.githubusercontent.com/linkerd/linkerd2/%s/charts/linkerd-crds/templates/%s", version, crd)
 }

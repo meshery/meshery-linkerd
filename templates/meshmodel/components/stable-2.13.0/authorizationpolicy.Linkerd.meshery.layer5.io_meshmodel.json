@@ -12,7 +12,7 @@
 	},
 	"model": {
 		"name": "linkerd",
-		"version": "stable-2.12.4",
+		"version": "stable-2.13.0",
 		"displayName": "LINKERD",
 		"category": {
 			"name": "Cloud Native Network",

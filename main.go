@@ -180,26 +180,19 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 	log.Info("Registering latest workload components for version ", version)
-	for _, v := range build.AllVersions {
-		fmt.Println("v", v)
-		if !strings.HasPrefix(v, "stable-") {
+	for _, crd := range build.VersionToURL[version] {
+		err := adapter.CreateComponents(adapter.StaticCompConfig{
+			URL:             crd,
+			Method:          gm,
+			MeshModelPath:   build.MeshModelPath,
+			MeshModelConfig: build.MeshModelConfig,
+			DirName:         version,
+			Config:          build.NewConfig(version),
+		})
+		if err != nil {
+			log.Info("Failed to generate components for version " + version)
+			log.Error(err)
 			continue
-		}
-		fmt.Println("BUILDING FOR", build.VersionToURL[v])
-		for _, crd := range build.VersionToURL[v] {
-			err := adapter.CreateComponents(adapter.StaticCompConfig{
-				URL:             crd,
-				Method:          gm,
-				MeshModelPath:   build.MeshModelPath,
-				MeshModelConfig: build.MeshModelConfig,
-				DirName:         v,
-				Config:          build.NewConfig(v),
-			})
-			if err != nil {
-				log.Info("Failed to generate components for version " + version)
-				log.Error(err)
-				continue
-			}
 		}
 
 	}
