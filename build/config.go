@@ -12,23 +12,20 @@ import (
 
 	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
+	"github.com/layer5io/meshkit/utils/walker"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var DefaultGenerationMethod string
-var DefaultGenerationURL string
 var LatestVersion string
-var WorkloadPath string
 var MeshModelPath string
 var AllVersions []string
 
 const Component = "Linkerd"
 
-var Meshmodelmetadata = make(map[string]interface{})
-
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 	Category: "Cloud Native Network",
-	Metadata: Meshmodelmetadata,
+	Metadata: map[string]interface{}{},
 }
 
 // NewConfig creates the configuration for creating components
@@ -50,6 +47,9 @@ func NewConfig(version string) manifests.Config {
 		},
 	}
 }
+
+var VersionToURL = make(map[string][]string)
+
 func init() {
 	// Initialize Metadata including logo svgs
 	f, _ := os.Open("./build/meshmodel_metadata.json")
@@ -60,15 +60,24 @@ func init() {
 	}()
 	byt, _ := io.ReadAll(f)
 
-	_ = json.Unmarshal(byt, &Meshmodelmetadata)
+	_ = json.Unmarshal(byt, &MeshModelConfig.Metadata)
 	wd, _ := os.Getwd()
-	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
 	if len(AllVersions) == 0 {
 		return
 	}
+	for _, v := range AllVersions {
+		walker.NewGithub().Owner("linkerd").Repo("linkerd2").Branch(v).Root("charts/linkerd-crds/templates").RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
+			VersionToURL[v] = append(VersionToURL[v], DefaultGenerationURL(v, gca.Name))
+			return nil
+		}).Walk()
+	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+
+}
+
+func DefaultGenerationURL(version string, crd string) string {
+	return fmt.Sprintf("https://raw.githubusercontent.com/linkerd/linkerd2/%s/charts/linkerd-crds/templates/policy/%s", version, crd)
 }
