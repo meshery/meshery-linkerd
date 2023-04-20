@@ -73,7 +73,6 @@ func init() {
 		}
 	}
 	for _, v := range AllVersions {
-		fmt.Println("I will try for", v)
 		_ = walker.NewGithub().Owner("linkerd").Repo("linkerd2").Branch(v).Root("charts/linkerd-crds/templates/**").RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
 			if strings.HasSuffix(gca.Name, ".yaml") {
 				if strings.Contains(gca.Path, "/policy/") {
