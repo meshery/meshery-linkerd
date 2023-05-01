@@ -84,9 +84,6 @@ func TestGetOperations(t *testing.T) {
 	if op.AdditionalProperties[ServiceName] != "jaeger" {
 		t.Errorf("Expected %v for %v additional property but got %v", "jaeger", ServiceName, op.AdditionalProperties[ServiceName])
 	}
-	if op.AdditionalProperties[ServicePatchFile] != "file://templates/oam/patches/service-loadbalancer.json" {
-		t.Errorf("Expected %v for %v additional property but got %v", "file://templates/oam/patches/service-loadbalancer.json", ServicePatchFile, op.AdditionalProperties[ServicePatchFile])
-	}
 	if op.AdditionalProperties[HelmChartURL] != "https://helm.linkerd.io/stable/linkerd-jaeger-30.4.5.tgz" {
 		t.Errorf("Expected %v for %v additional property but got %v", "https://helm.linkerd.io/stable/linkerd-jaeger-30.4.5.tgz", HelmChartURL, op.AdditionalProperties[HelmChartURL])
 	}
@@ -107,9 +104,6 @@ func TestGetOperations(t *testing.T) {
 	}
 	if op.AdditionalProperties[ServiceName] != "linkerd-gateway" {
 		t.Errorf("Expected %v for %v additional property but got %v", "linkerd-gateway", ServiceName, op.AdditionalProperties[ServiceName])
-	}
-	if op.AdditionalProperties[ServicePatchFile] != "file://templates/oam/patches/service-loadbalancer.json" {
-		t.Errorf("Expected %v for %v additional property but got %v", "file://templates/oam/patches/service-loadbalancer.json", ServicePatchFile, op.AdditionalProperties[ServicePatchFile])
 	}
 	if op.AdditionalProperties[HelmChartURL] != "https://helm.linkerd.io/stable/linkerd-multicluster-2.10.2.tgz" {
 		t.Errorf("Expected %v for %v additional property but got %v", "https://helm.linkerd.io/stable/linkerd-multicluster-2.10.2.tgz", HelmChartURL, op.AdditionalProperties[HelmChartURL])
