@@ -126,5 +126,4 @@ func TestGetOperations(t *testing.T) {
 	if op.AdditionalProperties[HelmChartURL] != "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz" {
 		t.Errorf("Expected %v for %v additional property but got %v", "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz", HelmChartURL, op.AdditionalProperties[HelmChartURL])
 	}
-	//
 }
