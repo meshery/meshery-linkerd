@@ -1,11 +1,8 @@
-# See the OWNERS docs at https://go.k8s.io/owners
-# We can easy let the Github automation to request the reviews from the member list below
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
 
-approvers:
-- girishranganathan
-- leecalcote
-- aisuko
-reviewers:
-- girishranganathan
-- leecalcote
-- aisuko
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @global-owner1 and @global-owner2 will be requested for
+# review when someone opens a pull request.
+*       @Revolyssup @leecalcote @aisuko
