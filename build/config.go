@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 
@@ -21,6 +22,8 @@ var LatestVersion string
 var WorkloadPath string
 var MeshModelPath string
 var AllVersions []string
+
+var once sync.Once
 
 const Component = "Linkerd"
 
@@ -50,7 +53,9 @@ func NewConfig(version string) manifests.Config {
 		},
 	}
 }
-func init() {
+
+// Setup initializes package-level variables
+func Setup() {
 	// Initialize Metadata including logo svgs
 	f, _ := os.Open("./build/meshmodel_metadata.json")
 	defer func() {
@@ -71,4 +76,10 @@ func init() {
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
 	DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+}
+
+// SetupOnce initializes package-level variables once
+// The sync.Once pattern guarantees that the setup() function will only be executed once, even if SetupOnce() is called multiple times.
+func SetupOnce() {
+	once.Do(Setup)
 }

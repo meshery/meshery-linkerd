@@ -83,7 +83,7 @@ func (linkerd *Linkerd) installLinkerd(del bool, version, namespace string, kube
 	return status.Installed, nil
 }
 
-func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDel bool, kubeconfigs []string) error {
+func (linkerd *Linkerd) applyHelmChart(appversion, namespace string, isDel bool, kubeconfigs []string) error {
 	loc, ver := getChartLocationAndVersion(appversion)
 	if loc == "" || ver == "" {
 		return ErrInvalidVersionForMeshInstallation
@@ -209,7 +209,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion string, namespace string, isDe
 	return nil
 }
 
-func getChartLocationAndVersion(version string) (string, string) {
+func getChartLocationAndVersion(version string) (a string, b string) {
 	if strings.HasPrefix(version, "edge-") {
 		return LinkerdHelmEdgeRepo, version
 	}
@@ -221,13 +221,13 @@ func getChartLocationAndVersion(version string) (string, string) {
 	return "", ""
 }
 
-func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bool) (string, error) {
+func (linkerd *Linkerd) fetchManifest(version, namespace string, isDel bool) (string, error) {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
 	)
 
-	Executable, err := linkerd.getExecutable(version)
+	executable, err := linkerd.getExecutable(version)
 	if err != nil {
 		return "", ErrFetchManifest(err, err.Error())
 	}
@@ -238,7 +238,7 @@ func (linkerd *Linkerd) fetchManifest(version string, namespace string, isDel bo
 
 	// We need a variable executable here hence using nosec
 	// #nosec
-	command := exec.Command(Executable, execCmd...)
+	command := exec.Command(executable, execCmd...)
 	command.Stdout = &out
 	command.Stderr = &er
 	err = command.Run()
@@ -325,7 +325,7 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 	}
 	// Install the binary
 	linkerd.Log.Info("Installing...")
-	if err = installBinary(path.Join(binPath, alternateBinaryName), runtime.GOOS, res); err != nil {
+	if err := installBinary(path.Join(binPath, alternateBinaryName), runtime.GOOS, res); err != nil {
 		return "", err
 	}
 
@@ -336,14 +336,11 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	var url = "https://github.com/linkerd/linkerd2/releases/download"
 	switch platform {
-	case "darwin":
-		fallthrough
-	case "windows":
+	case "darwin", "windows":
 		url = fmt.Sprintf("%s/%s/linkerd2-cli-%s-%s", url, release, release, platform)
 	case "linux":
 		url = fmt.Sprintf("%s/%s/linkerd2-cli-%s-%s-%s", url, release, release, platform, arch)
 	}
-
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, ErrDownloadBinary(err)
@@ -376,9 +373,7 @@ func installBinary(location, platform string, res *http.Response) error {
 	}()
 
 	switch platform {
-	case "darwin":
-		fallthrough
-	case "linux":
+	case "darwin", "linux":
 		_, err = io.Copy(out, res.Body)
 		if err != nil {
 			return ErrInstallBinary(err)

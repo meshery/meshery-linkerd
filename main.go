@@ -19,6 +19,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,8 +42,9 @@ var (
 	gitsha      = "none"
 	instanceID  = uuid.NewString()
 )
+var once sync.Once
 
-func init() {
+func initialize() {
 	// Create the config path if it doesn't exists as the entire adapter
 	// expects that directory to exists, which may or may not be true
 	if err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750); err != nil {
@@ -51,8 +53,20 @@ func init() {
 	}
 }
 
+func InitializeOnce() {
+	once.Do(initialize)
+}
+
 // main is the entrypoint of the adapter
 func main() {
+
+	InitializeOnce()
+
+	// Setup the variables in build package
+	build.SetupOnce()
+	// Setup the variables in oam package
+	oam.SetupOnce()
+
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
 		Format:     logger.SyslogLogFormat,

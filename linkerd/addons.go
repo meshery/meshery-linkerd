@@ -14,7 +14,7 @@ import (
 )
 
 // installAddon installs/uninstalls an addon in the given namespace
-func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string, kubeconfigs []string) (string, error) {
+func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL, addon string, kubeconfigs []string) (string, error) {
 	act := mesherykube.INSTALL
 	st := status.Installing
 
@@ -93,32 +93,35 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 			}
 
 			for _, patch := range patches {
-				if !del {
-					_, err := url.ParseRequestURI(patch)
-					if err != nil {
-						errMx.Lock()
-						errs = append(errs, err)
-						errMx.Unlock()
-						continue
-					}
+				if del {
+					continue
+				}
 
-					content, err := utils.ReadFileSource(patch)
-					if err != nil {
-						errMx.Lock()
-						errs = append(errs, err)
-						errMx.Unlock()
-						continue
-					}
+				_, err := url.ParseRequestURI(patch)
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					continue
+				}
 
-					_, err = kClient.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
-					if err != nil {
-						errMx.Lock()
-						errs = append(errs, err)
-						errMx.Unlock()
-						continue
-					}
+				content, err := utils.ReadFileSource(patch)
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					continue
+				}
+
+				_, err = kClient.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					continue
 				}
 			}
+
 		}(k8sconfig)
 	}
 	wg.Wait()

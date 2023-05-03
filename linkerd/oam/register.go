@@ -13,6 +13,8 @@ import (
 	"github.com/layer5io/meshkit/models/meshmodel/core/types"
 )
 
+var once sync.Once
+
 var (
 	basePath, _ = os.Getwd()
 
@@ -180,6 +182,11 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	return res, nil
 }
 
-func init() {
+func Setup() {
 	_, _ = load(WorkloadPath)
+}
+
+// SetupOnce initializes package-level variables once
+func SetupOnce() {
+	once.Do(Setup)
 }

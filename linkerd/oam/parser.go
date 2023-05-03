@@ -7,13 +7,15 @@ import (
 )
 
 // ParseApplicationComponent converts json application component to go struct
-func ParseApplicationComponent(jsn string) (acomp v1alpha1.Component, err error) {
-	err = json.Unmarshal([]byte(jsn), &acomp)
-	return
+func ParseApplicationComponent(jsn string) (v1alpha1.Component, error) {
+	var acomp v1alpha1.Component
+	err := json.Unmarshal([]byte(jsn), &acomp)
+	return acomp, err
 }
 
 // ParseApplicationConfiguration converts json application configuration to go struct
-func ParseApplicationConfiguration(jsn string) (acomp v1alpha1.Configuration, err error) {
-	err = json.Unmarshal([]byte(jsn), &acomp)
-	return
+func ParseApplicationConfiguration(jsn string) (v1alpha1.Configuration, error) {
+	var acomp v1alpha1.Configuration
+	err := json.Unmarshal([]byte(jsn), &acomp)
+	return acomp, err
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 )
 
-func (linkerd *Linkerd) applyCustomOperation(namespace string, manifest string, isDel bool, kubeconfigs []string) (string, error) {
+func (linkerd *Linkerd) applyCustomOperation(namespace, manifest string, isDel bool, kubeconfigs []string) (string, error) {
 	st := status.Starting
 
 	err := linkerd.applyManifest([]byte(manifest), isDel, namespace, kubeconfigs)
