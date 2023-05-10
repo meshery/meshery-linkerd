@@ -29,7 +29,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 		wg.Add(1)
 		go func(k8sconfig string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(k8sconfig))
+			client, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
@@ -38,7 +38,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 			}
 			switch addon {
 			case config.JaegerAddon:
-				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -49,7 +49,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.VizAddon:
-				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -61,7 +61,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.MultiClusterAddon:
-				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					CreateNamespace: true,
@@ -73,7 +73,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					},
 				})
 			case config.SMIAddon:
-				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 					URL:             helmChartURL,
 					Namespace:       namespace,
 					Action:          act,
@@ -113,7 +113,7 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					continue
 				}
 
-				_, err = kClient.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
+				_, err = client.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
 				if err != nil {
 					errMx.Lock()
 					errs = append(errs, err)
@@ -121,7 +121,6 @@ func (linkerd *Linkerd) installAddon(namespace string, del bool, service string,
 					continue
 				}
 			}
-
 		}(k8sconfig)
 	}
 	wg.Wait()

@@ -31,7 +31,7 @@ func (linkerd *Linkerd) installSampleApp(namespace string, del bool, templates [
 }
 
 // LoadToMesh adds annotation to service
-func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool, kubeconfigs []string) error {
+func (linkerd *Linkerd) LoadToMesh(namespace, service string, remove bool, kubeconfigs []string) error {
 	var errs []error
 	var wg sync.WaitGroup
 	var errMx sync.Mutex
@@ -39,14 +39,14 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 		wg.Add(1)
 		go func(k8sconfig string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(k8sconfig))
+			client, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-			deploy, err := kClient.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
+			deploy, err := client.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
@@ -63,7 +63,7 @@ func (linkerd *Linkerd) LoadToMesh(namespace string, service string, remove bool
 				delete(deploy.ObjectMeta.Annotations, "linkerd.io/inject")
 			}
 
-			_, err = kClient.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
+			_, err = client.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)

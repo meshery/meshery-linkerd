@@ -70,7 +70,7 @@ func GenerateRootCAWithDefaults(name string) (*x509.Certificate, *ecdsa.PrivateK
 
 // GetDefaultX509Cert returns x509 cert with some defaults
 func GetDefaultX509Cert(serialNumber uint64, k *ecdsa.PublicKey, validFrom *time.Time) *x509.Certificate {
-	const SignatureAlgorithm = x509.ECDSAWithSHA256
+	const signatureAlgorithm = x509.ECDSAWithSHA256
 
 	if validFrom == nil {
 		now := time.Now()
@@ -80,7 +80,7 @@ func GetDefaultX509Cert(serialNumber uint64, k *ecdsa.PublicKey, validFrom *time
 
 	return &x509.Certificate{
 		SerialNumber:       big.NewInt(int64(serialNumber)),
-		SignatureAlgorithm: SignatureAlgorithm,
+		SignatureAlgorithm: signatureAlgorithm,
 		NotBefore:          notBefore,
 		NotAfter:           notAfter,
 		PublicKey:          k,
@@ -93,6 +93,6 @@ func GetDefaultX509Cert(serialNumber uint64, k *ecdsa.PublicKey, validFrom *time
 }
 
 // GetWindow returns cert validity window based on the arguments given
-func GetWindow(t time.Time, lifetime, clockSkewAllowance time.Duration) (time.Time, time.Time) {
+func GetWindow(t time.Time, lifetime, clockSkewAllowance time.Duration) (t1, t2 time.Time) {
 	return t.Add(-clockSkewAllowance), t.Add(lifetime).Add(clockSkewAllowance)
 }

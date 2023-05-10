@@ -93,7 +93,9 @@ var (
 )
 
 // New creates a new config instance
-func New(provider string) (h config.Handler, err error) {
+func New(provider string) (config.Handler, error) {
+	var h config.Handler
+	var err error
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
@@ -150,19 +152,19 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 func RootPath() string {
 	return configRootPath
 }
-func threadSafeAppend(fs *map[string]string, name string, url string, m *sync.RWMutex) {
+func threadSafeAppend(fs map[string]string, name, url string, m *sync.RWMutex) {
 	m.Lock()
 	defer m.Unlock()
-	(*fs)[name] = url
+	(fs)[name] = url
 }
 
 // GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames->URL from that directory
-func GetFileNames(owner string, repo string, path string) (map[string]string, error) {
+func GetFileNames(owner, repo, repoPath string) (map[string]string, error) {
 	g := walker.NewGithub()
 	var filenames = make(map[string]string)
 	var m sync.RWMutex
-	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
-		threadSafeAppend(&filenames, gca.Name, gca.DownloadURL, &m)
+	err := g.Owner(owner).Repo(repo).Root(repoPath).RegisterFileInterceptor(func(gca walker.GithubContentAPI) error {
+		threadSafeAppend(filenames, gca.Name, gca.DownloadURL, &m)
 		return nil
 	}).Walk()
 	if err != nil {

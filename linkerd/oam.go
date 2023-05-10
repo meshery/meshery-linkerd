@@ -1,9 +1,9 @@
 package linkerd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -14,7 +14,7 @@ import (
 )
 
 // CompHandler is the type for functions which can handle OAM components
-type CompHandler func(*Linkerd, v1alpha1.Component, bool, []string) (string, error)
+type CompHandler func(*Linkerd, *v1alpha1.Component, bool, []string) (string, error)
 
 // HandleComponents handles the processing of OAM components
 func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
@@ -34,7 +34,8 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool,
 		"SMILinkerdAddon":          handleComponentLinkerdAddon,
 	}
 
-	for _, comp := range comps {
+	for i := range comps {
+		comp := &comps[i]
 		ee := &meshes.EventsResponse{
 			OperationId:   uuid.New().String(),
 			Component:     config.ServerConfig["type"],
@@ -77,10 +78,10 @@ func (linkerd *Linkerd) HandleComponents(comps []v1alpha1.Component, isDel bool,
 }
 
 // HandleApplicationConfiguration handles the processing of OAM application configuration
-func (linkerd *Linkerd) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool, kubeconfigs []string) (string, error) {
+func (linkerd *Linkerd) HandleApplicationConfiguration(cfg *v1alpha1.Configuration, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
-	for _, comp := range config.Spec.Components {
+	for _, comp := range cfg.Spec.Components {
 		for _, trait := range comp.Traits {
 			if trait.Name == "automaticSidecarInjection.Linkerd" {
 				namespaces := castSliceInterfaceToSliceString(trait.Properties["namespaces"].([]interface{}))
@@ -89,7 +90,7 @@ func (linkerd *Linkerd) HandleApplicationConfiguration(config v1alpha1.Configura
 				}
 			}
 
-			msgs = append(msgs, fmt.Sprintf("applied trait \"%s\" on service \"%s\"", trait.Name, comp.ComponentName))
+			msgs = append(msgs, fmt.Sprintf("applied trait \"%q\" on service \"%q\"", trait.Name, comp.ComponentName))
 		}
 	}
 
@@ -113,27 +114,27 @@ func handleNamespaceLabel(linkerd *Linkerd, namespaces []string, isDel bool, kub
 	return mergeErrors(errs)
 }
 
-func handleComponentLinkerdMesh(linkerd *Linkerd, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
+func handleComponentLinkerdMesh(linkerd *Linkerd, comp *v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	version := comp.Spec.Version
 	return linkerd.installLinkerd(isDel, version, comp.Namespace, kubeconfigs)
 }
 
 func handleLinkerdCoreComponent(
 	linkerd *Linkerd,
-	comp v1alpha1.Component,
+	comp *v1alpha1.Component,
 	isDel bool,
 	apiVersion,
 	kind string,
 	kubeconfigs []string) (string, error) {
 	if apiVersion == "" {
-		apiVersion = v1alpha1.GetAPIVersionFromComponent(comp)
+		apiVersion = v1alpha1.GetAPIVersionFromComponent(*comp)
 		if apiVersion == "" {
 			return "", ErrLinkerdCoreComponentFail(fmt.Errorf("failed to get API Version for: %s", comp.Name))
 		}
 	}
 
 	if kind == "" {
-		kind = v1alpha1.GetKindFromComponent(comp)
+		kind = v1alpha1.GetKindFromComponent(*comp)
 		if kind == "" {
 			return "", ErrLinkerdCoreComponentFail(fmt.Errorf("failed to get kind for: %s", comp.Name))
 		}
@@ -158,15 +159,15 @@ func handleLinkerdCoreComponent(
 		return "", err
 	}
 
-	msg := fmt.Sprintf("created %s \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
+	msg := fmt.Sprintf("created %s \"%q\" in namespace \"%q\"", kind, comp.Name, comp.Namespace)
 	if isDel {
-		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
+		msg = fmt.Sprintf("deleted %s config \"%q\" in namespace \"%q\"", kind, comp.Name, comp.Namespace)
 	}
 
 	return msg, linkerd.applyManifest(yamlByt, isDel, comp.Namespace, kubeconfigs)
 }
 
-func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
+func handleComponentLinkerdAddon(istio *Linkerd, comp *v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var addonName string
 	var helmURL string
 	version := removePrefixFromVersionIfPresent(comp.Spec.Version)
@@ -194,11 +195,12 @@ func handleComponentLinkerdAddon(istio *Linkerd, comp v1alpha1.Component, isDel 
 	patches := make([]string, 0)
 	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
 
-	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL, addonName, kubeconfigs)
-	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
+	statusMsg, err := istio.installAddon(comp.Namespace, isDel, svc, patches, helmURL, addonName, kubeconfigs)
+	msg := fmt.Sprintf("created service of type \"%q\"", comp.Spec.Type)
 	if isDel {
-		msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+		msg = fmt.Sprintf("deleted service of type \"%q\"", comp.Spec.Type)
 	}
+	fmt.Println(statusMsg)
 
 	return msg, err
 }

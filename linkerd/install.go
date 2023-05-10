@@ -135,14 +135,14 @@ func (linkerd *Linkerd) applyHelmChart(appversion, namespace string, isDel bool,
 		wg.Add(1)
 		go func(config string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(config))
+			client, err := mesherykube.New([]byte(config))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+			err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 				ReleaseName: "linkerd-crds",
 				ChartLocation: mesherykube.HelmChartLocation{
 					Repository: loc,
@@ -163,7 +163,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion, namespace string, isDel bool,
 				errMx.Unlock()
 				return
 			}
-			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+			err = client.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 				ReleaseName: "linkerd-control-plane",
 				ChartLocation: mesherykube.HelmChartLocation{
 					Repository: loc,
@@ -209,7 +209,7 @@ func (linkerd *Linkerd) applyHelmChart(appversion, namespace string, isDel bool,
 	return nil
 }
 
-func getChartLocationAndVersion(version string) (a string, b string) {
+func getChartLocationAndVersion(version string) (loc, ver string) {
 	if strings.HasPrefix(version, "edge-") {
 		return LinkerdHelmEdgeRepo, version
 	}
@@ -257,14 +257,14 @@ func (linkerd *Linkerd) applyManifest(contents []byte, isDel bool, namespace str
 		wg.Add(1)
 		go func(config string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(config))
+			client, err := mesherykube.New([]byte(config))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-			err = kClient.ApplyManifest(contents, mesherykube.ApplyOptions{
+			err = client.ApplyManifest(contents, mesherykube.ApplyOptions{
 				Namespace:    namespace,
 				Update:       true,
 				Delete:       isDel,
@@ -313,7 +313,8 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 	binPath := path.Join(config.RootPath(), "bin")
 	linkerd.Log.Info("Looking for linkerd in", binPath, "...")
 	executable = path.Join(binPath, alternateBinaryName)
-	if _, err := os.Stat(executable); err == nil {
+	_, err = os.Stat(executable)
+	if err == nil {
 		return executable, nil
 	}
 
@@ -323,6 +324,8 @@ func (linkerd *Linkerd) getExecutable(release string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer res.Body.Close()
+
 	// Install the binary
 	linkerd.Log.Info("Installing...")
 	if err := installBinary(path.Join(binPath, alternateBinaryName), runtime.GOOS, res); err != nil {
@@ -341,7 +344,12 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	case "linux":
 		url = fmt.Sprintf("%s/%s/linkerd2-cli-%s-%s-%s", url, release, release, platform, arch)
 	}
-	resp, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, http.NoBody)
+	if err != nil {
+		return nil, ErrDownloadBinary(err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, ErrDownloadBinary(err)
 	}
@@ -367,7 +375,8 @@ func installBinary(location, platform string, res *http.Response) error {
 	}
 	/* #nosec G307 */
 	defer func() {
-		if err := out.Close(); err != nil {
+		err = out.Close()
+		if err != nil {
 			fmt.Println(err)
 		}
 	}()

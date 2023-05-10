@@ -178,7 +178,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
 			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
-			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL, opReq.OperationName, kubeConfigs)
+			statusMsg, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL, opReq.OperationName, kubeConfigs)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"
@@ -189,6 +189,7 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				hh.streamErr(summary, ee, err)
 				return
 			}
+			fmt.Println(statusMsg)
 			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
 			ee.Details = fmt.Sprintf("Successfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(ee)
@@ -224,8 +225,8 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
-		comp, err := oam.ParseApplicationComponent(acomp)
-		if err != nil {
+		comp, parseErr := oam.ParseApplicationComponent(acomp)
+		if parseErr != nil {
 			linkerd.Log.Error(ErrParseOAMComponent)
 			continue
 		}
@@ -241,15 +242,15 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := linkerd.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
-		if err != nil {
-			return msg2, ErrProcessOAM(err)
+		msg2, err2 := linkerd.HandleApplicationConfiguration(&config, oamReq.DeleteOp, kubeconfigs)
+		if err2 != nil {
+			return msg2, ErrProcessOAM(err2)
 		}
 
 		// Process components
-		msg1, err := linkerd.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
-		if err != nil {
-			return msg1 + "\n" + msg2, ErrProcessOAM(err)
+		msg1, err3 := linkerd.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
+		if err3 != nil {
+			return msg1 + "\n" + msg2, ErrProcessOAM(err3)
 		}
 
 		return msg1 + "\n" + msg2, nil
@@ -262,7 +263,7 @@ func (linkerd *Linkerd) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	}
 
 	// Process configuration
-	msg2, err := linkerd.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
+	msg2, err := linkerd.HandleApplicationConfiguration(&config, oamReq.DeleteOp, kubeconfigs)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}
@@ -279,18 +280,18 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 		wg.Add(1)
 		go func(k8sconfig string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(k8sconfig))
+			client, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-			ns, err := kClient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+			ns, err := client.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 			if err != nil {
 				linkerd.Log.Info("Namespace \"", namespace, "\" not present. Creating namespace")
 				var er error
-				ns, er = createNS(kClient, namespace)
+				ns, er = createNS(client, namespace)
 				if er != nil {
 					errMx.Lock()
 					errs = append(errs, err)
@@ -312,7 +313,7 @@ func (linkerd *Linkerd) AnnotateNamespace(namespace string, remove bool, labels 
 				}
 			}
 
-			_, err = kClient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+			_, err = client.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)

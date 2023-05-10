@@ -36,7 +36,7 @@ func GetLatestReleaseNames(limit int) ([]adapter.Version, error) {
 	}
 
 	var releaseNames []adapter.Version
-	var latestStable adapter.Version = ""
+	var latestStable adapter.Version
 
 	for _, r := range releases {
 		releaseNames = append(releaseNames, r.Name)
@@ -70,7 +70,14 @@ func getLatestReleases(releases uint) ([]*Release, error) {
 	releaseAPIURL := "https://api.github.com/repos/linkerd/linkerd2/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
-	resp, err := http.Get(releaseAPIURL)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", releaseAPIURL, http.NoBody)
+	if err != nil {
+		return []*Release{}, ErrGetLatestReleases(err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return []*Release{}, ErrGetLatestReleases(err)
 	}
