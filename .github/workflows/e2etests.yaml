@@ -26,15 +26,21 @@ jobs:
         run: |
             if [ ${{ github.event_name }} == "release" ];then
                 echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            else 
-                echo "version=edge" >> $GITHUB_ENV
-            fi      
-      - name: Get latest release tag
-        id: gettag
+            else
+                echo "version=$(steps.getadapter.outputs.release)" >> $GITHUB_ENV
+            fi
+      - name: Get latest stable release of adapter
+        id: getadapter
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: linkerd/linkerd2
-          excludes: prerelease, draft, edge 
+          excludes: prerelease, draft, edge     
+      # - name: Get latest release tag
+      #   id: gettag
+      #   uses: pozetroninc/github-action-get-latest-release@master
+      #   with:
+      #     repository: 
+      #     excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
            yq e -i '.services.linkerd.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
