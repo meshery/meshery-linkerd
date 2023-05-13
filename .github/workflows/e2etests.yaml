@@ -24,13 +24,19 @@ jobs:
         uses: actions/checkout@master
       - name: Get latest version of Linkerd
         run: |
-            if [ ${{ github.event_name }} == "release" ];then
-                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+            if [ "$push" == "release" ]; then
+              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             else
-                 version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')
-                 version=${version#stable-}
-                 echo "version=$version" >> $GITHUB_ENV
-            fi  
+              version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')
+              if [ -n "$version" ]; then
+                version=${version#stable-}
+                echo "version=$version" >> $GITHUB_ENV
+              else
+                echo "Error: Unable to retrieve Linkerd version." 
+                exit 1
+              fi
+            fi
+
       # - name: Get latest release tag
       #   id: gettag
       #   uses: pozetroninc/github-action-get-latest-release@master
