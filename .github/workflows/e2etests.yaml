@@ -27,15 +27,16 @@ jobs:
             if [ "$push" == "release" ]; then
               echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             else
-              version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')
+              version=$(curl -sL "https://api.github.com/repos/linkerd/linkerd2/releases/latest" | grep -oP '"tag_name": "\K([^"]+)')
               if [ -n "$version" ]; then
-                version=${version#stable-}
+                version=${version#v}
                 echo "version=$version" >> $GITHUB_ENV
               else
-                echo "Error: Unable to retrieve Linkerd version." 
+                echo "Error: Unable to retrieve Linkerd version."  # Add appropriate error handling
                 exit 1
               fi
             fi
+
 
       # - name: Get latest release tag
       #   id: gettag
