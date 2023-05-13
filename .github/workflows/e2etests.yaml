@@ -28,7 +28,7 @@ jobs:
         with:
           repository: linkerd/linkerd2
           excludes: prerelease, draft, edge 
-      - name: Get stable release tag
+      - name: Get stable release version
         id: getstabletag
         run: |
           if [ ${{ github.event_name }} == "release" ]; then
