@@ -27,7 +27,9 @@ jobs:
             if [ ${{ github.event_name }} == "release" ];then
                 echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             else
-                echo "version=version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')" >> $GITHUB_ENV
+                 version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')
+                 version=${version#stable-}
+                 echo "version=$(version)" >> $GITHUB_ENV
             fi  
       # - name: Get latest release tag
       #   id: gettag
