@@ -22,19 +22,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@master
-      - name: Get version of adapter
+      - name: Get latest version of Linkerd
         run: |
             if [ ${{ github.event_name }} == "release" ];then
                 echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             else
-                echo "version=$(steps.getadapter.outputs.release)" >> $GITHUB_ENV
-            fi
-      - name: Get latest stable release of adapter
-        id: getadapter
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: linkerd/linkerd2
-          excludes: prerelease, draft, edge     
+                echo "version=version=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+')" >> $GITHUB_ENV
+            fi  
       # - name: Get latest release tag
       #   id: gettag
       #   uses: pozetroninc/github-action-get-latest-release@master
