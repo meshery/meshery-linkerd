@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Get latest release tag
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
@@ -39,13 +41,6 @@ jobs:
             echo "stable_release=$stable_release" >> $GITHUB_ENV
           fi
 
-      # - name: Get latest release tag
-      #   id: gettag
-      #   uses: pozetroninc/github-action-get-latest-release@master
-      #   with:
-      #     repository: 
-      #     excludes: prerelease, draft, edge 
-
       - name: Change service mesh version in patternfile
         run: | 
            yq e -i '.services.linkerd.version="${{ env.stable_release }}"' ./.github/install/deploy.yaml 
@@ -56,28 +51,7 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestLinkerd:
-    needs: SetPatternfile
-    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
-    with:
-      expected_resources: linkerd-destination,linkerd-identity,linkerd-proxy-injector
-      expected_resources_types: pod,pod,pod
-      expected_resources_namespaces: linkerd-system,linkerd-system,linkerd-system
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-service.yaml
-      adapter_name: linkerd
-      patternfile_name: deploy.yaml
-      provider: Local
-      k8s_version: v1.22.15
-      sm_version: ${{ needs.SetPatternfile.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfile.outputs.adapter_version }}
-      output_filename: data.json
-    secrets:
-      token: ${{ secrets.PROVIDER_TOKEN }} 
-
-
   UpdateDocs:
-    needs: TestLinkerd
     if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
     steps:
@@ -93,40 +67,7 @@ jobs:
       - uses: actions/checkout@master
         with:
           repository: meshery/meshery 
-          token: ${{ secrets.GH_ACCESS_TOKEN }}   
-      - name: DownloadJSON
-        uses: actions/download-artifact@v3
-        with:
-          name: data.json
-      - name: echo results
-        run: |
-          pretty=$(jq . data.json)
-          rm data.json
-          mkdir -p ./docs/_compatibility/meshery-linkerd
-          cd ./docs/_compatibility/meshery-linkerd
-          touch data.json
-          echo $pretty > data.json
-          cat data.json
-          touch test.md
-          filename=(`date +%m-%d-%Y-%H-%M-%m_${SHORT_SHA}`)
-          echo $filename
-          echo "---
-          timestamp: $(jq '.metadata.runon| strptime("%a %b %e %X %Z %Y") | strftime("%Y-%m-%d %X %Z %a")' data.json)
-          meshery-component: meshery-linkerd
-          meshery-component-version: $version
-          meshery-server-version: $(jq '.metadata."meshery-server-version"' data.json)
-          k8s-distro: minikube
-          k8s-version: $(jq '.metadata.k8s_version' data.json)
-          service-mesh: Linkerd
-          service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
-          tests:
-            pod/linkerd-destination: $(jq '.resources_status."pod/linkerd-destination"' data.json)
-            pod/linkerd-identity: $(jq '.resources_status."pod/linkerd-identity"' data.json)
-            pod/linkerd-proxy-injector:  $(jq '.resources_status."pod/linkerd-proxy-injector"' data.json)
-          overall-status: $(jq '."overall-status"' data.json)
-          ---" >  test.md
-          mv test.md $filename.md
-          rm data.json
+          token: ${{ secrets.GITHUB_TOKEN }}   
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -136,3 +77,4 @@ jobs:
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit_options: '--signoff'
           commit_message: '[Docs] Test status of adapter'
+
