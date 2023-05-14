@@ -38,6 +38,14 @@ jobs:
             stable_release=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+' | head -n1)
             echo "stable_release=$stable_release" >> $GITHUB_ENV
           fi
+
+      # - name: Get latest release tag
+      #   id: gettag
+      #   uses: pozetroninc/github-action-get-latest-release@master
+      #   with:
+      #     repository: 
+      #     excludes: prerelease, draft, edge 
+
       - name: Change service mesh version in patternfile
         run: | 
            yq e -i '.services.linkerd.version="${{ env.stable_release }}"' ./.github/install/deploy.yaml 
