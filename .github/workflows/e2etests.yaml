@@ -35,7 +35,7 @@ jobs:
             stable_release=${GITHUB_REF/refs\/tags\//}
             echo "stable_release=$stable_release" >> $GITHUB_ENV
           else
-            stable_release=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+' | head -n1)
+            stable_release=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+' | head -n1 | cut -d'-' -f2)
             echo "stable_release=$stable_release" >> $GITHUB_ENV
           fi
 
