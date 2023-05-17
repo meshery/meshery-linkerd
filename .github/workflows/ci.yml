@@ -41,7 +41,6 @@ jobs:
       with:
         args: --timeout 3m --verbose
   codecov:
-      needs: golangci-lint
       name: Code Coverage
       if: github.repository == 'meshery/meshery-linkerd'
       runs-on: ubuntu-22.04
