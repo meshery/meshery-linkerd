@@ -344,8 +344,10 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	case "linux":
 		url = fmt.Sprintf("%s/%s/linkerd2-cli-%s-%s-%s", url, release, release, platform, arch)
 	}
+
+	ctx := context.Background()
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, ErrDownloadBinary(err)
 	}

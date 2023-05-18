@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -70,9 +71,10 @@ func getLatestReleases(releases uint) ([]*Release, error) {
 	releaseAPIURL := "https://api.github.com/repos/linkerd/linkerd2/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
-	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", releaseAPIURL, http.NoBody)
+	ctx := context.Background()
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, releaseAPIURL, http.NoBody)
 	if err != nil {
 		return []*Release{}, ErrGetLatestReleases(err)
 	}
