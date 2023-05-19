@@ -22,22 +22,33 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@master
-      - name: Get version of adapter
-        run: |
-            if [ ${{ github.event_name }} == "release" ];then
-                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            else 
-                echo "version=edge" >> $GITHUB_ENV
-            fi      
       - name: Get latest release tag
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: linkerd/linkerd2
           excludes: prerelease, draft, edge 
+      - name: Get stable release version
+        id: getstabletag
+        run: |
+          if [ ${{ github.event_name }} == "release" ]; then
+            stable_release=${GITHUB_REF/refs\/tags\//}
+            echo "stable_release=$stable_release" >> $GITHUB_ENV
+          else
+            stable_release=$(curl -sL "https://linkerd.io/releases/" | grep -oP 'Stable \(latest version: \K[^)]+' | head -n1)
+            echo "stable_release=$stable_release" >> $GITHUB_ENV
+          fi
+
+      # - name: Get latest release tag
+      #   id: gettag
+      #   uses: pozetroninc/github-action-get-latest-release@master
+      #   with:
+      #     repository: 
+      #     excludes: prerelease, draft, edge 
+
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.linkerd.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.version="${{ env.stable_release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v3
