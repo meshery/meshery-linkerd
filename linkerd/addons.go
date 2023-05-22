@@ -14,7 +14,7 @@ import (
 )
 
 // installAddon installs/uninstalls an addon in the given namespace
-func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL string, addon string, kubeconfigs []string) (string, error) {
+func (linkerd *Linkerd) installAddon(namespace string, del bool, service string, patches []string, helmChartURL, addon string, kubeconfigs []string) (string, error) {
 	act := mesherykube.INSTALL
 	st := status.Installing
 

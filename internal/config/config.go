@@ -157,7 +157,7 @@ func threadSafeAppend(fs *map[string]string, name string, url string, m *sync.RW
 }
 
 // GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames->URL from that directory
-func GetFileNames(owner string, repo string, path string) (map[string]string, error) {
+func GetFileNames(owner, repo, path string) (map[string]string, error) {
 	g := walker.NewGithub()
 	var filenames = make(map[string]string)
 	var m sync.RWMutex

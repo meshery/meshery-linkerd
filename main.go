@@ -95,7 +95,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// // Initialize Tracing instance
+	// Initialize Tracing instance
 	// tracer, err := tracing.New(service.Name, service.TraceURL)
 	// if err != nil {
 	// 	log.Err("Tracing Init Failed", err.Error())
@@ -191,7 +191,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 
-	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
+	// If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
 	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
 	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
 		url = os.Getenv("COMP_GEN_URL")
