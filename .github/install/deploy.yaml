@@ -2,6 +2,7 @@ name: LinkerdMesh
 services:
   linkerd:
     type: LinkerdMesh
+    model: LINKERD
     namespace: linkerd-system
     version:  #will be inserted dynamically
 
