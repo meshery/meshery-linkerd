@@ -58,7 +58,7 @@ jobs:
 
   TestLinkerd:
     needs: SetPatternfile
-    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
+    uses: meshery/meshery/.github/workflows/test_adaptersv2.yaml@master
     with:
       expected_resources: linkerd-destination,linkerd-identity,linkerd-proxy-injector
       expected_resources_types: pod,pod,pod
