@@ -13,10 +13,13 @@ import (
 	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
 	smp "github.com/layer5io/service-mesh-performance/spec"
+
+	"github.com/layer5io/meshery-linkerd/internal/config"
 )
 
 var DefaultGenerationMethod string
 var DefaultGenerationURL string
+var CRDnamesURL map[string]string
 var LatestVersion string
 var WorkloadPath string
 var MeshModelPath string
@@ -69,6 +72,30 @@ func init() {
 		return
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
+	// vs, err := config.GetLatestReleaseNames(30)
+	// fmt.Println("vs: ", vs)
+ 	// if len(vs) == 0 {
+ 	// 	fmt.Println("dynamic component generation failure: ", err.Error())
+ 	// 	return
+ 	// }
+ 	// for _, v := range vs {
+ 	// 	AllVersions = append(AllVersions, string(v))
+ 	// }
+	// fmt.Println("AllVersions: ", AllVersions)
+
+ 	// LatestVersion = AllVersions[0]
 	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+	// DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd2/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+
+	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
+ 	if err != nil {
+ 		fmt.Println("dynamic component generation failure: ", err.Error())
+ 		return
+ 	}
+ 	for n := range names {
+ 		if !strings.HasSuffix(n, ".yaml") {
+ 			delete(names, n)
+ 		}
+ 	}
+ 	CRDnamesURL = names
 }

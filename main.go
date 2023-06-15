@@ -27,6 +27,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils/events"
+	"github.com/sirupsen/logrus"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -198,23 +199,42 @@ func registerWorkloads(port string, log logger.Handler) {
 		gm = os.Getenv("COMP_GEN_METHOD")
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
 	}
-
+	log.Info("url: ", url, " method: ", gm)
 	log.Info("Registering latest workload components for version ", version)
 
-	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:             url,
-		Method:          gm,
-		OAMPath:         build.WorkloadPath,
-		MeshModelPath:   build.MeshModelPath,
-		MeshModelConfig: build.MeshModelConfig,
-		DirName:         version,
-		Config:          build.NewConfig(version),
-	})
-	if err != nil {
-		log.Info("Failed to generate components for version " + version)
-		log.Error(err)
-		return
+	for name, url := range build.CRDnamesURL {
+ 		log.Info("Registering for ", name)
+		logrus.Debug("Registering for url: ", url)
+ 		if err := adapter.CreateComponents(adapter.StaticCompConfig{
+ 			URL:             url,
+ 			Method:          gm,
+ 			MeshModelPath:   build.MeshModelPath,
+ 			MeshModelConfig: build.MeshModelConfig,
+ 			DirName:         version,
+ 			Config:          build.NewConfig(version),
+ 		}); err != nil {
+ 			log.Error(err)
+ 			return
+ 		}
+ 		log.Info(name, " registered")
 	}
+
+	// err := adapter.CreateComponents(adapter.StaticCompConfig{
+	// 	URL:             url,
+	// 	Method:          gm,
+	// 	OAMPath:         build.WorkloadPath,
+	// 	MeshModelPath:   build.MeshModelPath,
+	// 	MeshModelConfig: build.MeshModelConfig,
+	// 	DirName:         version,
+	// 	Config:          build.NewConfig(version),
+	// })
+
+	// if err != nil {
+	// 	log.Info("Failed to generate components for version " + version)
+	// 	log.Error(err)
+	// 	return
+	// 	}
+
 
 	// The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component creation completed for version ", version)
