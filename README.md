@@ -31,7 +31,7 @@
 <a href="https://meshery.io"><img src="/img/readme/meshery-logo-light-text.svg"
 style="margin:10px;" width="125px" 
 alt="Meshery - the Cloud Native Management Plane" align="left" /></a>
-As a self-service engineering platform, <a href="https://meshery.io">Meshery</a> enables collaborative design and operation of cloud native infrastructure. Through it's extension points, Meshery offers the ability to optionally plugin adapters in order to more deeply integrate with specific systems like Linkerd. 
+As a self-service engineering platform, <a href="https://meshery.io">Meshery</a> enables collaborative design and operation of cloud native infrastructure. Through it's extension points, Meshery offers the ability to optionally plugin adapters in order to more deeply integrate with specific systems like Linkerd. Deploy the Meshery Adapter for Linkerd in order to enable deeper lifecycle management of Linkerd service meshes.
 <br /><br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
 </p>
 
