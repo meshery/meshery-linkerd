@@ -72,21 +72,7 @@ func init() {
 		return
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
-	// vs, err := config.GetLatestReleaseNames(30)
-	// fmt.Println("vs: ", vs)
- 	// if len(vs) == 0 {
- 	// 	fmt.Println("dynamic component generation failure: ", err.Error())
- 	// 	return
- 	// }
- 	// for _, v := range vs {
- 	// 	AllVersions = append(AllVersions, string(v))
- 	// }
-	// fmt.Println("AllVersions: ", AllVersions)
-
- 	// LatestVersion = AllVersions[0]
 	DefaultGenerationMethod = adapter.Manifests
-	// DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd2/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
-
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
  	if err != nil {
  		fmt.Println("dynamic component generation failure: ", err.Error())
