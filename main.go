@@ -180,7 +180,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Generating latest service mesh components...")
 
 	// First we create and store any new components if available
-	version := v
+	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
 
