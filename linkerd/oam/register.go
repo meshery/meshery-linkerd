@@ -72,37 +72,3 @@ func loadMeshmodelComponents(basepath string) ([]meshmodelDefinitionPathSet, err
 
 	return res, nil
 }
-
-func load(basePath string) ([]schemaDefinitionPathSet, error) {
-	res := []schemaDefinitionPathSet{}
-
-	if err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		if matched, err := filepath.Match("*_definition.json", filepath.Base(path)); err != nil {
-			return err
-		} else if matched {
-			nameWithPath := strings.TrimSuffix(path, "_definition.json")
-
-			res = append(res, schemaDefinitionPathSet{
-				oamDefinitionPath: path,
-				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
-				name:              filepath.Base(nameWithPath),
-			})
-			availableVersionGlobalMutex.Lock()
-			AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
-			availableVersionGlobalMutex.Unlock()
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return res, nil
-}
