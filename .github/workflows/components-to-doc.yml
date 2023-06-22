@@ -23,7 +23,7 @@ jobs:
               fi
             }
             mkdir output
-            folder_path=templates/oam/workloads/*
+            folder_path=templates/meshmodel/components/*
             for file in $folder_path;
             do
                 folder_name="$file/*"
