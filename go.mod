@@ -4,15 +4,6 @@ go 1.19
 
 replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 
-// replace (
-// 	go.opentelemetry.io/otel => go.opentelemetry.io/otel v0.11.0
-// 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v0.11.0
-// )
-
-// replace github.com/layer5io/meshery-adapter-library v0.6.7 => /Users/pranavsingh/Documents/OS/External/meshery-adapter-library
-
-// replace github.com/layer5io/meshkit v0.6.40 => /Users/pranavsingh/Documents/OS/External/meshkit
-
 require (
 	github.com/google/uuid v1.3.0
 	github.com/layer5io/meshery-adapter-library v0.6.8
