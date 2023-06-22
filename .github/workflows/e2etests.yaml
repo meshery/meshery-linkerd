@@ -24,10 +24,9 @@ jobs:
         uses: actions/checkout@master
       - name: Get latest release tag
         id: gettag
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: linkerd/linkerd2
-          excludes: prerelease, draft, edge 
+        run: |
+           NEW_LINKERD_VERSION=$(curl --silent "https://api.github.com/repos/linkerd/linkerd2/releases" | jq ' .[] | select(.tag_name|test("stable")) | ."tag_name"' | sed -n 1p$'\n' | tr -d '"')
+           echo "::set-output name=release::$NEW_LINKERD_VERSION"
       - name: Get stable release version
         id: getstabletag
         run: |
