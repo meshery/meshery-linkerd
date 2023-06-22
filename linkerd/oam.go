@@ -1,9 +1,9 @@
 package linkerd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/common"

@@ -65,37 +65,22 @@ func init() {
 
 	_ = json.Unmarshal(byt, &Meshmodelmetadata)
 	wd, _ := os.Getwd()
-	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
 	if len(AllVersions) == 0 {
 		return
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
-	// vs, err := config.GetLatestReleaseNames(30)
-	// fmt.Println("vs: ", vs)
- 	// if len(vs) == 0 {
- 	// 	fmt.Println("dynamic component generation failure: ", err.Error())
- 	// 	return
- 	// }
- 	// for _, v := range vs {
- 	// 	AllVersions = append(AllVersions, string(v))
- 	// }
-	// fmt.Println("AllVersions: ", AllVersions)
-
- 	// LatestVersion = AllVersions[0]
 	DefaultGenerationMethod = adapter.Manifests
-	// DefaultGenerationURL = "https://raw.githubusercontent.com/linkerd/linkerd2/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
-
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
- 	if err != nil {
- 		fmt.Println("dynamic component generation failure: ", err.Error())
- 		return
- 	}
- 	for n := range names {
- 		if !strings.HasSuffix(n, ".yaml") {
- 			delete(names, n)
- 		}
- 	}
- 	CRDnamesURL = names
+	if err != nil {
+		fmt.Println("dynamic component generation failure: ", err.Error())
+		return
+	}
+	for n := range names {
+		if !strings.HasSuffix(n, ".yaml") {
+			delete(names, n)
+		}
+	}
+	CRDnamesURL = names
 }
