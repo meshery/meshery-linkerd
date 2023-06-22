@@ -9,28 +9,19 @@ import (
 	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshery-linkerd/internal/config"
 	"github.com/layer5io/meshkit/models/meshmodel/core/types"
 )
 
 var (
 	basePath, _ = os.Getwd()
 
-	// WorkloadPath will be used by both static and component generation
-	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads")
+	// MeshModelComponents Path will be used by both static and component generation
 	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
-	traitPath           = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
 // AvailableVersions denote the component versions available statically
 var AvailableVersions = map[string]bool{}
 var availableVersionGlobalMutex sync.Mutex
-
-type schemaDefinitionPathSet struct {
-	oamDefinitionPath string
-	jsonSchemaPath    string
-	name              string
-}
 
 type meshmodelDefinitionPathSet struct {
 	meshmodelDefinitionPath string
@@ -55,70 +46,6 @@ func RegisterMeshModelComponents(uuid, runtime, host, port string) error {
 	return adapter.
 		NewMeshModelRegistrant(meshmodelRDP, fmt.Sprintf("%s/api/meshmodel/components/register", runtime)).
 		Register(uuid)
-}
-
-// RegisterWorkloads will register all of the workload definitions
-// present in the path oam/workloads
-//
-// Registration process will send POST request to $runtime/api/oam/workload
-func RegisterWorkloads(runtime, host string) error {
-	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
-
-	pathSets, err := load(WorkloadPath)
-	if err != nil {
-		return err
-	}
-
-	for _, pathSet := range pathSets {
-		metadata := map[string]string{
-			config.OAMAdapterNameMetadataKey: config.LinkerdOperation,
-		}
-
-		if strings.HasSuffix(pathSet.name, "addon") {
-			metadata[config.OAMComponentCategoryMetadataKey] = "addon"
-		}
-
-		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: pathSet.oamDefinitionPath,
-			OAMRefSchemaPath: pathSet.jsonSchemaPath,
-			Host:             host,
-			Metadata:         metadata,
-		})
-	}
-
-	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/workload", runtime)).
-		Register()
-}
-
-// RegisterTraits will register all of the trait definitions
-// present in the path oam/traits
-//
-// Registeration process will send POST request to $runtime/api/oam/trait
-func RegisterTraits(runtime, host string) error {
-	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
-
-	pathSets, err := load(traitPath)
-	if err != nil {
-		return err
-	}
-
-	for _, pathSet := range pathSets {
-		metadata := map[string]string{
-			config.OAMAdapterNameMetadataKey: config.LinkerdOperation,
-		}
-
-		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: pathSet.oamDefinitionPath,
-			OAMRefSchemaPath: pathSet.jsonSchemaPath,
-			Host:             host,
-			Metadata:         metadata,
-		})
-	}
-
-	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/trait", runtime)).
-		Register()
 }
 
 func loadMeshmodelComponents(basepath string) ([]meshmodelDefinitionPathSet, error) {
@@ -178,8 +105,4 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 		return nil, err
 	}
 	return res, nil
-}
-
-func init() {
-	_, _ = load(WorkloadPath)
 }

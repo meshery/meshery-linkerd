@@ -65,7 +65,6 @@ func init() {
 
 	_ = json.Unmarshal(byt, &Meshmodelmetadata)
 	wd, _ := os.Getwd()
-	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("linkerd", "linkerd2")
 	if len(AllVersions) == 0 {

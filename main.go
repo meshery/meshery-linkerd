@@ -150,16 +150,6 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
-	// Register workloads
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
-	// Register traits
-	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
 	// Register meshmodel components
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Error(err)
