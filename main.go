@@ -191,18 +191,18 @@ func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Registering latest workload components for version ", version)
 
 	for name, u := range build.CRDnamesURL {
- 		if err := adapter.CreateComponents(adapter.StaticCompConfig{
- 			URL:             u,
- 			Method:          gm,
- 			MeshModelPath:   build.MeshModelPath,
- 			MeshModelConfig: build.MeshModelConfig,
- 			DirName:         version,
- 			Config:          build.NewConfig(version),
- 		}); err != nil {
- 			log.Error(err)
- 			return
- 		}
- 		log.Info(name, " registered")
+		if err := adapter.CreateComponents(adapter.StaticCompConfig{
+			URL:             u,
+			Method:          gm,
+			MeshModelPath:   build.MeshModelPath,
+			MeshModelConfig: build.MeshModelConfig,
+			DirName:         version,
+			Config:          build.NewConfig(version),
+		}); err != nil {
+			log.Error(err)
+			return
+		}
+		log.Info(name, " registered")
 	}
 
 	// The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
@@ -215,5 +215,4 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 	log.Info("Latest workload components successfully registered for version ", version)
-
 }

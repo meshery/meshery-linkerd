@@ -73,14 +73,14 @@ func init() {
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
 	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd-crds/templates/**")
- 	if err != nil {
- 		fmt.Println("dynamic component generation failure: ", err.Error())
- 		return
- 	}
- 	for n := range names {
- 		if !strings.HasSuffix(n, ".yaml") {
- 			delete(names, n)
- 		}
- 	}
- 	CRDnamesURL = names
+	if err != nil {
+		fmt.Println("dynamic component generation failure: ", err.Error())
+		return
+	}
+	for n := range names {
+		if !strings.HasSuffix(n, ".yaml") {
+			delete(names, n)
+		}
+	}
+	CRDnamesURL = names
 }

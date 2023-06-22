@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
