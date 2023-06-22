@@ -9,13 +9,39 @@ on:
     paths-ignore:
       - 'docs/**'
       - '.github/**'
+      - 'img/**'
+      - 'templates/**'
   pull_request:
     branches:
       - master
+    paths:
+      - '**.go'
+      - '**.yml'
+      - '**.yaml'
+
 
 jobs:
+  detect_changes:
+    runs-on: ubuntu-latest
+    outputs:
+      go_changes: ${{ steps.filter.outputs.go_changes }}
+      yaml_changes: ${{ steps.filter.outputs.yaml_changes }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            go_changes:
+              - '**.go'
+            yaml_changes:
+              - '**.yml'
+              - '**.yaml'
+
   golangci-lint:
     runs-on: ubuntu-latest
+    needs: detect_changes
+    if: needs.detect_changes.outputs.go_changes == 'true'
     steps:
 
     - name: Setup go
@@ -62,6 +88,8 @@ jobs:
   error_code_check:
     name: Error code utility check
     runs-on: ubuntu-22.04
+    needs: detect_changes
+    if: needs.detect_changes.outputs.yaml_changes == 'true'
     steps:
 
       - name: Setup go

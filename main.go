@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -151,16 +150,6 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
-	// Register workloads
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
-	// Register traits
-	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
 	// Register meshmodel components
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Error(err)
@@ -198,22 +187,22 @@ func registerWorkloads(port string, log logger.Handler) {
 		gm = os.Getenv("COMP_GEN_METHOD")
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
 	}
-
+	log.Info("url: ", url, " method: ", gm)
 	log.Info("Registering latest workload components for version ", version)
 
-	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:             url,
-		Method:          gm,
-		OAMPath:         build.WorkloadPath,
-		MeshModelPath:   build.MeshModelPath,
-		MeshModelConfig: build.MeshModelConfig,
-		DirName:         version,
-		Config:          build.NewConfig(version),
-	})
-	if err != nil {
-		log.Info("Failed to generate components for version " + version)
-		log.Error(err)
-		return
+	for name, u := range build.CRDnamesURL {
+		if err := adapter.CreateComponents(adapter.StaticCompConfig{
+			URL:             u,
+			Method:          gm,
+			MeshModelPath:   build.MeshModelPath,
+			MeshModelConfig: build.MeshModelConfig,
+			DirName:         version,
+			Config:          build.NewConfig(version),
+		}); err != nil {
+			log.Error(err)
+			return
+		}
+		log.Info(name, " registered")
 	}
 
 	// The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
@@ -221,15 +210,9 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	// Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version ", version)
-	originalPath := oam.WorkloadPath
-	oam.WorkloadPath = filepath.Join(originalPath, version)
-	defer resetWorkloadPath(originalPath)
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Error(err)
 		return
 	}
 	log.Info("Latest workload components successfully registered for version ", version)
-}
-func resetWorkloadPath(orig string) {
-	oam.WorkloadPath = orig
 }
