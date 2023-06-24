@@ -15,7 +15,7 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-linkerd.svg)](https://hub.docker.com/r/layer5/meshery-linkerd)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-linkerd)](https://goreportcard.com/report/github.com/layer5io/meshery-linkerd)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/meshery/meshery-linkerd/build-and-release.yml?branch=master)](https://github.com/meshery/meshery-linkerd/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/meshery/meshery-linkerd/multi-platform.yml?branch=master)](https://github.com/meshery/meshery-linkerd/actions)
 [![GitHub](https://img.shields.io/github/license/layer5io/meshery-linkerd.svg)](https://github.com/layer5io/meshery-linkerd/blob/master/LICENSE)
 [![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-linkerd/help%20wanted.svg)](https://github.com/layer5io/meshery-linkerd/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery)
