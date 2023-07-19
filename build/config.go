@@ -45,7 +45,7 @@ func NewConfig(version string) manifests.Config {
 			IdPath:      "spec.names.kind",
 			VersionPath: "spec.versions[0].name",
 			GroupPath:   "spec.group",
-			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
+			SpecPath:    "spec.versions[0].schema.openAPIV3Schema"}, false),
 		ExtractCrds: func(manifest string) []string {
 			manifests.RemoveHelmTemplatingFromCRD(&manifest)
 			crds := strings.Split(manifest, "---")
