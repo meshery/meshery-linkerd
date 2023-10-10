@@ -7,7 +7,7 @@ replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200
 require (
 	github.com/google/uuid v1.3.0
 	github.com/layer5io/meshery-adapter-library v0.6.9
-	github.com/layer5io/meshkit v0.6.68
+	github.com/layer5io/meshkit v0.6.71
 	github.com/layer5io/service-mesh-performance v0.6.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.1
