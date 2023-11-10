@@ -113,7 +113,7 @@ func main() {
 	go registerDynamicCapabilities(service.Port, log)
 	// Server Initialization
 	log.Info("Adapter Listening at port: ", service.Port)
-	err = grpc.Start(service, nil)
+	err = grpc.Start(service)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)

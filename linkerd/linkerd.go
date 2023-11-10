@@ -14,6 +14,7 @@ import (
 	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"github.com/layer5io/meshkit/utils/events"
@@ -92,6 +93,8 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	}
 	operations := make(adapter.Operations)
 	kubeConfigs := opReq.K8sConfigs
+	requestedVersion := adapter.Version(opReq.Version)
+
 	err = linkerd.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
@@ -114,6 +117,10 @@ func (linkerd *Linkerd) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				err = ErrFetchLinkerdVersions
 			} else {
 				version = string(operations[opReq.OperationName].Versions[len(operations[opReq.OperationName].Versions)-1])
+				if utils.Contains[[]adapter.Version, adapter.Version](operations[opReq.OperationName].Versions, requestedVersion) {
+					version = requestedVersion.String()
+				}
+				fmt.Println("test::::::::", version, operations[opReq.OperationName].Versions)
 				stat, err = hh.installLinkerd(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs)
 			}
 			if err != nil {
