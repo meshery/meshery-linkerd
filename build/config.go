@@ -37,7 +37,7 @@ var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 // NewConfig creates the configuration for creating components
 func NewConfig(version string) manifests.Config {
 	return manifests.Config{
-		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_LINKERD)],
+		Name:        strings.ToLower(smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_LINKERD)]),
 		Type:        Component,
 		MeshVersion: version,
 		CrdFilter: manifests.NewCueCrdFilter(manifests.ExtractorPaths{
