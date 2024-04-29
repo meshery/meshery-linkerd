@@ -43,7 +43,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: patternfile
-          path: ./.github/install/deploy.yaml 
+          path: ./.github/install/deploy.yaml
+          overwrite: true
 
   TestLinkerd:
     needs: SetPatternfile
