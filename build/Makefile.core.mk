@@ -31,14 +31,6 @@ SHELL :=/bin/bash -o pipefail
 ADAPTER_URLS := "localhost:10000 localhost:10001 localhost:10002 localhost:10004 localhost:10005 localhost:10006 localhost:10007 localhost:10009 localhost:10010 localhost:10012"
 
 #-----------------------------------------------------------------------------
-# Providers
-#-----------------------------------------------------------------------------
-REMOTE_PROVIDER_LOCAL="http://localhost:9876"
-MESHERY_CLOUD_DEV="http://localhost:9876"
-MESHERY_CLOUD_PROD="https://meshery.layer5.io"
-MESHERY_CLOUD_STAGING="https://staging-meshery.layer5.io"
-
-#-----------------------------------------------------------------------------
 # Server
 #-----------------------------------------------------------------------------
 MESHERY_K8S_SKIP_COMP_GEN ?= TRUE
