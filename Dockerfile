@@ -5,7 +5,7 @@ ARG GIT_COMMITSHA
 ARG GIT_VERSION
 ARG GIT_STRIPPED_VERSION
 
-WORKDIR /github.com/layer5io/meshery-linkerd
+WORKDIR /github.com/meshery/meshery-linkerd
 COPY go.mod go.sum ./
 RUN go mod download
 COPY main.go main.go
@@ -30,5 +30,5 @@ ENV SERVICE_ADDR="meshery-linkerd"
 ENV MESHERY_SERVER="http://meshery:9081"
 WORKDIR /
 COPY templates/ ./templates
-COPY --from=build-env /github.com/layer5io/meshery-linkerd/meshery-linkerd .
+COPY --from=build-env /github.com/meshery/meshery-linkerd/meshery-linkerd .
 ENTRYPOINT ["./meshery-linkerd"]
